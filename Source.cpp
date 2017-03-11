@@ -142,7 +142,6 @@ void createArm(const btVector3& scale, const btVector3& position)
 
 }
 
-
 // ƒqƒgƒf‚Ì¶¬
 void CreateStarfish()
 {
