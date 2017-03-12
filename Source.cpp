@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <OpenGL/DemoApplication.h>
 
 #define RADIAN 180/M_PI
 
@@ -26,7 +27,7 @@ btCollisionShape* groundShape;
 btAlignedObjectArray<btCollisionShape*> collisionShapes;
 
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
-GLfloat light1pos[] = { 5.0, 3.0, 0.0, 1.0 };
+GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
 
 //----------------------------------------------------
 // 物質質感の定義
@@ -86,6 +87,8 @@ void CreateGround()
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
 
+    body->setActivationState(DISABLE_DEACTIVATION);
+    
 	// 作成した剛体をワールドへ登録
 	dynamicsWorld->addRigidBody(body);
 }
@@ -121,7 +124,7 @@ void CreateBall()
 }
 
 //ヒトデの胴体生成
-btRigidBody* initBody(const btVector3& scale, const btVector3& position)
+btRigidBody* initBody(const btVector3 scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btBoxShape(scale);
     collisionShapes.push_back(sBodyShape);
@@ -130,7 +133,7 @@ btRigidBody* initBody(const btVector3& scale, const btVector3& position)
     sBodyTransform.setIdentity();
     sBodyTransform.setOrigin(position);
     
-    btScalar mass(0.);
+    btScalar mass(10.);
     
     bool isDynamic = (mass != 0.f);
     
@@ -147,12 +150,12 @@ btRigidBody* initBody(const btVector3& scale, const btVector3& position)
 }
 
 //ヒトデの腕生成
-btRigidBody* initArm(const btVector3& scale, const btVector3& position)
+btRigidBody* initArm(const btVector3 scale, const btVector3 position)
 {
 	btCollisionShape* sBodyShape = new btBoxShape(scale);
 	collisionShapes.push_back(sBodyShape);
 
-	btScalar mass1(1.);
+	btScalar mass1(10.);
 	bool isDynamic = (mass1 != 0.f);
 
 	btVector3 localInertia1(0, 0, 0);
@@ -168,9 +171,39 @@ btRigidBody* initArm(const btVector3& scale, const btVector3& position)
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
 	btRigidBody* body = new btRigidBody(rbInfo);
-
+    
+    body->setActivationState(DISABLE_DEACTIVATION);
+    
     return body;
 
+}
+
+//ヒトデの管足生成
+btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
+{
+    btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
+    collisionShapes.push_back(sBodyShape);
+    
+    btScalar mass1(1.);
+    bool isDynamic = (mass1 != 0.f);
+    
+    btVector3 localInertia1(0, 0, 0);
+    if (isDynamic)
+        groundShape->calculateLocalInertia(mass1, localInertia1);
+    
+    // デフォルトのモーションステートを作成
+    
+    btTransform sBodyTransform;
+    sBodyTransform.setIdentity();
+    sBodyTransform.setOrigin(position);
+    btDefaultMotionState* myMotionState1 = new btDefaultMotionState(sBodyTransform);
+    
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
+    btRigidBody* body = new btRigidBody(rbInfo);
+    
+    body->setActivationState(DISABLE_DEACTIVATION);
+    
+    return body;
 }
 
 // ヒトデの生成
@@ -185,7 +218,7 @@ void CreateStarfish()
 	
 /***↓腕***/
 	btVector3 scale_a = btVector3(btScalar(25.), btScalar(10.), btScalar(25.));
-    btScalar dist = scale_a[0]+scale_b[0]+scale_b[1]*2;
+    btScalar dist = scale_a[0]+scale_b[0]+scale_b[1];
 
 	bodies.push_back(initArm(scale_a, btVector3(dist, position_b[1], 0)));
 	bodies.push_back(initArm(scale_a, btVector3(-dist, position_b[1], 0)));
@@ -193,23 +226,49 @@ void CreateStarfish()
 	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], -dist)));
     
 /***↓管足***/
-    
-    
+    btScalar scale_t[] = { btScalar(1.), btScalar(1.)};
+    btVector3 position_t = btVector3(0, 0, 0);
+    bodies.push_back(initTubefeet(scale_t, position_t));
     
     for (int i = 0; i < bodies.size(); i++) {
         dynamicsWorld->addRigidBody(bodies[i]);
     }
     
 //////拘束///////
+    vector<btHingeConstraint* > hinges;
+    
     btVector3 pivotInBody = btVector3(scale_b[0], 0, 0);
     btVector3 axisInBody = btVector3(0, 0, 1);
-    //btVector3 pivotInArm = btVector3(-scale_a[0]-scale_b[1]*2, 0, 0);
-    btVector3 pivotInArm = btVector3(10, 10, 0);
+    btVector3 pivotInArm = btVector3(-scale_a[0]-scale_b[1], 0, 0);
     btVector3 axisInArm = axisInBody;
+    btHingeConstraint* hinge = new btHingeConstraint(*bodies[0], *bodies[1], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    hinges.push_back(hinge);
     
-    //btHingeConstraint* hinge = new btHingeConstraint(*bodies[0], *bodies[1], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    btHingeConstraint* hinge = new btHingeConstraint(*bodies[1], pivotInArm, axisInArm);
-    dynamicsWorld->addConstraint(hinge);
+    pivotInBody = btVector3(-scale_b[0], 0, 0);
+    axisInBody = btVector3(0, 0, 1);
+    pivotInArm = btVector3(scale_a[0]+scale_b[1], 0, 0);
+    axisInArm = axisInBody;
+    hinge = new btHingeConstraint(*bodies[0], *bodies[2], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    hinges.push_back(hinge);
+
+    pivotInBody = btVector3(0, 0, scale_b[0]);
+    axisInBody = btVector3(1, 0, 0);
+    pivotInArm = btVector3(0, 0, -scale_a[0]-scale_b[1]);
+    axisInArm = axisInBody;
+    hinge = new btHingeConstraint(*bodies[0], *bodies[3], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    hinges.push_back(hinge);
+
+    pivotInBody = btVector3(0, 0, -scale_b[0]);
+    axisInBody = btVector3(1, 0, 0);
+    pivotInArm = btVector3(0, 0, scale_a[0]+scale_b[1]);
+    axisInArm = axisInBody;
+    hinge = new btHingeConstraint(*bodies[0], *bodies[4], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    hinges.push_back(hinge);
+    
+    
+    for (int i = 0; i < hinges.size(); i++) {
+        dynamicsWorld->addConstraint(hinges[i]);
+    }
 
 }
 
@@ -236,6 +295,12 @@ void CleanupBullet()
 		collisionShapes[j] = 0;
 		delete shape;
 	}
+    
+    for(int i = dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
+        btTypedConstraint* constraint = dynamicsWorld->getConstraint(i);
+        dynamicsWorld->removeConstraint(constraint);
+        delete constraint;
+    }
 
 	// ワールドを削除
 	delete dynamicsWorld;
@@ -277,46 +342,17 @@ void InitBullet()
 
 void Render()
 {
-#if 0
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //バッファの消去
 
-	//モデルビュー変換行列の設定--------------------------
-	glMatrixMode(GL_MODELVIEW);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
-	glLoadIdentity();//行列の初期化
-	glViewport(0, 0, 640, 480);
-	//----------------------------------------------
-
-	//陰影ON-----------------------------
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);//光源0を利用
-	//-----------------------------------
-
-	//球
-	glPushMatrix();
-	glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-	glTranslated(0.0, 0.0, 0.0);//平行移動値の設定
-	glutSolidSphere(10.0, 20, 20);//引数：(半径, Z軸まわりの分割数, Z軸に沿った分割数)
-	glPopMatrix();
-
-
-	//陰影OFF-----------------------------
-	glDisable(GL_LIGHTING);
-	//-----------------------------------
-
-	glutSwapBuffers(); //glutInitDisplayMode(GLUT_DOUBLE)でダブルバッファリングを利用可
-#else
 	dynamicsWorld->stepSimulation(1.f / 60.f, 10);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
+	//glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
 
 	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	//glDisable(GL_LIGHT1);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+    //glDisable(GL_LIGHT1);
 
 	/* モデルビュー変換行列の保存 */
 	glPushMatrix();
@@ -330,7 +366,7 @@ void Render()
 		{
             btVector3 pos = body->getCenterOfMassPosition();
 			int shape = body->getCollisionShape()->getShapeType();
-            btScalar rot = btScalar(body->getOrientation().getAngle() / RADIAN);
+            btScalar rot = body->getOrientation().getAngle() * RADIAN;
             btVector3 axis = body->getOrientation().getAxis();
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
             
@@ -375,7 +411,7 @@ void Render()
 	glDisable(GL_LIGHTING);
 
 	glutSwapBuffers();
-#endif
+
 }
 
 /// 動作怪しいよ
@@ -409,7 +445,8 @@ void init(void)
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
-	//glCullFace(GL_BACK);
+    glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+    //glCullFace(GL_BACK);
 	//glCullFace(GL_FRONT);
 
 	glMatrixMode(GL_PROJECTION);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
