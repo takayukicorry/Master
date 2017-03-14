@@ -61,7 +61,16 @@ GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };//白色
 GLfloat shininess = 30.0;//光沢の強さ
 //-----------------------------------------
 
+btVector3 RotateY(const btVector3 bef, double alpha)
+{
+    btVector3 aft = bef;
+    aft[0] = bef[0] * cos(alpha) - bef[2] * sin(alpha);
+    aft[2] = bef[0] * sin(alpha) + bef[2] * cos(alpha);
+    
+    return aft;
+}
 
+//---------------------------------------------
 // グランドの生成
 void CreateGround()
 {
@@ -150,7 +159,7 @@ btRigidBody* initBody(const btVector3 scale, const btVector3 position)
 }
 
 //ヒトデの腕生成
-btRigidBody* initArm(const btVector3 scale, const btVector3 position)
+btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
 {
 	btCollisionShape* sBodyShape = new btBoxShape(scale);
 	collisionShapes.push_back(sBodyShape);
@@ -167,6 +176,7 @@ btRigidBody* initArm(const btVector3 scale, const btVector3 position)
 	btTransform sBodyTransform;
 	sBodyTransform.setIdentity();
 	sBodyTransform.setOrigin(position);
+    sBodyTransform.setRotation(rot);
 	btDefaultMotionState* myMotionState1 = new btDefaultMotionState(sBodyTransform);
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
@@ -210,64 +220,80 @@ btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
 void CreateStarfish()
 {
     vector<btRigidBody* > bodies;
+    vector<btTypedConstraint* > constraints;
+    
     
 /***↓胴体***/
-    btVector3 scale_b = btVector3(btScalar(25.), btScalar(10.), btScalar(25.));
+    btVector3 scale_b = btVector3(btScalar(25.), btScalar(5.), btScalar(25.));
     btVector3 position_b = btVector3(0, 50, 0);
     bodies.push_back(initBody(scale_b, position_b));
 	
 /***↓腕***/
-	btVector3 scale_a = btVector3(btScalar(25.), btScalar(10.), btScalar(25.));
+	btVector3 scale_a = btVector3(btScalar(25.), btScalar(5.), btScalar(10.));
     btScalar dist = scale_a[0]+scale_b[0]+scale_b[1];
 
-	bodies.push_back(initArm(scale_a, btVector3(dist, position_b[1], 0)));
-	bodies.push_back(initArm(scale_a, btVector3(-dist, position_b[1], 0)));
-	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], dist)));
-	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], -dist)));
+	bodies.push_back(initArm(scale_a, btVector3(dist, position_b[1], 0), btQuaternion(0, 0, 0, 1)));
+	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], -dist), btQuaternion(0, 1/sqrt(2), 0, 1/sqrt(2))));
+	bodies.push_back(initArm(scale_a, btVector3(-dist, position_b[1], 0), btQuaternion(0, 1, 0, 0)));
+	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], dist), btQuaternion(0, -1/sqrt(2), 0, 1/sqrt(2))));
     
-/***↓管足***/
-    btScalar scale_t[] = { btScalar(1.), btScalar(1.)};
-    btVector3 position_t = btVector3(0, 0, 0);
-    bodies.push_back(initTubefeet(scale_t, position_t));
-    
-    for (int i = 0; i < bodies.size(); i++) {
-        dynamicsWorld->addRigidBody(bodies[i]);
-    }
-    
-//////拘束///////
-    vector<btHingeConstraint* > hinges;
     
     btVector3 pivotInBody = btVector3(scale_b[0], 0, 0);
     btVector3 axisInBody = btVector3(0, 0, 1);
     btVector3 pivotInArm = btVector3(-scale_a[0]-scale_b[1], 0, 0);
     btVector3 axisInArm = axisInBody;
-    btHingeConstraint* hinge = new btHingeConstraint(*bodies[0], *bodies[1], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    hinges.push_back(hinge);
+    btHingeConstraint* hinge = new btHingeConstraint(*bodies[0], *bodies[1], pivotInBody, pivotInArm, axisInBody, axisInArm);//全部ローカル
+    constraints.push_back(hinge);
     
-    pivotInBody = btVector3(-scale_b[0], 0, 0);
-    axisInBody = btVector3(0, 0, 1);
-    pivotInArm = btVector3(scale_a[0]+scale_b[1], 0, 0);
-    axisInArm = axisInBody;
-    hinge = new btHingeConstraint(*bodies[0], *bodies[2], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    hinges.push_back(hinge);
-
-    pivotInBody = btVector3(0, 0, scale_b[0]);
-    axisInBody = btVector3(1, 0, 0);
-    pivotInArm = btVector3(0, 0, -scale_a[0]-scale_b[1]);
-    axisInArm = axisInBody;
-    hinge = new btHingeConstraint(*bodies[0], *bodies[3], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    hinges.push_back(hinge);
-
     pivotInBody = btVector3(0, 0, -scale_b[0]);
     axisInBody = btVector3(1, 0, 0);
-    pivotInArm = btVector3(0, 0, scale_a[0]+scale_b[1]);
-    axisInArm = axisInBody;
+    hinge = new btHingeConstraint(*bodies[0], *bodies[2], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    constraints.push_back(hinge);
+    
+    pivotInBody = btVector3(-scale_b[0], 0, 0);
+    axisInBody = btVector3(0, 0, -1);
+    hinge = new btHingeConstraint(*bodies[0], *bodies[3], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    constraints.push_back(hinge);
+    
+    pivotInBody = btVector3(0, 0, scale_b[0]);
+    axisInBody = btVector3(-1, 0, 0);
     hinge = new btHingeConstraint(*bodies[0], *bodies[4], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    hinges.push_back(hinge);
+    constraints.push_back(hinge);
     
     
-    for (int i = 0; i < hinges.size(); i++) {
-        dynamicsWorld->addConstraint(hinges[i]);
+    /***↓管足***/
+    btScalar scale_t[] = { btScalar(2.), btScalar(6.) };
+    btVector3 position_t;
+    int col, row;
+    int h = position_b[1] - scale_b[1] - scale_t[0] - scale_t[1]/2;
+    int from_x = dist - scale_a[0] + scale_t[0]*2;
+    
+    for (int i = 0; i < (scale_a[0]*2-scale_t[0]*4)*2/(scale_t[0]*3)+2; i++) {
+        col = i % 2;
+        row = i / 2;
+        position_t = btVector3(from_x + row * scale_t[0] * 3, h, pow(-1, col) * scale_t[0] * 2);
+        for (int j = 1; j <= 4; j++) {
+            btRigidBody* body_t = initTubefeet(scale_t, position_t);
+            bodies.push_back(body_t);
+            
+            position_t[1] += scale_t[0] + scale_t[1]/2;
+            btUniversalConstraint* univ = new btUniversalConstraint(*bodies[j], *body_t, position_t, btVector3(0, 1,    0), btVector3(0, 0, 1));//全部グローバル
+            constraints.push_back(univ);
+            
+            position_t[1] -= scale_t[0] + scale_t[1]/2;
+            position_t = RotateY(position_t, M_PI_2);
+        }
+    }
+    
+    
+    
+////登録////
+    for (int i = 0; i < bodies.size(); i++) {
+        dynamicsWorld->addRigidBody(bodies[i]);
+    }
+
+    for (int i = 0; i < constraints.size(); i++) {
+        dynamicsWorld->addConstraint(constraints[i]);
     }
 
 }
@@ -390,7 +416,6 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
 				glutSolidCube(1);
-				
 			}
 			else if (shape == SPHERE_SHAPE_PROXYTYPE)
 			{
@@ -401,6 +426,15 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
 				glutSolidSphere(1, 100, 100);
 			}
+            else if (shape == CAPSULE_SHAPE_PROXYTYPE)
+            {
+                glScaled(halfExtent[0], halfExtent[1]*2, halfExtent[2]);
+                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
+                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
+                glutSolidCube(1);
+            }
 			glPopMatrix();
 		}
 	}
@@ -452,7 +486,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
 	glLoadIdentity();//行列の初期化
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 1000);
-	gluLookAt(0, 100, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 50, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
