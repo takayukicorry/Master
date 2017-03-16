@@ -13,6 +13,7 @@
 #include <vector>
 #include <math.h>
 #include <OpenGL/DemoApplication.h>
+#include "Variables.h"
 
 #define RADIAN 180/M_PI
 
@@ -28,6 +29,8 @@ btAlignedObjectArray<btCollisionShape*> collisionShapes;
 
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
+
+int time_step = 0;
 
 //----------------------------------------------------
 // 物質質感の定義
@@ -60,6 +63,8 @@ GLfloat yellow[] = { 0.8, 0.8, 0.2, 1.0 };//黄色
 GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };//白色
 GLfloat shininess = 30.0;//光沢の強さ
 //-----------------------------------------
+//計算する関数
+//-----------------------------------------
 
 btVector3 RotateY(const btVector3 bef, double alpha)
 {
@@ -70,7 +75,18 @@ btVector3 RotateY(const btVector3 bef, double alpha)
     return aft;
 }
 
+btVector3 acrossb(btVector3 r, btVector3 t)
+{
+    btVector3 b = {0, 0, 0};
+    b[0]=r[1]*t[2]-r[2]*t[1];
+    b[1]=r[2]*t[0]-r[0]*t[2];
+    b[2]=r[0]*t[1]-r[1]*t[0];
+    
+    return b;
+}
 //---------------------------------------------
+
+
 // グランドの生成
 void CreateGround()
 {
@@ -113,7 +129,7 @@ void CreateBall()
 	btTransform startTransform;
 	startTransform.setIdentity();
 
-	btScalar mass(10.f);
+	btScalar mass(0.f);
 
 	// 質量を1としたのでダイナミック
 	bool isDynamic = (mass != 0.f);
@@ -122,7 +138,7 @@ void CreateBall()
 	if (isDynamic)
 		colShape->calculateLocalInertia(mass, localInertia);
 
-	startTransform.setOrigin(btVector3(2, 15, 0));
+	startTransform.setOrigin(btVector3(70, 10, 0));
 
 	// モーションステートを作成
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
@@ -142,7 +158,7 @@ btRigidBody* initBody(const btVector3 scale, const btVector3 position)
     sBodyTransform.setIdentity();
     sBodyTransform.setOrigin(position);
     
-    btScalar mass(10.);
+    btScalar mass(M_BODY);
     
     bool isDynamic = (mass != 0.f);
     
@@ -164,7 +180,7 @@ btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQu
 	btCollisionShape* sBodyShape = new btBoxShape(scale);
 	collisionShapes.push_back(sBodyShape);
 
-	btScalar mass1(10.);
+	btScalar mass1(M_ARM);
 	bool isDynamic = (mass1 != 0.f);
 
 	btVector3 localInertia1(0, 0, 0);
@@ -368,7 +384,7 @@ void InitBullet()
 
 void Render()
 {
-
+    time_step++;
 	dynamicsWorld->stepSimulation(1.f / 60.f, 10);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -399,7 +415,8 @@ void Render()
 			glPushMatrix();
             glTranslatef(pos[0], pos[1], pos[2]);
             glRotated(rot, axis[0], axis[1], axis[2]);
-			if (j == 0)
+			//地面
+            if (j == 0)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
@@ -408,6 +425,7 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
 				glutSolidCube(1);
 			}
+            //胴体　腕
 			else if (shape == BOX_SHAPE_PROXYTYPE)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
@@ -426,6 +444,7 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
 				glutSolidSphere(1, 100, 100);
 			}
+            //管足
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
                 glScaled(halfExtent[0], halfExtent[1]*2, halfExtent[2]);
@@ -434,6 +453,17 @@ void Render()
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
                 glutSolidCube(1);
+                
+                btVector3 r = btVector3(0, -1, 0);
+                btVector3 t1 = btVector3(10, 0, 0);
+                btVector3 t2 = btVector3(-10, 0, 0);
+                if ((time_step/60 - 1) / 2 % 2 == 0) {
+                    body->applyTorqueImpulse(acrossb(r, t1));
+                }
+                else
+                {
+                    body->applyTorqueImpulse(acrossb(r, t2));
+                }
             }
 			glPopMatrix();
 		}
