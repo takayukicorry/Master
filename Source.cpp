@@ -2,13 +2,13 @@
 // proj301
 //
 
-#include "btBulletDynamicsCommon.h"
-//#include <BulletDynamics/btBulletDynamicsCommon.h>
+//#include "btBulletDynamicsCommon.h"
+#include <BulletDynamics/btBulletDynamicsCommon.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <GL/glut.h>
-//#include <GLUT/GLUT.h>
-//#include <OpenGL/OpenGL.h>
+//#include <GL/glut.h>
+#include <GLUT/GLUT.h>
+#include <OpenGL/OpenGL.h>
 #include <iostream>
 #include <vector>
 #include "Variables.h"
@@ -25,6 +25,10 @@ btSequentialImpulseConstraintSolver* solver;
 btDiscreteDynamicsWorld* dynamicsWorld;
 btCollisionShape* groundShape;
 btAlignedObjectArray<btCollisionShape*> collisionShapes;
+vector<btRotationalLimitMotor* > motor_tY;
+vector<btRotationalLimitMotor* > motor_tZ;
+vector<btRotationalLimitMotor* > motor_aY;
+vector<btRotationalLimitMotor* > motor_aZ;
 
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
@@ -252,7 +256,7 @@ void CreateStarfish()
 	bodies.push_back(initArm(scale_a, btVector3(-dist, position_b[1], 0), btQuaternion(0, 1, 0, 0)));
 	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], dist), btQuaternion(0, -1/sqrt(2), 0, 1/sqrt(2))));
     
-    
+    //拘束
     btVector3 pivotInBody(scale_b[0], 0, 0);
     btVector3 axisInBody(0, 0, 1);
     btVector3 pivotInArm(-scale_a[0]-scale_b[1], 0, 0);
@@ -275,8 +279,7 @@ void CreateStarfish()
     hinge = new btHingeConstraint(*bodies[0], *bodies[4], pivotInBody, pivotInArm, axisInBody, axisInArm);
     constraints.push_back(hinge);
     
-    
-    /***↓管足***/
+/***↓管足***/
     btScalar scale_t[] = { btScalar(2.), btScalar(6.) };
     btVector3 position_t;
     int col, row;
@@ -291,16 +294,24 @@ void CreateStarfish()
             btRigidBody* body_t = initTubefeet(scale_t, position_t);
             bodies.push_back(body_t);
             
+            //拘束
             position_t[1] += scale_t[0] + scale_t[1]/2;
-            btUniversalConstraint* univ = new btUniversalConstraint(*bodies[j], *body_t, position_t, btVector3(0, 1,    0), btVector3(0, 0, 1));//全部グローバル
+            btUniversalConstraint* univ = new btUniversalConstraint(*bodies[j], *body_t, position_t, btVector3(0, 1,    0), btVector3(sin(M_PI_2*(j-1)), 0, cos(M_PI_2*(j-1))));//全部グローバル
             constraints.push_back(univ);
-            
+
+            //モーター
+            btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//車輪
+            btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ステアリング
+            motor1->m_enableMotor = true;
+            motor2->m_enableMotor = true;
+            motor_tZ.push_back(motor1);
+            motor_tY.push_back(motor2);
+
             position_t[1] -= scale_t[0] + scale_t[1]/2;
             position_t = RotateY(position_t, M_PI_2);
+            
         }
     }
-    
-    
     
 ////登録////
     for (int i = 0; i < bodies.size(); i++) {
@@ -452,7 +463,7 @@ void Render()
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
                 glutSolidCube(1);
-                
+                /*
                 btVector3 r = btVector3(0, -1, 0);
                 btVector3 t1 = btVector3(10, 0, 0);
                 btVector3 t2 = btVector3(-10, 0, 0);
@@ -462,7 +473,7 @@ void Render()
                 else
                 {
                     body->applyTorqueImpulse(acrossb(r, t2));
-                }
+                }*/
             }
 			glPopMatrix();
 		}
@@ -475,6 +486,14 @@ void Render()
 
 	glutSwapBuffers();
 
+}
+
+void ControllTubeFeet()
+{
+    for (int i = 0; i < motor_tZ.size(); i++) {
+        motor_tZ[i]->m_maxMotorForce = 10;
+        motor_tZ[i]->m_targetVelocity = -btRadians(10);
+    }
 }
 
 /// 動作怪しいよ
@@ -521,6 +540,7 @@ void init(void)
 void idle(void)
 {
 	glutPostRedisplay();
+    ControllTubeFeet();
 }
 
 
