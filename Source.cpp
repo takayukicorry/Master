@@ -2,20 +2,19 @@
 // proj301
 //
 
-//#include "btBulletDynamicsCommon.h"
-#include <BulletDynamics/btBulletDynamicsCommon.h>
+#include "btBulletDynamicsCommon.h"
+//#include <BulletDynamics/btBulletDynamicsCommon.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include <GL/glut.h>
-#include <GLUT/GLUT.h>
-#include <OpenGL/OpenGL.h>
+#include <GL/glut.h>
+//#include <GLUT/GLUT.h>
+//#include <OpenGL/OpenGL.h>
 #include <iostream>
 #include <vector>
-#include <math.h>
-#include <OpenGL/DemoApplication.h>
 #include "Variables.h"
+#include <math.h>
+//#include <OpenGL/DemoApplication.h>
 
-#define RADIAN 180/M_PI
 
 using namespace std;
 
@@ -240,12 +239,12 @@ void CreateStarfish()
     
     
 /***Å´ì∑ëÃ***/
-    btVector3 scale_b = btVector3(btScalar(25.), btScalar(5.), btScalar(25.));
-    btVector3 position_b = btVector3(0, 50, 0);
+    btVector3 scale_b(btScalar(25.), btScalar(5.), btScalar(25.));
+    btVector3 position_b(0, 50, 0);
     bodies.push_back(initBody(scale_b, position_b));
 	
 /***Å´òr***/
-	btVector3 scale_a = btVector3(btScalar(25.), btScalar(5.), btScalar(10.));
+	btVector3 scale_a(btScalar(25.), btScalar(5.), btScalar(10.));
     btScalar dist = scale_a[0]+scale_b[0]+scale_b[1];
 
 	bodies.push_back(initArm(scale_a, btVector3(dist, position_b[1], 0), btQuaternion(0, 0, 0, 1)));
@@ -254,9 +253,9 @@ void CreateStarfish()
 	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], dist), btQuaternion(0, -1/sqrt(2), 0, 1/sqrt(2))));
     
     
-    btVector3 pivotInBody = btVector3(scale_b[0], 0, 0);
-    btVector3 axisInBody = btVector3(0, 0, 1);
-    btVector3 pivotInArm = btVector3(-scale_a[0]-scale_b[1], 0, 0);
+    btVector3 pivotInBody(scale_b[0], 0, 0);
+    btVector3 axisInBody(0, 0, 1);
+    btVector3 pivotInArm(-scale_a[0]-scale_b[1], 0, 0);
     btVector3 axisInArm = axisInBody;
     btHingeConstraint* hinge = new btHingeConstraint(*bodies[0], *bodies[1], pivotInBody, pivotInArm, axisInBody, axisInArm);//ëSïîÉçÅ[ÉJÉã
     constraints.push_back(hinge);
