@@ -35,6 +35,13 @@ GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
 
 int time_step = 0;
 
+enum CollisionGroup{
+    RX_COL_NOTHING = 0, // 0000
+    RX_COL_GROUND = 1,  // 0001
+    RX_COL_BODY = 2,  // 0010
+    RX_COL_TF = 4   // 0100
+};
+
 //----------------------------------------------------
 // 物質質感の定義
 //----------------------------------------------------
@@ -118,7 +125,8 @@ void CreateGround()
     body->setActivationState(DISABLE_DEACTIVATION);
     
 	// 作成した剛体をワールドへ登録
-	dynamicsWorld->addRigidBody(body);
+    dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF);
+    ///dynamicsWorld->addRigidBody(body);
 }
 
 // 球の生成
@@ -213,7 +221,7 @@ btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
     collisionShapes.push_back(sBodyShape);
     
-    btScalar mass1(1.);
+    btScalar mass1(M_TF);
     bool isDynamic = (mass1 != 0.f);
     
     btVector3 localInertia1(0, 0, 0);
@@ -238,45 +246,46 @@ btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
 // ヒトデの生成
 void CreateStarfish()
 {
-    vector<btRigidBody* > bodies;
+    vector<btRigidBody* > bodies_body;
+    vector<btRigidBody* > bodies_tf;
     vector<btTypedConstraint* > constraints;
     
     
 /***↓胴体***/
     btVector3 scale_b(btScalar(25.), btScalar(5.), btScalar(25.));
-    btVector3 position_b(0, 50, 0);
-    bodies.push_back(initBody(scale_b, position_b));
+    btVector3 position_b(0, 10, 0);
+    bodies_body.push_back(initBody(scale_b, position_b));
 	
 /***↓腕***/
 	btVector3 scale_a(btScalar(25.), btScalar(5.), btScalar(10.));
     btScalar dist = scale_a[0]+scale_b[0]+scale_b[1];
 
-	bodies.push_back(initArm(scale_a, btVector3(dist, position_b[1], 0), btQuaternion(0, 0, 0, 1)));
-	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], -dist), btQuaternion(0, 1/sqrt(2), 0, 1/sqrt(2))));
-	bodies.push_back(initArm(scale_a, btVector3(-dist, position_b[1], 0), btQuaternion(0, 1, 0, 0)));
-	bodies.push_back(initArm(scale_a, btVector3(0, position_b[1], dist), btQuaternion(0, -1/sqrt(2), 0, 1/sqrt(2))));
+	bodies_body.push_back(initArm(scale_a, btVector3(dist, position_b[1], 0), btQuaternion(0, 0, 0, 1)));
+	bodies_body.push_back(initArm(scale_a, btVector3(0, position_b[1], -dist), btQuaternion(0, 1/sqrt(2), 0, 1/sqrt(2))));
+	bodies_body.push_back(initArm(scale_a, btVector3(-dist, position_b[1], 0), btQuaternion(0, 1, 0, 0)));
+	bodies_body.push_back(initArm(scale_a, btVector3(0, position_b[1], dist), btQuaternion(0, -1/sqrt(2), 0, 1/sqrt(2))));
     
     //拘束
     btVector3 pivotInBody(scale_b[0], 0, 0);
     btVector3 axisInBody(0, 0, 1);
     btVector3 pivotInArm(-scale_a[0]-scale_b[1], 0, 0);
     btVector3 axisInArm = axisInBody;
-    btHingeConstraint* hinge = new btHingeConstraint(*bodies[0], *bodies[1], pivotInBody, pivotInArm, axisInBody, axisInArm);//全部ローカル
+    btHingeConstraint* hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[1], pivotInBody, pivotInArm, axisInBody, axisInArm);//全部ローカル
     constraints.push_back(hinge);
     
     pivotInBody = btVector3(0, 0, -scale_b[0]);
     axisInBody = btVector3(1, 0, 0);
-    hinge = new btHingeConstraint(*bodies[0], *bodies[2], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[2], pivotInBody, pivotInArm, axisInBody, axisInArm);
     constraints.push_back(hinge);
     
     pivotInBody = btVector3(-scale_b[0], 0, 0);
     axisInBody = btVector3(0, 0, -1);
-    hinge = new btHingeConstraint(*bodies[0], *bodies[3], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[3], pivotInBody, pivotInArm, axisInBody, axisInArm);
     constraints.push_back(hinge);
     
     pivotInBody = btVector3(0, 0, scale_b[0]);
     axisInBody = btVector3(-1, 0, 0);
-    hinge = new btHingeConstraint(*bodies[0], *bodies[4], pivotInBody, pivotInArm, axisInBody, axisInArm);
+    hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[4], pivotInBody, pivotInArm, axisInBody, axisInArm);
     constraints.push_back(hinge);
     
 /***↓管足***/
@@ -292,11 +301,32 @@ void CreateStarfish()
         position_t = btVector3(from_x + row * scale_t[0] * 3, h, pow(-1, col) * scale_t[0] * 2);
         for (int j = 1; j <= 4; j++) {
             btRigidBody* body_t = initTubefeet(scale_t, position_t);
-            bodies.push_back(body_t);
+            bodies_tf.push_back(body_t);
             
             //拘束
             position_t[1] += scale_t[0] + scale_t[1]/2;
-            btUniversalConstraint* univ = new btUniversalConstraint(*bodies[j], *body_t, position_t, btVector3(0, 1,    0), btVector3(sin(M_PI_2*(j-1)), 0, cos(M_PI_2*(j-1))));//全部グローバル
+            btUniversalConstraint* univ = new btUniversalConstraint(*bodies_body[j], *body_t, position_t, btVector3(0, 1, 0), btVector3(sin(M_PI_2*(j-1)), 0, cos(M_PI_2*(j-1))));//全部グローバル
+            
+            if (j==1)
+            {
+                univ->setLowerLimit(-M_PI/3, -M_PI/3);
+                univ->setUpperLimit(M_PI/3, M_PI/3);
+            }
+            else if (j==2)
+            {
+                univ->setLowerLimit(-M_PI/3, -M_PI/3);
+                univ->setUpperLimit(M_PI/3, M_PI/3);
+            }
+            else if (j==3)
+            {
+                univ->setLowerLimit(-M_PI/3, -M_PI/3);
+                univ->setUpperLimit(M_PI/3, M_PI/3);
+            }
+            else if (j==4)
+            {
+                univ->setLowerLimit(-M_PI/3, -M_PI/3);
+                univ->setUpperLimit(M_PI/3, M_PI/3);
+            }
             constraints.push_back(univ);
 
             //モーター
@@ -304,6 +334,7 @@ void CreateStarfish()
             btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ステアリング
             motor1->m_enableMotor = true;
             motor2->m_enableMotor = true;
+            
             motor_tZ.push_back(motor1);
             motor_tY.push_back(motor2);
 
@@ -314,8 +345,15 @@ void CreateStarfish()
     }
     
 ////登録////
-    for (int i = 0; i < bodies.size(); i++) {
-        dynamicsWorld->addRigidBody(bodies[i]);
+    
+    for (int i = 0; i < bodies_body.size(); i++) {
+        dynamicsWorld->addRigidBody(bodies_body[i], RX_COL_BODY, RX_COL_GROUND);
+        ///dynamicsWorld->addRigidBody(bodies_body[i]);
+    }
+    
+    for (int i = 0; i < bodies_tf.size(); i++) {
+        dynamicsWorld->addRigidBody(bodies_tf[i], RX_COL_TF, RX_COL_GROUND);
+        ///dynamicsWorld->addRigidBody(bodies_tf[i]);
     }
 
     for (int i = 0; i < constraints.size(); i++) {
@@ -395,7 +433,7 @@ void InitBullet()
 void Render()
 {
     time_step++;
-	dynamicsWorld->stepSimulation(1.f / 60.f, 10);
+    dynamicsWorld->stepSimulation(1.f / 60.f, 10);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -490,9 +528,22 @@ void Render()
 
 void ControllTubeFeet()
 {
-    for (int i = 0; i < motor_tZ.size(); i++) {
-        motor_tZ[i]->m_maxMotorForce = 10;
-        motor_tZ[i]->m_targetVelocity = -btRadians(10);
+    for (int i = 0; i < motor_tZ.size()/4; i++) {
+        motor_tZ[i*4]->m_maxMotorForce = 100000000;
+        motor_tZ[i*4+1]->m_maxMotorForce = 100000000;
+        motor_tZ[i*4+2]->m_maxMotorForce = 100000000;
+        motor_tZ[i*4+3]->m_maxMotorForce = 100000000;
+        motor_tY[i*4]->m_maxMotorForce = 100000000;
+        motor_tY[i*4+1]->m_maxMotorForce = 100000000;
+        motor_tY[i*4+2]->m_maxMotorForce = 100000000;
+        motor_tY[i*4+3]->m_maxMotorForce = 100000000;
+        
+        if ((time_step/60+1) / 2 % 2 == 0) {
+            motor_tZ[i*4]->m_targetVelocity = btRadians(50);
+        }else{
+            motor_tZ[i*4]->m_targetVelocity = -btRadians(50);
+        }
+        
     }
 }
 
@@ -534,7 +585,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
 	glLoadIdentity();//行列の初期化
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 1000);
-	gluLookAt(0, 50, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 0, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)

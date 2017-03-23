@@ -7,5 +7,6 @@
 
 #define M_BODY 100
 #define M_ARM 50
+#define M_TF 1
 
 #endif
