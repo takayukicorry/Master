@@ -5,8 +5,8 @@
 
 #define RADIAN 180/M_PI
 
-#define M_BODY 100
-#define M_ARM 50
+#define M_BODY 100000
+#define M_ARM 50000
 #define M_TF 1
 
 #endif
