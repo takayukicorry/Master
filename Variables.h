@@ -6,7 +6,7 @@
 #define TUBEFEET_SIMULATION_MODE 1
 
 #define RADIAN 180/M_PI
-#define SECOND 60
+#define SECOND 120
 
 #define M_BODY 100000
 #define M_ARM 50000

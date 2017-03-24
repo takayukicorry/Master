@@ -13,6 +13,7 @@
 #include <vector>
 #include "Variables.h"
 #include <math.h>
+#include <map>
 //#include <OpenGL/DemoApplication.h>
 
 using namespace std;
@@ -31,6 +32,7 @@ vector<btRotationalLimitMotor* > motor_aZ;
 
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
+map<int, bool> TF_contact;
 
 int time_step = 0;
 
@@ -267,8 +269,12 @@ void CreateStarfish()
     
 /***管足***/
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
-    bodies_tf.push_back(CreateBall(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0)));
-    bodies_tf.push_back(initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0)));
+    btRigidBody* body_amp = CreateBall(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0));
+    btRigidBody* body_tf = initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0));
+    body_tf->setUserIndex(100);
+    TF_contact[100] = false;
+    bodies_tf.push_back(body_amp);
+    bodies_tf.push_back(body_tf);
     //拘束
     btUniversalConstraint* univ = new btUniversalConstraint(*bodies_tf[0], *bodies_tf[1], btVector3(0, 24, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
     constraints.push_back(univ);
@@ -383,28 +389,38 @@ void ControllTubeFeet()
     
     btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[1];
     btRigidBody* body = btRigidBody::upcast(obj);
-    if (body && body->getMotionState())
+    int index = dynamicsWorld->getCollisionObjectArray()[2]->getUserIndex();
+    
+    //瓶嚢の上下
+    if (body && body->getMotionState() && !TF_contact[index])
     {
         btVector3 pos = body->getCenterOfMassPosition();
         
         btTransform tran;
         tran.setIdentity();
-        tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4)/2 + (LENGTH/2 + 4)/2*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+        ////tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4)/2 + (LENGTH/2 + 4)/2*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+        tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
         
         body->setCenterOfMassTransform(tran);
-    
     }
     
+    //管足のモーター
     for (int i = 0; i < motor_tZ.size(); i++) {
         motor_tZ[i]->m_maxMotorForce = 100000000;
         motor_tY[i]->m_maxMotorForce = 100000000;
         
-        if ((time_step/SECOND+1) / 2 % 2 == 0) {
-            motor_tZ[i]->m_targetVelocity = ANGLE;
-        }else{
-            motor_tZ[i]->m_targetVelocity = -ANGLE;
+        if (!TF_contact[index])
+        {
+            if ((time_step/SECOND+1) / 2 % 2 == 0) {
+                motor_tZ[i]->m_targetVelocity = ANGLE*60/SECOND;
+            }else{
+                motor_tZ[i]->m_targetVelocity = -ANGLE*60/SECOND;
+            }
         }
-        
+        else
+        {
+            motor_tZ[i]->m_targetVelocity = 0;
+        }
     }
     
 #else
@@ -421,6 +437,36 @@ void ControllTubeFeet()
         
     }
 #endif
+}
+
+void ContactAction()
+{
+    int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
+    for (int i = 0; i < numManifolds; i++)
+    {
+        //管足衝突状態更新
+        btPersistentManifold* contactManifold =  dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
+        const btCollisionObject* obA = contactManifold->getBody0();
+        const btCollisionObject* obB = contactManifold->getBody1();
+        TF_contact[obB->getUserIndex()] = true;
+
+        //衝突情報取得
+        int numContacts = contactManifold->getNumContacts();
+        for (int j = 0; j < numContacts; j++)
+        {
+            btManifoldPoint& pt = contactManifold->getContactPoint(j);
+            if (pt.getDistance() < 0.f)
+            {
+                const btVector3& ptA = pt.getPositionWorldOnA();
+                const btVector3& ptB = pt.getPositionWorldOnB();
+                const btVector3& normalOnB = pt.m_normalWorldOnB;
+            }
+        }
+        
+        
+        
+    }
+
 }
 
 void Render()
@@ -527,6 +573,7 @@ void init(void)
 
 void idle(void)
 {
+    ContactAction();
 	glutPostRedisplay();
     ControllTubeFeet();
 }
