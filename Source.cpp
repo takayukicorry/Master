@@ -15,7 +15,6 @@
 #include <math.h>
 //#include <OpenGL/DemoApplication.h>
 
-
 using namespace std;
 
 btDefaultCollisionConfiguration* collisionConfiguration;
@@ -94,8 +93,22 @@ btVector3 acrossb(btVector3 r, btVector3 t)
     
     return b;
 }
-//---------------------------------------------
 
+void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 position)
+{
+    glBegin(GL_POLYGON);
+    
+    for (int i = 0; i < num; i++) {
+        glVertex3d(position[0] + radius * cos((M_PI*2/num)*i), position[1] + height, position[2] + radius * sin((M_PI*2/num)*i));
+        glVertex3d(position[0] + radius * cos((M_PI*2/num)*(i+1)), position[1] + height, position[2] + radius * sin((M_PI*2/num)*(i+1)));
+        glVertex3d(position[0] + radius * cos((M_PI*2/num)*(i+1)), position[1] - height, position[2] + radius * sin((M_PI*2/num)*(i+1)));
+        glVertex3d(position[0] + radius * cos((M_PI*2/num)*i), position[1] - height, position[2] + radius * sin((M_PI*2/num)*i));
+        
+    }
+    
+    glEnd();
+}
+//---------------------------------------------
 
 // グランドの生成
 void CreateGround()
@@ -130,9 +143,8 @@ void CreateGround()
 }
 
 // 球の生成
-void CreateBall()
+btRigidBody* CreateBall(btScalar scale, const btVector3 position)
 {
-	btScalar scale = 5;
 	btCollisionShape* colShape = new btSphereShape(scale);
 	collisionShapes.push_back(colShape);
 
@@ -149,14 +161,14 @@ void CreateBall()
 	if (isDynamic)
 		colShape->calculateLocalInertia(mass, localInertia);
 
-	startTransform.setOrigin(btVector3(70, 10, 0));
+	startTransform.setOrigin(position);
 
 	// モーションステートを作成
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
 
-	dynamicsWorld->addRigidBody(body);
+    return  body;
 }
 
 //ヒトデの胴体生成
@@ -250,8 +262,27 @@ void CreateStarfish()
     vector<btRigidBody* > bodies_tf;
     vector<btTypedConstraint* > constraints;
     
+#if TUBEFEET_SIMULATION_MODE //管足一個のシミュレーション
+/***胴体***/
     
-/***↓胴体***/
+/***管足***/
+    btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
+    bodies_tf.push_back(CreateBall(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0)));
+    bodies_tf.push_back(initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0)));
+    //拘束
+    btUniversalConstraint* univ = new btUniversalConstraint(*bodies_tf[0], *bodies_tf[1], btVector3(0, 24, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+    constraints.push_back(univ);
+    //モーター
+    btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//車輪
+    btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ステアリング
+    motor1->m_enableMotor = true;
+    motor2->m_enableMotor = true;
+    motor_tZ.push_back(motor1);
+    motor_tY.push_back(motor2);
+    
+    
+#else
+    /***↓胴体***/
     btVector3 scale_b(btScalar(25.), btScalar(5.), btScalar(25.));
     btVector3 position_b(0, 10, 0);
     bodies_body.push_back(initBody(scale_b, position_b));
@@ -307,26 +338,9 @@ void CreateStarfish()
             position_t[1] += scale_t[0] + scale_t[1]/2;
             btUniversalConstraint* univ = new btUniversalConstraint(*bodies_body[j], *body_t, position_t, btVector3(0, 1, 0), btVector3(sin(M_PI_2*(j-1)), 0, cos(M_PI_2*(j-1))));//全部グローバル
             
-            if (j==1)
-            {
-                univ->setLowerLimit(-M_PI/3, -M_PI/3);
-                univ->setUpperLimit(M_PI/3, M_PI/3);
-            }
-            else if (j==2)
-            {
-                univ->setLowerLimit(-M_PI/3, -M_PI/3);
-                univ->setUpperLimit(M_PI/3, M_PI/3);
-            }
-            else if (j==3)
-            {
-                univ->setLowerLimit(-M_PI/3, -M_PI/3);
-                univ->setUpperLimit(M_PI/3, M_PI/3);
-            }
-            else if (j==4)
-            {
-                univ->setLowerLimit(-M_PI/3, -M_PI/3);
-                univ->setUpperLimit(M_PI/3, M_PI/3);
-            }
+            univ->setLowerLimit(-ANGLE, -ANGLE);
+            univ->setUpperLimit(ANGLE, ANGLE);
+            
             constraints.push_back(univ);
 
             //モーター
@@ -343,6 +357,7 @@ void CreateStarfish()
             
         }
     }
+#endif
     
 ////登録////
     
@@ -362,72 +377,50 @@ void CreateStarfish()
 
 }
 
-// 終了処理
-void CleanupBullet()
+void ControllTubeFeet()
 {
-	// 剛体を削除
-	for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
-	{
-		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
-		btRigidBody* body = btRigidBody::upcast(obj);
-		if (body && body->getMotionState())
-		{
-			delete body->getMotionState();
-		}
-		dynamicsWorld->removeCollisionObject(obj);
-		delete obj;
-	}
-
-	// 衝突シェイプを削除
-	for (int j = 0; j<collisionShapes.size(); j++)
-	{
-		btCollisionShape* shape = collisionShapes[j];
-		collisionShapes[j] = 0;
-		delete shape;
-	}
+#if TUBEFEET_SIMULATION_MODE
     
-    for(int i = dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
-        btTypedConstraint* constraint = dynamicsWorld->getConstraint(i);
-        dynamicsWorld->removeConstraint(constraint);
-        delete constraint;
+    btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[1];
+    btRigidBody* body = btRigidBody::upcast(obj);
+    if (body && body->getMotionState())
+    {
+        btVector3 pos = body->getCenterOfMassPosition();
+        
+        btTransform tran;
+        tran.setIdentity();
+        tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4)/2 + (LENGTH/2 + 4)/2*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+        
+        body->setCenterOfMassTransform(tran);
+    
     }
-
-	// ワールドを削除
-	delete dynamicsWorld;
-
-	// ソルバーを削除
-	delete solver;
-
-	// 衝突検知のブロードフェイズを削除
-	delete overlappingPairCache;
-
-	// ディスパッチャを削除
-	delete dispatcher;
-
-	delete collisionConfiguration;
-
-	// オプション、なくても良い
-	collisionShapes.clear();
-}
-
-// 初期化
-void InitBullet()
-{
-	// デフォルトの衝突検知アルゴリズム
-	collisionConfiguration = new btDefaultCollisionConfiguration();
-
-	// デフォルトの衝突ディスパッチャ
-	dispatcher = new btCollisionDispatcher(collisionConfiguration);
-
-	// 階層的な衝突検知アルゴリズム
-	overlappingPairCache = new btDbvtBroadphase();
-
-	// シーケンシャル(非並列)なインパルス解法
-	solver = new btSequentialImpulseConstraintSolver;
-
-	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-
-	dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    
+    for (int i = 0; i < motor_tZ.size(); i++) {
+        motor_tZ[i]->m_maxMotorForce = 100000000;
+        motor_tY[i]->m_maxMotorForce = 100000000;
+        
+        if ((time_step/SECOND+1) / 2 % 2 == 0) {
+            motor_tZ[i]->m_targetVelocity = ANGLE;
+        }else{
+            motor_tZ[i]->m_targetVelocity = -ANGLE;
+        }
+        
+    }
+    
+#else
+    
+    for (int i = 0; i < motor_tZ.size(); i++) {
+        motor_tZ[i]->m_maxMotorForce = 100000000;
+        motor_tY[i]->m_maxMotorForce = 100000000;
+        
+        if ((time_step/60+1) / 2 % 2 == 0) {
+            motor_tZ[i]->m_targetVelocity = ANGLE;
+        }else{
+            motor_tZ[i]->m_targetVelocity = -ANGLE;
+        }
+        
+    }
+#endif
 }
 
 void Render()
@@ -463,7 +456,7 @@ void Render()
 			glPushMatrix();
             glTranslatef(pos[0], pos[1], pos[2]);
             glRotated(rot, axis[0], axis[1], axis[2]);
-			//地面
+            //地面
             if (j == 0)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
@@ -485,7 +478,7 @@ void Render()
 			}
 			else if (shape == SPHERE_SHAPE_PROXYTYPE)
 			{
-				glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
+                glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
 				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
@@ -495,23 +488,13 @@ void Render()
             //管足
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
-                glScaled(halfExtent[0], halfExtent[1]*2, halfExtent[2]);
+                glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                glutSolidCube(1);
-                /*
-                btVector3 r = btVector3(0, -1, 0);
-                btVector3 t1 = btVector3(10, 0, 0);
-                btVector3 t2 = btVector3(-10, 0, 0);
-                if ((time_step/60 - 1) / 2 % 2 == 0) {
-                    body->applyTorqueImpulse(acrossb(r, t1));
-                }
-                else
-                {
-                    body->applyTorqueImpulse(acrossb(r, t2));
-                }*/
+                glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
+                
             }
 			glPopMatrix();
 		}
@@ -525,52 +508,6 @@ void Render()
 	glutSwapBuffers();
 
 }
-
-void ControllTubeFeet()
-{
-    for (int i = 0; i < motor_tZ.size()/4; i++) {
-        motor_tZ[i*4]->m_maxMotorForce = 100000000;
-        motor_tZ[i*4+1]->m_maxMotorForce = 100000000;
-        motor_tZ[i*4+2]->m_maxMotorForce = 100000000;
-        motor_tZ[i*4+3]->m_maxMotorForce = 100000000;
-        motor_tY[i*4]->m_maxMotorForce = 100000000;
-        motor_tY[i*4+1]->m_maxMotorForce = 100000000;
-        motor_tY[i*4+2]->m_maxMotorForce = 100000000;
-        motor_tY[i*4+3]->m_maxMotorForce = 100000000;
-        
-        if ((time_step/60+1) / 2 % 2 == 0) {
-            motor_tZ[i*4]->m_targetVelocity = btRadians(50);
-        }else{
-            motor_tZ[i*4]->m_targetVelocity = -btRadians(50);
-        }
-        
-    }
-}
-
-/// 動作怪しいよ
-void resize(int w, int h)
-{
-	// ウィンドウ全体をビューポートにする
-	glViewport(0, 0, w, h);
-
-	/* 透視変換行列の設定 */
-	//glMatrixMode(GL_PROJECTION);
-
-	// 変換行列の初期化 
-	glLoadIdentity();
-	
-#if 0
-	gluPerspective(30.0, (double)w / (double)h, 0.1, 1000);
-
-	/* モデルビュー変換行列の設定 */
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	/* 視点位置と視線方向 */
-	//gluLookAt(300 , 10 , 0 , 0.0, 0 , 0.0, 0.0, 1.0, 0.0);
-	gluLookAt(100, 0, 0, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
-#endif
-}
-
 
 void init(void)
 {
@@ -594,12 +531,81 @@ void idle(void)
     ControllTubeFeet();
 }
 
+// 終了処理
+void CleanupBullet()
+{
+    // 剛体を削除
+    for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+    {
+        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+        btRigidBody* body = btRigidBody::upcast(obj);
+        if (body && body->getMotionState())
+        {
+            delete body->getMotionState();
+        }
+        dynamicsWorld->removeCollisionObject(obj);
+        delete obj;
+    }
+    
+    // 衝突シェイプを削除
+    for (int j = 0; j<collisionShapes.size(); j++)
+    {
+        btCollisionShape* shape = collisionShapes[j];
+        collisionShapes[j] = 0;
+        delete shape;
+    }
+    
+    for(int i = dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
+        btTypedConstraint* constraint = dynamicsWorld->getConstraint(i);
+        dynamicsWorld->removeConstraint(constraint);
+        delete constraint;
+    }
+    
+    // ワールドを削除
+    delete dynamicsWorld;
+    
+    // ソルバーを削除
+    delete solver;
+    
+    // 衝突検知のブロードフェイズを削除
+    delete overlappingPairCache;
+    
+    // ディスパッチャを削除
+    delete dispatcher;
+    
+    delete collisionConfiguration;
+    
+    // オプション、なくても良い
+    collisionShapes.clear();
+}
+
+// 初期化
+void InitBullet()
+{
+    // デフォルトの衝突検知アルゴリズム
+    collisionConfiguration = new btDefaultCollisionConfiguration();
+    
+    // デフォルトの衝突ディスパッチャ
+    dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    
+    // 階層的な衝突検知アルゴリズム
+    overlappingPairCache = new btDbvtBroadphase();
+    
+    // シーケンシャル(非並列)なインパルス解法
+    solver = new btSequentialImpulseConstraintSolver;
+    
+    dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+}
+
+
 
 // メイン
 int main(int argc, char** argv)
 {
-	// 初期化
-	InitBullet();
+    // 初期化
+    InitBullet();
 
 	// グランドの作成
 	CreateGround();
@@ -617,7 +623,6 @@ int main(int argc, char** argv)
 	glutCreateWindow(argv[0]);
 	glutDisplayFunc(Render);
 	glutIdleFunc(idle);
-	//glutReshapeFunc(resize);
 	init();
 	glutMainLoop();
 
