@@ -503,9 +503,8 @@ void ContactAction()
                     const btVector3& normalOnB = pt.m_normalWorldOnB;
                     
                     if (!TF_contact[index]) {
-                        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[1];
-                        btRigidBody* body = btRigidBody::upcast(obj);
-                        dynamicsWorld->removeRigidBody(body);
+                        btTypedConstraint* c = dynamicsWorld->getConstraint(0);
+                        dynamicsWorld->removeConstraint(c);
                         
                         TF_contact[index] = true;
                         
