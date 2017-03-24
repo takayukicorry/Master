@@ -29,6 +29,8 @@ vector<btRotationalLimitMotor* > motor_tY;
 vector<btRotationalLimitMotor* > motor_tZ;
 vector<btRotationalLimitMotor* > motor_aY;
 vector<btRotationalLimitMotor* > motor_aZ;
+vector<btRotationalLimitMotor* > motor_to_groundY;
+vector<btRotationalLimitMotor* > motor_to_groundZ;
 
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
@@ -110,6 +112,27 @@ void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 posi
     
     glEnd();
 }
+
+btRigidBody::btRigidBodyConstructionInfo calcInertia(btScalar mass, btVector3 position)
+{
+
+    btTransform groundTransform;
+    groundTransform.setIdentity();
+    groundTransform.setOrigin(position);
+    
+    // 静的な剛体を作ります
+    bool isDynamic = (mass != 0.f);
+    
+    btVector3 localInertia(0, 0, 0);
+    if (isDynamic)
+        groundShape->calculateLocalInertia(mass, localInertia);
+        
+    // デフォルトのモーションステートを作成
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+    
+    return rbInfo;
+}
 //---------------------------------------------
 
 // グランドの生成
@@ -138,6 +161,7 @@ void CreateGround()
 	btRigidBody* body = new btRigidBody(rbInfo);
 
     body->setActivationState(DISABLE_DEACTIVATION);
+    body->setUserIndex(1);
     
 	// 作成した剛体をワールドへ登録
     dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF);
@@ -169,6 +193,8 @@ btRigidBody* CreateBall(btScalar scale, const btVector3 position)
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
+    
+    body->setActivationState(DISABLE_DEACTIVATION);
 
     return  body;
 }
@@ -386,12 +412,11 @@ void CreateStarfish()
 void ControllTubeFeet()
 {
 #if TUBEFEET_SIMULATION_MODE
-    
+    //瓶嚢の上下
     btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[1];
     btRigidBody* body = btRigidBody::upcast(obj);
     int index = dynamicsWorld->getCollisionObjectArray()[2]->getUserIndex();
     
-    //瓶嚢の上下
     if (body && body->getMotionState() && !TF_contact[index])
     {
         btVector3 pos = body->getCenterOfMassPosition();
@@ -416,11 +441,21 @@ void ControllTubeFeet()
             }else{
                 motor_tZ[i]->m_targetVelocity = -ANGLE*60/SECOND;
             }
+            
         }
         else
         {
             motor_tZ[i]->m_targetVelocity = 0;
+            
         }
+    }
+    
+    //地面とのモーター
+    for (int i = 0; i < motor_to_groundZ.size(); i++) {
+        motor_to_groundZ[i]->m_maxMotorForce = 100000000;
+        motor_to_groundY[i]->m_maxMotorForce = 100000000;
+        
+        motor_to_groundZ[i]->m_targetVelocity = -ANGLE;
     }
     
 #else
@@ -441,6 +476,8 @@ void ControllTubeFeet()
 
 void ContactAction()
 {
+    vector<int > contacts;
+    
     int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
     for (int i = 0; i < numManifolds; i++)
     {
@@ -448,25 +485,49 @@ void ContactAction()
         btPersistentManifold* contactManifold =  dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
         const btCollisionObject* obA = contactManifold->getBody0();
         const btCollisionObject* obB = contactManifold->getBody1();
-        TF_contact[obB->getUserIndex()] = true;
+        btRigidBody* bodyA = btRigidBody::upcast(const_cast<btCollisionObject *>(obA));
+        btRigidBody* bodyB = btRigidBody::upcast(const_cast<btCollisionObject *>(obB));
+        int index = obB->getUserIndex();
 
-        //衝突情報取得
-        int numContacts = contactManifold->getNumContacts();
-        for (int j = 0; j < numContacts; j++)
-        {
-            btManifoldPoint& pt = contactManifold->getContactPoint(j);
-            if (pt.getDistance() < 0.f)
+        if (obA->getUserIndex()==1) {
+            
+            //衝突情報取得
+            int numContacts = contactManifold->getNumContacts();
+            for (int j = 0; j < numContacts; j++)
             {
-                const btVector3& ptA = pt.getPositionWorldOnA();
-                const btVector3& ptB = pt.getPositionWorldOnB();
-                const btVector3& normalOnB = pt.m_normalWorldOnB;
+                btManifoldPoint& pt = contactManifold->getContactPoint(j);
+                if (pt.getDistance() < 0.f)
+                {
+                    const btVector3& ptA = pt.getPositionWorldOnA();
+                    const btVector3& ptB = pt.getPositionWorldOnB();
+                    const btVector3& normalOnB = pt.m_normalWorldOnB;
+                    
+                    if (!TF_contact[index]) {
+                        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[1];
+                        btRigidBody* body = btRigidBody::upcast(obj);
+                        dynamicsWorld->removeRigidBody(body);
+                        
+                        TF_contact[index] = true;
+                        
+                        
+                        //衝突点に拘束作成
+                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+                        univ->setLowerLimit(-ANGLE, -ANGLE);
+                        univ->setUpperLimit(ANGLE, ANGLE);
+                        dynamicsWorld->addConstraint(univ);
+                    
+                        //モーター
+                        btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//車輪
+                        btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ステアリング
+                        motor1->m_enableMotor = true;
+                        motor2->m_enableMotor = true;
+                        motor_to_groundZ.push_back(motor1);
+                        motor_to_groundY.push_back(motor2);
+                    }
+                }
             }
         }
-        
-        
-        
     }
-
 }
 
 void Render()
