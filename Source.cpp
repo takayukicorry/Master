@@ -196,7 +196,7 @@ void CreateGround()
 }
 
 // 球の生成
-btRigidBody* CreateBall(btScalar scale, const btVector3 position)
+btRigidBody* initAmp(btScalar scale, const btVector3 position)
 {
 	btCollisionShape* colShape = new btSphereShape(scale);
 	collisionShapes.push_back(colShape);
@@ -322,7 +322,7 @@ void CreateStarfish()
     
 /***管足***/
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
-    btRigidBody* body_amp = CreateBall(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0));
+    btRigidBody* body_amp = initAmp(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0));
     btRigidBody* body_tf = initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0));
     body_tf->setUserIndex(100);
     TF_object_amp[100] = body_amp;
@@ -561,8 +561,28 @@ void ContactAction()
                     else
                     {
                         
-                        //TF_constraint_ground[index];
-                        
+                        /**角度判定**/
+                        if (1)
+                        {
+                            /*地面との拘束無くして瓶嚢復活*/
+                            dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
+                            motor_to_groundY.erase(index);
+                            motor_to_groundZ.erase(index);
+                            
+                            btRigidBody* body_amp = initAmp(RADIUS, btVector3(, , ));
+                            TF_object_amp[index] = body_amp;
+                            
+                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *getByUserIndex(index), btVector3(, , ), btVector3(0, 1, 0), btVector3(0, 0, 1));
+                            TF_constraint_amp[index] = univ;
+                            
+                            btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);
+                            btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);
+                            motor1->m_enableMotor = true;
+                            motor2->m_enableMotor = true;
+                            motor_tZ[index] = motor1;
+                            motor_tY[index] = motor2;
+                            
+                        }
                     }
                 }
             }
@@ -758,10 +778,7 @@ int main(int argc, char** argv)
 	// グランドの作成
 	CreateGround();
 
-	// 球の作成
-	//CreateBall();
-
-	//ヒトデの生成
+    //ヒトデの生成
 	CreateStarfish();
 	
 	glutInitWindowPosition(100, 100);
