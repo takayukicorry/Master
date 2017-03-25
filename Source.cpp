@@ -25,16 +25,20 @@ btSequentialImpulseConstraintSolver* solver;
 btDiscreteDynamicsWorld* dynamicsWorld;
 btCollisionShape* groundShape;
 btAlignedObjectArray<btCollisionShape*> collisionShapes;
-vector<btRotationalLimitMotor* > motor_tY;
-vector<btRotationalLimitMotor* > motor_tZ;
-vector<btRotationalLimitMotor* > motor_aY;
-vector<btRotationalLimitMotor* > motor_aZ;
-vector<btRotationalLimitMotor* > motor_to_groundY;
-vector<btRotationalLimitMotor* > motor_to_groundZ;
 
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
-map<int, bool> TF_contact;
+
+//Userindex==intの～
+map<int, bool> TF_contact;//管足が吸着してるかどうか
+map<int, btTypedConstraint*> TF_constraint_amp;//管足と瓶嚢の拘束
+map<int, btTypedConstraint*> TF_constraint_ground;//管足と地面の拘束
+map<int, btRigidBody*> TF_object_amp;//管足と繋がってる瓶嚢（Rigid Body）
+map<int, btRotationalLimitMotor* > motor_tY;//管足と瓶嚢のモーター（ハンドル）
+map<int, btRotationalLimitMotor* > motor_tZ;//管足と瓶嚢のモーター（車輪）
+map<int, btRotationalLimitMotor* > motor_to_groundY;//管足と地面のモーター（ハンドル）
+map<int, btRotationalLimitMotor* > motor_to_groundZ;//管足と地面のモーター（車輪）
+
 
 int time_step = 0;
 
@@ -132,6 +136,29 @@ btRigidBody::btRigidBodyConstructionInfo calcInertia(btScalar mass, btVector3 po
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
     
     return rbInfo;
+}
+
+btRigidBody* getByUserIndex(int index)
+{
+    for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+    {
+        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+        if (obj->getUserIndex()==index) {
+            btRigidBody* body = btRigidBody::upcast(obj);
+            return body;
+        }
+    }
+    
+    assert(1);
+    
+    btCollisionShape* colShape = new btSphereShape(1);
+    btTransform groundTransform;
+    groundTransform.setIdentity();
+    groundTransform.setOrigin(btVector3(0, -56, 0));
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(0, myMotionState, colShape, btVector3(0,0,0));
+    btRigidBody* body = new btRigidBody(rbInfo);
+    return body;
 }
 //---------------------------------------------
 
@@ -298,19 +325,21 @@ void CreateStarfish()
     btRigidBody* body_amp = CreateBall(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0));
     btRigidBody* body_tf = initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0));
     body_tf->setUserIndex(100);
+    TF_object_amp[100] = body_amp;
     TF_contact[100] = false;
     bodies_tf.push_back(body_amp);
     bodies_tf.push_back(body_tf);
     //拘束
     btUniversalConstraint* univ = new btUniversalConstraint(*bodies_tf[0], *bodies_tf[1], btVector3(0, 24, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+    TF_constraint_amp[100] = univ;
     constraints.push_back(univ);
     //モーター
     btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//車輪
     btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ステアリング
     motor1->m_enableMotor = true;
     motor2->m_enableMotor = true;
-    motor_tZ.push_back(motor1);
-    motor_tY.push_back(motor2);
+    motor_tZ[100] = motor1;
+    motor_tY[100] = motor2;
     
     
 #else
@@ -413,9 +442,8 @@ void ControllTubeFeet()
 {
 #if TUBEFEET_SIMULATION_MODE
     //瓶嚢の上下
-    btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[1];
-    btRigidBody* body = btRigidBody::upcast(obj);
-    int index = dynamicsWorld->getCollisionObjectArray()[2]->getUserIndex();
+    int index = 100;
+    btRigidBody* body = TF_object_amp[index];
     
     if (body && body->getMotionState() && !TF_contact[index])
     {
@@ -430,32 +458,34 @@ void ControllTubeFeet()
     }
     
     //管足のモーター
-    for (int i = 0; i < motor_tZ.size(); i++) {
-        motor_tZ[i]->m_maxMotorForce = 100000000;
-        motor_tY[i]->m_maxMotorForce = 100000000;
+    for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
+        
+        itr->second->m_maxMotorForce = 100000000;
+        motor_tY[itr->first]->m_maxMotorForce = 100000000;
         
         if (!TF_contact[index])
         {
             if ((time_step/SECOND+1) / 2 % 2 == 0) {
-                motor_tZ[i]->m_targetVelocity = ANGLE*60/SECOND;
+                itr->second->m_targetVelocity = ANGLE*60/SECOND;
             }else{
-                motor_tZ[i]->m_targetVelocity = -ANGLE*60/SECOND;
+                itr->second->m_targetVelocity = -ANGLE*60/SECOND;
             }
             
         }
         else
         {
-            motor_tZ[i]->m_targetVelocity = 0;
+            itr->second->m_targetVelocity = 0;
             
         }
     }
     
     //地面とのモーター
-    for (int i = 0; i < motor_to_groundZ.size(); i++) {
-        motor_to_groundZ[i]->m_maxMotorForce = 100000000;
-        motor_to_groundY[i]->m_maxMotorForce = 100000000;
+    for (auto itr = motor_to_groundZ.begin(); itr != motor_to_groundZ.end(); ++itr) {
         
-        motor_to_groundZ[i]->m_targetVelocity = -ANGLE;
+        itr->second->m_maxMotorForce = 100000000;
+        motor_to_groundY[itr->first]->m_maxMotorForce = 100000000;
+        
+        itr->second->m_targetVelocity = -ANGLE;
     }
     
 #else
@@ -487,7 +517,6 @@ void ContactAction()
         const btCollisionObject* obB = contactManifold->getBody1();
         btRigidBody* bodyA = btRigidBody::upcast(const_cast<btCollisionObject *>(obA));
         btRigidBody* bodyB = btRigidBody::upcast(const_cast<btCollisionObject *>(obB));
-        int index = obB->getUserIndex();
 
         if (obA->getUserIndex()==1) {
             
@@ -501,10 +530,14 @@ void ContactAction()
                     const btVector3& ptA = pt.getPositionWorldOnA();
                     const btVector3& ptB = pt.getPositionWorldOnB();
                     const btVector3& normalOnB = pt.m_normalWorldOnB;
-                    
+
+                    int index = obB->getUserIndex();
+
+                    //吸着してなかった場合
                     if (!TF_contact[index]) {
-                        btTypedConstraint* c = dynamicsWorld->getConstraint(0);
-                        dynamicsWorld->removeConstraint(c);
+                        
+                        dynamicsWorld->removeRigidBody(TF_object_amp[index]);
+                        dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
                         
                         TF_contact[index] = true;
                         
@@ -513,6 +546,7 @@ void ContactAction()
                         btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
                         univ->setLowerLimit(-ANGLE, -ANGLE);
                         univ->setUpperLimit(ANGLE, ANGLE);
+                        TF_constraint_ground[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                     
                         //モーター
@@ -520,8 +554,15 @@ void ContactAction()
                         btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ステアリング
                         motor1->m_enableMotor = true;
                         motor2->m_enableMotor = true;
-                        motor_to_groundZ.push_back(motor1);
-                        motor_to_groundY.push_back(motor2);
+                        motor_to_groundZ[index] = motor1;
+                        motor_to_groundY[index] = motor2;
+                    }
+                    //吸着してた場合
+                    else
+                    {
+                        
+                        //TF_constraint_ground[index];
+                        
                     }
                 }
             }
