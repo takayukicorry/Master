@@ -12,7 +12,7 @@
 #define M_ARM 50000
 #define M_TF 1
 
-#define ANGLE M_PI/3
+#define ANGLE M_PI/3//管足の限度
 #define LENGTH 12
 #define RADIUS 4
 #define INIT_POS_Y 28

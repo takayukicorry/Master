@@ -330,7 +330,9 @@ void CreateStarfish()
     bodies_tf.push_back(body_amp);
     bodies_tf.push_back(body_tf);
     //拘束
-    btUniversalConstraint* univ = new btUniversalConstraint(*bodies_tf[0], *bodies_tf[1], btVector3(0, 24, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+    btUniversalConstraint* univ = new btUniversalConstraint(*bodies_tf[0], *bodies_tf[1], btVector3(0, INIT_POS_Y, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+    univ->setLowerLimit(-ANGLE, -ANGLE);
+    univ->setUpperLimit(ANGLE, ANGLE);
     TF_constraint_amp[100] = univ;
     constraints.push_back(univ);
     //モーター
@@ -532,9 +534,13 @@ void ContactAction()
                     const btVector3& normalOnB = pt.m_normalWorldOnB;
 
                     int index = obB->getUserIndex();
-
+                    
+                    btVector3 euler;
+                    bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
+                    double angle = euler[2];
+                    
                     //吸着してなかった場合
-                    if (!TF_contact[index]) {
+                    if (!TF_contact[index] && angle<0) {
                         
                         dynamicsWorld->removeRigidBody(TF_object_amp[index]);
                         dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
@@ -542,10 +548,10 @@ void ContactAction()
                         TF_contact[index] = true;
                         
                         
-                        //衝突点に拘束作成
+                        //衝突点に地面との拘束作成
                         btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
-                        univ->setLowerLimit(-ANGLE, -ANGLE);
-                        univ->setUpperLimit(ANGLE, ANGLE);
+                        //univ->setLowerLimit(-ANGLE, -ANGLE);
+                        //univ->setUpperLimit(ANGLE, ANGLE);
                         TF_constraint_ground[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                     
@@ -560,20 +566,29 @@ void ContactAction()
                     //吸着してた場合
                     else
                     {
-                        
+            
                         /**角度判定**/
-                        if (1)
+                        if (angle>ANGLE/2)
                         {
-                            /*地面との拘束無くして瓶嚢復活*/
+                            /*地面との拘束削除*/
                             dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
                             motor_to_groundY.erase(index);
                             motor_to_groundZ.erase(index);
+                            TF_contact[index] = false;
                             
-                            btRigidBody* body_amp = initAmp(RADIUS, btVector3(, , ));
+                            /*瓶嚢復活*/
+                            btVector3 pos_tf = bodyB->getCenterOfMassPosition();
+                            btVector3 pos_amp = btVector3(pos_tf[0]-(LENGTH/2+RADIUS*2)*sin(angle), pos_tf[1]+(LENGTH/2+RADIUS*2)*cos(angle), pos_tf[2]);
+                            
+                            btRigidBody* body_amp = initAmp(RADIUS, pos_amp);
                             TF_object_amp[index] = body_amp;
+                            dynamicsWorld->addRigidBody(body_amp);
                             
-                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *getByUserIndex(index), btVector3(, , ), btVector3(0, 1, 0), btVector3(0, 0, 1));
+                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *getByUserIndex(index), pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(0, 0, 1));
+                            univ->setLowerLimit(-ANGLE+angle, -ANGLE);
+                            univ->setUpperLimit(ANGLE+angle, ANGLE);
                             TF_constraint_amp[index] = univ;
+                            dynamicsWorld->addConstraint(univ);
                             
                             btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);
                             btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);
