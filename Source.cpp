@@ -26,6 +26,7 @@ btDiscreteDynamicsWorld* dynamicsWorld;
 btCollisionShape* groundShape;
 btAlignedObjectArray<btCollisionShape*> collisionShapes;
 
+
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
 
@@ -38,6 +39,7 @@ map<int, btRotationalLimitMotor* > motor_tY;//管足と瓶嚢のモーター（ハンドル）
 map<int, btRotationalLimitMotor* > motor_tZ;//管足と瓶嚢のモーター（車輪）
 map<int, btRotationalLimitMotor* > motor_to_groundY;//管足と地面のモーター（ハンドル）
 map<int, btRotationalLimitMotor* > motor_to_groundZ;//管足と地面のモーター（車輪）
+map<int, int> ResumeTime_tf;//管足と瓶嚢のモーターの開始時刻
 
 
 int time_step = 0;
@@ -344,6 +346,7 @@ void CreateStarfish()
     motor2->m_enableMotor = true;
     motor_tZ[100] = motor1;
     motor_tY[100] = motor2;
+    ResumeTime_tf[100] = 0;
     
     
 #else
@@ -451,39 +454,45 @@ void ControllTubeFeet()
 {
 #if TUBEFEET_SIMULATION_MODE
     //瓶嚢の上下
-    int index = 100;
-    btRigidBody* body = TF_object_amp[index];
+    for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
+        
+        int index = itr->first;
+        btRigidBody* body = itr->second;
     
-    if (body && body->getMotionState() && !TF_contact[index])
-    {
-        btVector3 pos = body->getCenterOfMassPosition();
+        if (body && body->getMotionState() && !TF_contact[index])
+        {
+            btVector3 pos = body->getCenterOfMassPosition();
         
-        btTransform tran;
-        tran.setIdentity();
-        ////tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4)/2 + (LENGTH/2 + 4)/2*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
-        tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            btTransform tran;
+            tran.setIdentity();
+            ////tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4)/2 + (LENGTH/2 + 4)/2*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
         
-        body->setCenterOfMassTransform(tran);
+            body->setCenterOfMassTransform(tran);
+        }
     }
     
     //管足のモーター
     for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
         
-        itr->second->m_maxMotorForce = 100000000;
-        motor_tY[itr->first]->m_maxMotorForce = 100000000;
+        int index = itr->first;
+        btRotationalLimitMotor* motor = itr->second;
         
+        motor->m_maxMotorForce = 100000000;
+        motor_tY[index]->m_maxMotorForce = 100000000;
+
         if (!TF_contact[index])
         {
-            if ((time_step/SECOND+1) / 2 % 2 == 0) {
-                itr->second->m_targetVelocity = ANGLE*60/SECOND;
+            if (((time_step-ResumeTime_tf[index])/SECOND+1) / 2 % 2 == 0) {
+                motor->m_targetVelocity = ANGLE*60/SECOND;
             }else{
-                itr->second->m_targetVelocity = -ANGLE*60/SECOND;
+                motor->m_targetVelocity = -ANGLE*60/SECOND;
             }
             
         }
         else
         {
-            itr->second->m_targetVelocity = 0;
+            motor->m_targetVelocity = 0;
             
         }
     }
@@ -491,10 +500,13 @@ void ControllTubeFeet()
     //地面とのモーター
     for (auto itr = motor_to_groundZ.begin(); itr != motor_to_groundZ.end(); ++itr) {
         
-        itr->second->m_maxMotorForce = 100000000;
-        motor_to_groundY[itr->first]->m_maxMotorForce = 100000000;
+        int index = itr->first;
+        btRotationalLimitMotor* motor = itr->second;
         
-        itr->second->m_targetVelocity = -ANGLE;
+        motor->m_maxMotorForce = 100000000;
+        motor_to_groundY[index]->m_maxMotorForce = 100000000;
+        
+        motor->m_targetVelocity = -ANGLE;
     }
     
 #else
@@ -576,7 +588,7 @@ void ContactAction()
                     else
                     {
             
-                        /**角度判定**/
+                        /**地面から離脱←角度判定**/
                         if (angle>ANGLE/2)
                         {
                             /*地面との拘束削除*/
@@ -593,6 +605,7 @@ void ContactAction()
                             TF_object_amp[index] = body_amp;
                             dynamicsWorld->addRigidBody(body_amp);
                             
+                            /*瓶嚢と管足のモーター*/
                             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *getByUserIndex(index), pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(0, 0, 1));
                             univ->setLowerLimit(-ANGLE+angle, -ANGLE);
                             univ->setUpperLimit(ANGLE+angle, ANGLE);
@@ -605,6 +618,7 @@ void ContactAction()
                             motor2->m_enableMotor = true;
                             motor_tZ[index] = motor1;
                             motor_tY[index] = motor2;
+                            ResumeTime_tf[index] = time_step;
                             
                         }
                     }
