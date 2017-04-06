@@ -44,9 +44,10 @@ int time_step = 0;
 
 enum CollisionGroup{
     RX_COL_NOTHING = 0, // 0000
-    RX_COL_GROUND = 1,  // 0001
+    RX_COL_GROUND = 1, // 0001
     RX_COL_BODY = 2,  // 0010
-    RX_COL_TF = 4   // 0100
+    RX_COL_TF = 4,  // 0100
+    RX_COL_AMP = 8   // 1000
 };
 
 //----------------------------------------------------
@@ -191,7 +192,7 @@ void CreateGround()
     body->setUserIndex(1);
     
 	// 作成した剛体をワールドへ登録
-    dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF);
+    dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
     ///dynamicsWorld->addRigidBody(body);
 }
 
@@ -315,6 +316,7 @@ void CreateStarfish()
 {
     vector<btRigidBody* > bodies_body;
     vector<btRigidBody* > bodies_tf;
+    vector<btRigidBody* > bodies_amp;
     vector<btTypedConstraint* > constraints;
     
 #if TUBEFEET_SIMULATION_MODE //管足一個のシミュレーション
@@ -327,10 +329,10 @@ void CreateStarfish()
     body_tf->setUserIndex(100);
     TF_object_amp[100] = body_amp;
     TF_contact[100] = false;
-    bodies_tf.push_back(body_amp);
+    bodies_amp.push_back(body_amp);
     bodies_tf.push_back(body_tf);
     //拘束
-    btUniversalConstraint* univ = new btUniversalConstraint(*bodies_tf[0], *bodies_tf[1], btVector3(0, INIT_POS_Y, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+    btUniversalConstraint* univ = new btUniversalConstraint(*bodies_amp[0], *bodies_tf[0], btVector3(0, INIT_POS_Y, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
     univ->setLowerLimit(-ANGLE, -ANGLE);
     univ->setUpperLimit(ANGLE, ANGLE);
     TF_constraint_amp[100] = univ;
@@ -434,6 +436,11 @@ void CreateStarfish()
         ///dynamicsWorld->addRigidBody(bodies_tf[i]);
     }
 
+    for (int i = 0; i < bodies_amp.size(); i++) {
+        dynamicsWorld->addRigidBody(bodies_amp[i], RX_COL_AMP, RX_COL_GROUND);
+        ///dynamicsWorld->addRigidBody(bodies_tf[i]);
+    }
+    
     for (int i = 0; i < constraints.size(); i++) {
         dynamicsWorld->addConstraint(constraints[i]);
     }
@@ -520,7 +527,9 @@ void ContactAction()
         btRigidBody* bodyA = btRigidBody::upcast(const_cast<btCollisionObject *>(obA));
         btRigidBody* bodyB = btRigidBody::upcast(const_cast<btCollisionObject *>(obB));
 
-        if (obA->getUserIndex()==1) {
+        int obID = obA->getUserIndex();
+       
+        if (obID==1) {
             
             //衝突情報取得
             int numContacts = contactManifold->getNumContacts();
@@ -529,9 +538,9 @@ void ContactAction()
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getDistance() < 0.f)
                 {
-                    const btVector3& ptA = pt.getPositionWorldOnA();
+                    ///const btVector3& ptA = pt.getPositionWorldOnA();
                     const btVector3& ptB = pt.getPositionWorldOnB();
-                    const btVector3& normalOnB = pt.m_normalWorldOnB;
+                    ///const btVector3& normalOnB = pt.m_normalWorldOnB;
 
                     int index = obB->getUserIndex();
                     
