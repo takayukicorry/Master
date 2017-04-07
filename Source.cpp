@@ -40,6 +40,7 @@ map<int, btRotationalLimitMotor* > motor_tZ;//管足と瓶嚢のモーター（車輪）
 map<int, btRotationalLimitMotor* > motor_to_groundY;//管足と地面のモーター（ハンドル）
 map<int, btRotationalLimitMotor* > motor_to_groundZ;//管足と地面のモーター（車輪）
 map<int, int> ResumeTime_tf;//管足と瓶嚢のモーターの開始時刻
+map<int, int> RemoveTime_tf;//管足と地面が離脱した時刻
 
 
 int time_step = 0;
@@ -169,8 +170,8 @@ btRigidBody* getByUserIndex(int index)
 void CreateGround()
 {
 	// シェイプの生成
-	btVector3 scale = btVector3(btScalar(500.), btScalar(50.), btScalar(500.));
-	groundShape = new btBoxShape(scale);
+    btVector3 scale = btVector3(btScalar(500.), btScalar(50.), btScalar(500.));
+    groundShape = new btBoxShape(scale);
 	collisionShapes.push_back(groundShape);
 	btTransform groundTransform;
 	groundTransform.setIdentity();
@@ -347,6 +348,7 @@ void CreateStarfish()
     motor_tZ[100] = motor1;
     motor_tY[100] = motor2;
     ResumeTime_tf[100] = 0;
+    RemoveTime_tf[100] = 0;
     
     
 #else
@@ -484,9 +486,9 @@ void ControllTubeFeet()
         if (!TF_contact[index])
         {
             if (((time_step-ResumeTime_tf[index])/SECOND+1) / 2 % 2 == 0) {
-                motor->m_targetVelocity = ANGLE*60/SECOND;
+                motor->m_targetVelocity = ANGLE_VELOCITY_TF;
             }else{
-                motor->m_targetVelocity = -ANGLE*60/SECOND;
+                motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
             }
             
         }
@@ -506,7 +508,7 @@ void ControllTubeFeet()
         motor->m_maxMotorForce = 100000000;
         motor_to_groundY[index]->m_maxMotorForce = 100000000;
         
-        motor->m_targetVelocity = -ANGLE;
+        motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
     }
     
 #else
@@ -540,15 +542,18 @@ void ContactAction()
         btRigidBody* bodyB = btRigidBody::upcast(const_cast<btCollisionObject *>(obB));
 
         int obID = obA->getUserIndex();
-       
+        
+        //地面との衝突だった時
         if (obID==1) {
             
             //衝突情報取得
             int numContacts = contactManifold->getNumContacts();
+            
             for (int j = 0; j < numContacts; j++)
             {
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getDistance() < 0.f)
+                cout << pt.getDistance() << endl;
+                if (pt.getDistance() < 0.5f)
                 {
                     ///const btVector3& ptA = pt.getPositionWorldOnA();
                     const btVector3& ptB = pt.getPositionWorldOnB();
@@ -561,7 +566,7 @@ void ContactAction()
                     double angle = euler[2];
                     
                     //吸着してなかった場合
-                    if (!TF_contact[index] && angle<0) {
+                    if (!TF_contact[index] && angle<ANGLE_ATTACH) {
                         
                         dynamicsWorld->removeRigidBody(TF_object_amp[index]);
                         dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
@@ -585,11 +590,10 @@ void ContactAction()
                         motor_to_groundY[index] = motor2;
                     }
                     //吸着してた場合
-                    else
-                    {
-            
+                    else if (TF_contact[index])
+                    {cout << angle << endl;
                         /**地面から離脱←角度判定**/
-                        if (angle>ANGLE/2)
+                        if (angle>ANGLE_DETACH)
                         {
                             /*地面との拘束削除*/
                             dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
@@ -619,6 +623,7 @@ void ContactAction()
                             motor_tZ[index] = motor1;
                             motor_tY[index] = motor2;
                             ResumeTime_tf[index] = time_step;
+                            RemoveTime_tf[index] = time_step;
                             
                         }
                     }
@@ -644,7 +649,7 @@ void Render()
 
 	/* モデルビュー変換行列の保存 */
 	glPushMatrix();
-
+    
 	// 剛体の座標をプリント
 	for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
 	{
@@ -817,7 +822,7 @@ int main(int argc, char** argv)
 	CreateGround();
 
     //ヒトデの生成
-	CreateStarfish();
+    CreateStarfish();
 	
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 480);
