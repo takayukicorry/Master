@@ -326,8 +326,10 @@ void CreateStarfish()
 /***胴体***/
     
 /***管足***/
+/* 1 */
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
-    btRigidBody* body_amp = initAmp(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0));
+    btVector3 pos_amp = btVector3(0, btScalar(INIT_POS_Y), 0);
+    btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
     btRigidBody* body_tf = initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0));
     body_tf->setUserIndex(100);
     TF_object[100] = body_tf;
@@ -336,7 +338,7 @@ void CreateStarfish()
     bodies_amp.push_back(body_amp);
     bodies_tf.push_back(body_tf);
     //拘束
-    btUniversalConstraint* univ = new btUniversalConstraint(*bodies_amp[0], *bodies_tf[0], btVector3(0, INIT_POS_Y, 0), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+    btUniversalConstraint* univ = new btUniversalConstraint(*bodies_amp[0], *bodies_tf[0], pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
     univ->setLowerLimit(-ANGLE, -ANGLE);
     univ->setUpperLimit(ANGLE, ANGLE);
     TF_constraint_amp[100] = univ;
@@ -351,9 +353,35 @@ void CreateStarfish()
     ResumeTime_tf[100] = 0;
     RemoveTime_tf[100] = 0;
     
+/* 2 */
+    btScalar scale1[] = {btScalar(RADIUS), btScalar(LENGTH)};
+    pos_amp = btVector3(0, btScalar(INIT_POS_Y), -20);
+    body_amp = initAmp(btScalar(RADIUS), pos_amp);
+    body_tf = initTubefeet(scale1, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, -20));
+    body_tf->setUserIndex(101);
+    TF_object[101] = body_tf;
+    TF_object_amp[101] = body_amp;
+    TF_contact[101] = false;
+    bodies_amp.push_back(body_amp);
+    bodies_tf.push_back(body_tf);
+    //拘束
+    univ = new btUniversalConstraint(*bodies_amp[1], *bodies_tf[1], pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
+    univ->setLowerLimit(-ANGLE, -ANGLE);
+    univ->setUpperLimit(ANGLE, ANGLE);
+    TF_constraint_amp[101] = univ;
+    constraints.push_back(univ);
+    //モーター
+    motor1 = univ->getRotationalLimitMotor(1);//車輪
+    motor2 = univ->getRotationalLimitMotor(2);//ステアリング
+    motor1->m_enableMotor = true;
+    motor2->m_enableMotor = true;
+    motor_tZ[101] = motor1;
+    motor_tY[101] = motor2;
+    ResumeTime_tf[101] = -SECOND;
+    RemoveTime_tf[101] = 0;
     
     
-////登録////
+    ////登録////
     
     for (int i = 0; i < bodies_body.size(); i++) {
         dynamicsWorld->addRigidBody(bodies_body[i], RX_COL_BODY, RX_COL_GROUND);
@@ -412,8 +440,6 @@ void ControllTubeFeet()
         
             body->setCenterOfMassTransform(tran);
         }
-        
-        
     }
     
     //管足のモーター
@@ -432,7 +458,6 @@ void ControllTubeFeet()
             }else{
                 motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
             }
-            
         }
         else
         {
@@ -660,7 +685,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
 	glLoadIdentity();//行列の初期化
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 1000);
-	gluLookAt(0, 0, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 50, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
