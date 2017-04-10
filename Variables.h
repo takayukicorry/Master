@@ -3,8 +3,6 @@
 #define Variables_h
 #define _USE_MATH_DEFINES
 
-#define TUBEFEET_SIMULATION_MODE 1
-
 #define FPS 60.f
 
 #define RADIAN 180/M_PI

@@ -323,7 +323,6 @@ void CreateStarfish()
     vector<btRigidBody* > bodies_amp;
     vector<btTypedConstraint* > constraints;
     
-#if TUBEFEET_SIMULATION_MODE //管足一個のシミュレーション
 /***胴体***/
     
 /***管足***/
@@ -353,83 +352,6 @@ void CreateStarfish()
     RemoveTime_tf[100] = 0;
     
     
-#else
-    /***↓胴体***/
-    btVector3 scale_b(btScalar(25.), btScalar(5.), btScalar(25.));
-    btVector3 position_b(0, 10, 0);
-    bodies_body.push_back(initBody(scale_b, position_b));
-	
-/***↓腕***/
-	btVector3 scale_a(btScalar(25.), btScalar(5.), btScalar(10.));
-    btScalar dist = scale_a[0]+scale_b[0]+scale_b[1];
-
-	bodies_body.push_back(initArm(scale_a, btVector3(dist, position_b[1], 0), btQuaternion(0, 0, 0, 1)));
-	bodies_body.push_back(initArm(scale_a, btVector3(0, position_b[1], -dist), btQuaternion(0, 1/sqrt(2), 0, 1/sqrt(2))));
-	bodies_body.push_back(initArm(scale_a, btVector3(-dist, position_b[1], 0), btQuaternion(0, 1, 0, 0)));
-	bodies_body.push_back(initArm(scale_a, btVector3(0, position_b[1], dist), btQuaternion(0, -1/sqrt(2), 0, 1/sqrt(2))));
-    
-    //拘束
-    btVector3 pivotInBody(scale_b[0], 0, 0);
-    btVector3 axisInBody(0, 0, 1);
-    btVector3 pivotInArm(-scale_a[0]-scale_b[1], 0, 0);
-    btVector3 axisInArm = axisInBody;
-    btHingeConstraint* hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[1], pivotInBody, pivotInArm, axisInBody, axisInArm);//全部ローカル
-    constraints.push_back(hinge);
-    
-    pivotInBody = btVector3(0, 0, -scale_b[0]);
-    axisInBody = btVector3(1, 0, 0);
-    hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[2], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    constraints.push_back(hinge);
-    
-    pivotInBody = btVector3(-scale_b[0], 0, 0);
-    axisInBody = btVector3(0, 0, -1);
-    hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[3], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    constraints.push_back(hinge);
-    
-    pivotInBody = btVector3(0, 0, scale_b[0]);
-    axisInBody = btVector3(-1, 0, 0);
-    hinge = new btHingeConstraint(*bodies_body[0], *bodies_body[4], pivotInBody, pivotInArm, axisInBody, axisInArm);
-    constraints.push_back(hinge);
-    
-/***↓管足***/
-    btScalar scale_t[] = { btScalar(2.), btScalar(6.) };
-    btVector3 position_t;
-    int col, row;
-    int h = position_b[1] - scale_b[1] - scale_t[0] - scale_t[1]/2;
-    int from_x = dist - scale_a[0] + scale_t[0]*2;
-    
-    for (int i = 0; i < (scale_a[0]*2-scale_t[0]*4)*2/(scale_t[0]*3)+2; i++) {
-        col = i % 2;
-        row = i / 2;
-        position_t = btVector3(from_x + row * scale_t[0] * 3, h, pow(-1, col) * scale_t[0] * 2);
-        for (int j = 1; j <= 4; j++) {
-            btRigidBody* body_t = initTubefeet(scale_t, position_t);
-            bodies_tf.push_back(body_t);
-            
-            //拘束
-            position_t[1] += scale_t[0] + scale_t[1]/2;
-            btUniversalConstraint* univ = new btUniversalConstraint(*bodies_body[j], *body_t, position_t, btVector3(0, 1, 0), btVector3(sin(M_PI_2*(j-1)), 0, cos(M_PI_2*(j-1))));//全部グローバル
-            
-            univ->setLowerLimit(-ANGLE, -ANGLE);
-            univ->setUpperLimit(ANGLE, ANGLE);
-            
-            constraints.push_back(univ);
-
-            //モーター
-            btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//車輪
-            btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ステアリング
-            motor1->m_enableMotor = true;
-            motor2->m_enableMotor = true;
-            
-            motor_tZ.push_back(motor1);
-            motor_tY.push_back(motor2);
-
-            position_t[1] -= scale_t[0] + scale_t[1]/2;
-            position_t = RotateY(position_t, M_PI_2);
-            
-        }
-    }
-#endif
     
 ////登録////
     
@@ -456,7 +378,6 @@ void CreateStarfish()
 
 void ControllTubeFeet()
 {
-#if TUBEFEET_SIMULATION_MODE
     
     btScalar velocity_all = 0;
     for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
@@ -532,20 +453,7 @@ void ControllTubeFeet()
         motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
     }
     
-#else
-    
-    for (int i = 0; i < motor_tZ.size(); i++) {
-        motor_tZ[i]->m_maxMotorForce = 100000000;
-        motor_tY[i]->m_maxMotorForce = 100000000;
-        
-        if ((time_step/60+1) / 2 % 2 == 0) {
-            motor_tZ[i]->m_targetVelocity = ANGLE;
-        }else{
-            motor_tZ[i]->m_targetVelocity = -ANGLE;
-        }
-        
-    }
-#endif
+
 }
 
 void ContactAction()
