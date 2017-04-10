@@ -34,6 +34,7 @@ GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
 map<int, bool> TF_contact;//管足が吸着してるかどうか
 map<int, btTypedConstraint*> TF_constraint_amp;//管足と瓶嚢の拘束
 map<int, btTypedConstraint*> TF_constraint_ground;//管足と地面の拘束
+map<int, btRigidBody*> TF_object;//管足(Rigid Body)
 map<int, btRigidBody*> TF_object_amp;//管足と繋がってる瓶嚢（Rigid Body）
 map<int, btRotationalLimitMotor* > motor_tY;//管足と瓶嚢のモーター（ハンドル）
 map<int, btRotationalLimitMotor* > motor_tZ;//管足と瓶嚢のモーター（車輪）
@@ -330,6 +331,7 @@ void CreateStarfish()
     btRigidBody* body_amp = initAmp(btScalar(RADIUS), btVector3(0, btScalar(INIT_POS_Y), 0));
     btRigidBody* body_tf = initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0));
     body_tf->setUserIndex(100);
+    TF_object[100] = body_tf;
     TF_object_amp[100] = body_amp;
     TF_contact[100] = false;
     bodies_amp.push_back(body_amp);
@@ -455,7 +457,24 @@ void CreateStarfish()
 void ControllTubeFeet()
 {
 #if TUBEFEET_SIMULATION_MODE
-    //瓶嚢の上下
+    
+    btScalar velocity_all = 0;
+    for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
+        
+        int index = itr->first;
+        btRigidBody* body = TF_object[index];
+        
+        if (body && body->getMotionState() && TF_contact[index])
+        {
+            btScalar velocity_x = body->getLinearVelocity()[0];
+            
+            if (velocity_x < velocity_all) {
+                velocity_all = velocity_x;
+            }
+        }
+    }
+    
+    //瓶嚢の上下＆前後の動き
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
         int index = itr->first;
@@ -468,10 +487,12 @@ void ControllTubeFeet()
             btTransform tran;
             tran.setIdentity();
             ////tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4)/2 + (LENGTH/2 + 4)/2*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
-            tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
         
             body->setCenterOfMassTransform(tran);
         }
+        
+        
     }
     
     //管足のモーター
@@ -552,7 +573,6 @@ void ContactAction()
             for (int j = 0; j < numContacts; j++)
             {
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                cout << pt.getDistance() << endl;
                 if (pt.getDistance() < 0.5f)
                 {
                     ///const btVector3& ptA = pt.getPositionWorldOnA();
@@ -591,7 +611,7 @@ void ContactAction()
                     }
                     //吸着してた場合
                     else if (TF_contact[index])
-                    {cout << angle << endl;
+                    {
                         /**地面から離脱←角度判定**/
                         if (angle>ANGLE_DETACH)
                         {
@@ -610,7 +630,7 @@ void ContactAction()
                             dynamicsWorld->addRigidBody(body_amp);
                             
                             /*瓶嚢と管足のモーター*/
-                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *getByUserIndex(index), pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(0, 0, 1));
+                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(0, 0, 1));
                             univ->setLowerLimit(-ANGLE+angle, -ANGLE);
                             univ->setUpperLimit(ANGLE+angle, ANGLE);
                             TF_constraint_amp[index] = univ;
@@ -636,7 +656,7 @@ void ContactAction()
 void Render()
 {
     time_step++;
-    dynamicsWorld->stepSimulation(1.f / 60.f, 10);
+    dynamicsWorld->stepSimulation(1.f / FPS, 10);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
