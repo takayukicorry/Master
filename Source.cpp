@@ -693,8 +693,8 @@ void init(void)
 
 	glMatrixMode(GL_PROJECTION);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
 	glLoadIdentity();//行列の初期化
-	gluPerspective(30.0, (double)640 / (double)480, 0.1, 1000);
-	gluLookAt(0, 100, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
+	gluLookAt(0, 700, 1000, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
