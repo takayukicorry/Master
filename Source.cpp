@@ -41,7 +41,6 @@ map<int, btRotationalLimitMotor* > motor_tZ;//管足と瓶嚢のモーター（車輪）
 map<int, btRotationalLimitMotor* > motor_to_groundY;//管足と地面のモーター（ハンドル）
 map<int, btRotationalLimitMotor* > motor_to_groundZ;//管足と地面のモーター（車輪）
 map<int, int> ResumeTime_tf;//管足と瓶嚢のモーターの開始時刻
-map<int, int> RemoveTime_tf;//管足と地面が離脱した時刻
 
 
 int time_step = 0;
@@ -339,7 +338,7 @@ void CreateStarfish()
         row = i / 2;
         pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(from_x + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
-        for (int j = 1; j <= 4; j++) {
+        for (int j = 1; j <= 5; j++) {
             //body
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
@@ -363,12 +362,10 @@ void CreateStarfish()
             motor2->m_enableMotor = true;
             motor_tZ[index] = motor1;
             motor_tY[index] = motor2;
-            ResumeTime_tf[index] = 0;
-            RemoveTime_tf[index] = 0;
-            
+            ResumeTime_tf[index] = -SECOND*col;
             //for next
-            pos_tf = RotateY(pos_tf, M_PI_2);
-            pos_amp = RotateY(pos_amp, M_PI_2);
+            pos_tf = RotateY(pos_tf, M_PI*2/5);
+            pos_amp = RotateY(pos_amp, M_PI*2/5);
         }
     }
     
@@ -621,7 +618,6 @@ void ContactAction()
                             motor_tZ[index] = motor1;
                             motor_tY[index] = motor2;
                             ResumeTime_tf[index] = time_step;
-                            RemoveTime_tf[index] = time_step;
                             
                         }
                     }
@@ -730,7 +726,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
 	glLoadIdentity();//行列の初期化
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 1000);
-	gluLookAt(0, 50, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 100, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
