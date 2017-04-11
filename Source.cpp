@@ -326,8 +326,54 @@ void CreateStarfish()
 /***胴体***/
     
 /***管足***/
-/* 1 */
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
+    
+#if 1
+    //点(0,0)を中心に間隔RADIUS*4くらいで五放射相称に配置
+    btVector3 pos_tf, pos_amp;
+    int col, row;
+    int h = INIT_POS_Y-RADIUS*2-LENGTH/2;
+    int from_x = RADIUS*2;
+    for (int i = 0; i < 10; i++) {
+        col = i % 2;
+        row = i / 2;
+        pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
+        pos_amp = btVector3(from_x + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
+        for (int j = 1; j <= 4; j++) {
+            //body
+            btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
+            btRigidBody* body_tf = initTubefeet(scale, pos_tf);
+            int index = 100 + 10 * i + j;
+            body_tf->setUserIndex(index);
+            TF_object[index] = body_tf;
+            TF_object_amp[index] = body_amp;
+            TF_contact[index] = false;
+            bodies_tf.push_back(body_tf);
+            bodies_amp.push_back(body_amp);
+            //constraint
+            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
+            univ->setLowerLimit(-ANGLE, -ANGLE);
+            univ->setUpperLimit(ANGLE, ANGLE);
+            TF_constraint_amp[index] = univ;
+            constraints.push_back(univ);
+            //motor
+            btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
+            btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
+            motor1->m_enableMotor = true;
+            motor2->m_enableMotor = true;
+            motor_tZ[index] = motor1;
+            motor_tY[index] = motor2;
+            ResumeTime_tf[index] = 0;
+            RemoveTime_tf[index] = 0;
+            
+            //for next
+            pos_tf = RotateY(pos_tf, M_PI_2);
+            pos_amp = RotateY(pos_amp, M_PI_2);
+        }
+    }
+    
+#else
+/* 1 */
     btVector3 pos_amp = btVector3(0, btScalar(INIT_POS_Y), 0);
     btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
     btRigidBody* body_tf = initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, 0));
@@ -354,10 +400,9 @@ void CreateStarfish()
     RemoveTime_tf[100] = 0;
     
 /* 2 */
-    btScalar scale1[] = {btScalar(RADIUS), btScalar(LENGTH)};
     pos_amp = btVector3(0, btScalar(INIT_POS_Y), -20);
     body_amp = initAmp(btScalar(RADIUS), pos_amp);
-    body_tf = initTubefeet(scale1, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, -20));
+    body_tf = initTubefeet(scale, btVector3(0, INIT_POS_Y-RADIUS*2-LENGTH/2, -20));
     body_tf->setUserIndex(101);
     TF_object[101] = body_tf;
     TF_object_amp[101] = body_amp;
@@ -379,7 +424,7 @@ void CreateStarfish()
     motor_tY[101] = motor2;
     ResumeTime_tf[101] = -SECOND;
     RemoveTime_tf[101] = 0;
-    
+#endif
     
     ////登録////
     
