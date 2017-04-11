@@ -34,6 +34,7 @@ GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
 map<int, bool> TF_contact;//ä«ë´Ç™ãzíÖÇµÇƒÇÈÇ©Ç«Ç§Ç©
 map<int, btTypedConstraint*> TF_constraint_amp;//ä«ë´Ç∆ïrîXÇÃçSë©
 map<int, btTypedConstraint*> TF_constraint_ground;//ä«ë´Ç∆ínñ ÇÃçSë©
+map<int, btRigidBody*> BODY_object;//ì∑ëÃ(Rigid Body)
 map<int, btRigidBody*> TF_object;//ä«ë´(Rigid Body)
 map<int, btRigidBody*> TF_object_amp;//ä«ë´Ç∆åqÇ™Ç¡ÇƒÇÈïrîXÅiRigid BodyÅj
 map<int, btRotationalLimitMotor* > motor_tY;//ä«ë´Ç∆ïrîXÇÃÉÇÅ[É^Å[ÅiÉnÉìÉhÉãÅj
@@ -253,6 +254,8 @@ btRigidBody* initBody(const btVector3 scale, const btVector3 position)
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sBodyShape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
     
+    body->setActivationState(DISABLE_DEACTIVATION);
+    
     return body;
 }
 
@@ -322,12 +325,18 @@ void CreateStarfish()
     vector<btRigidBody* > bodies_amp;
     vector<btTypedConstraint* > constraints;
     
-/***ì∑ëÃ***/
+/***ëÃ***/
+    /*btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
+    BODY_object[0] = body_body;
+    bodies_body.push_back(body_body);
+    for (int i = 0; i < 5; i++) {
+        btRigidBody* body_arm = initArm(btVector3(RADIUS*6, LENGTH, RADIUS*2), RotateY(btVector3(RADIUS*10, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/5), btQuaternion(btVector3(0, 1, 0), M_PI*2*i/5));
+        BODY_object[i+1] = body_arm;
+        bodies_body.push_back(body_arm);
+    }*/
     
 /***ä«ë´***/
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
-    
-    //ì_(0,0)ÇíÜêSÇ…ä‘äuRADIUS*4Ç≠ÇÁÇ¢Ç≈å‹ï˙éÀëäèÃÇ…îzíu
     btVector3 pos_tf, pos_amp;
     int col, row;
     int h = INIT_POS_Y-RADIUS*2-LENGTH/2;
@@ -373,17 +382,14 @@ void CreateStarfish()
     
     for (int i = 0; i < bodies_body.size(); i++) {
         dynamicsWorld->addRigidBody(bodies_body[i], RX_COL_BODY, RX_COL_GROUND);
-        ///dynamicsWorld->addRigidBody(bodies_body[i]);
     }
     
     for (int i = 0; i < bodies_tf.size(); i++) {
         dynamicsWorld->addRigidBody(bodies_tf[i], RX_COL_TF, RX_COL_GROUND);
-        ///dynamicsWorld->addRigidBody(bodies_tf[i]);
     }
 
     for (int i = 0; i < bodies_amp.size(); i++) {
         dynamicsWorld->addRigidBody(bodies_amp[i], RX_COL_AMP, RX_COL_GROUND);
-        ///dynamicsWorld->addRigidBody(bodies_tf[i]);
     }
     
     for (int i = 0; i < constraints.size(); i++) {
@@ -411,6 +417,22 @@ void ControllTubeFeet()
         }
     }
     
+    //ñ{ëÃÇÃëOå„ÇÃìÆÇ´
+    for (auto itr = BODY_object.begin(); itr != BODY_object.end(); ++itr) {
+        btRigidBody* body = itr->second;
+        
+        if (body && body->getMotionState())
+        {
+            btVector3 pos = body->getCenterOfMassPosition();
+            
+            btTransform tran;
+            tran.setIdentity();
+            tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, pos[1], pos[2]));
+            
+            body->setCenterOfMassTransform(tran);
+        }
+    }
+    
     //ïrîXÇÃè„â∫ÅïëOå„ÇÃìÆÇ´
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
@@ -423,8 +445,7 @@ void ControllTubeFeet()
         
             btTransform tran;
             tran.setIdentity();
-            ////tran.setOrigin(btVector3(pos[0], INIT_POS_Y - (LENGTH/2 + 4)/2 + (LENGTH/2 + 4)/2*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
-            tran.setOrigin(btVector3(pos[0]+velocity_all/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
         
             body->setCenterOfMassTransform(tran);
         }
@@ -626,14 +647,15 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
 				glutSolidCube(1);
 			}
+            //ïrîX
 			else if (shape == SPHERE_SHAPE_PROXYTYPE)
-			{
+			{/*
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
 				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-				glutSolidSphere(1, 100, 100);
+				glutSolidSphere(1, 100, 100);*/
 			}
             //ä«ë´
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
