@@ -442,6 +442,9 @@ void ControllTubeFeet()
     
         if (body && body->getMotionState() && !TF_contact[index])
         {
+            btVector3 pos = body->getCenterOfMassPosition();
+
+            //ã‰º
             btVector3 euler;
             TF_object[index]->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
             double angle = euler[2];
@@ -451,12 +454,12 @@ void ControllTubeFeet()
             
             double h = (2*RADIUS + LENGTH)*cos(angle) + (2-rand200(mt)/100.0)*RADIUS;
             
-            btVector3 pos = body->getCenterOfMassPosition();
+            //‘OŒã
+            double d = pos[0]+velocity_all*3.5/FPS;
+            
             btTransform tran;
             tran.setIdentity();
-            //tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
-            tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, h, pos[2]));
-            
+            tran.setOrigin(btVector3(d, h, pos[2]));
             body->setCenterOfMassTransform(tran);
         }
     }
