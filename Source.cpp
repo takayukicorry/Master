@@ -666,7 +666,6 @@ void Render()
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
                 glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
-                
             }
 			glPopMatrix();
 		}
