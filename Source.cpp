@@ -14,6 +14,7 @@
 #include "Variables.h"
 #include <math.h>
 #include <map>
+#include <random>
 //#include <OpenGL/DemoApplication.h>
 
 using namespace std;
@@ -441,12 +442,21 @@ void ControllTubeFeet()
     
         if (body && body->getMotionState() && !TF_contact[index])
         {
+            btVector3 euler;
+            TF_object[index]->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
+            double angle = euler[2];
+            random_device rnd;
+            mt19937 mt(rnd());
+            uniform_int_distribution<> rand200(0, 200);
+            
+            double h = (2*RADIUS + LENGTH)*cos(angle) + (2-rand200(mt)/100.0)*RADIUS;
+            
             btVector3 pos = body->getCenterOfMassPosition();
-        
             btTransform tran;
             tran.setIdentity();
-            tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
-        
+            //tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, h, pos[2]));
+            
             body->setCenterOfMassTransform(tran);
         }
     }
