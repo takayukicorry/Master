@@ -291,7 +291,7 @@ btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQu
 }
 
 //ヒトデの管足生成
-btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
+btRigidBody* initTubefeet(btScalar* scale, const btVector3 position, const btQuaternion rot)
 {
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
     collisionShapes.push_back(sBodyShape);
@@ -308,6 +308,7 @@ btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
     btTransform sBodyTransform;
     sBodyTransform.setIdentity();
     sBodyTransform.setOrigin(position);
+    sBodyTransform.setRotation(rot);
     btDefaultMotionState* myMotionState1 = new btDefaultMotionState(sBodyTransform);
     
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
@@ -350,7 +351,7 @@ void CreateStarfish()
         for (int j = 1; j <= 5; j++) {
             //body
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
-            btRigidBody* body_tf = initTubefeet(scale, pos_tf);
+            btRigidBody* body_tf = initTubefeet(scale, pos_tf, btQuaternion(btVector3(0, 1, 0), 0));
             int index = 100 + 10 * i + j;
             body_tf->setUserIndex(index);
             TF_object[index] = body_tf;
@@ -448,11 +449,12 @@ void ControllTubeFeet()
             btVector3 euler;
             TF_object[index]->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
             double angle = euler[2];
+            double h = (2*RADIUS + LENGTH)*cos(angle)+2*RADIUS;
             random_device rnd;
             mt19937 mt(rnd());
-            uniform_int_distribution<> rand200(0, 200);
+            uniform_int_distribution<> rand200(150, 250);
             
-            double h = (2*RADIUS + LENGTH)*cos(angle) + (2-rand200(mt)/100.0)*RADIUS;
+            h -= rand200(mt)/100.0*RADIUS;
             
             //前後
             double d = pos[0]+velocity_all*3.5/FPS;
@@ -551,8 +553,8 @@ void ContactAction()
                         
                         //衝突点に地面との拘束作成
                         btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//全部グローバル
-                        //univ->setLowerLimit(-ANGLE, -ANGLE);
-                        //univ->setUpperLimit(ANGLE, ANGLE);
+                        univ->setLowerLimit(-ANGLE, -ANGLE);
+                        univ->setUpperLimit(ANGLE, ANGLE);
                         TF_constraint_ground[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                     
@@ -706,7 +708,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//行列モードの設定（GL_PROJECTION : 透視変換行列の設定、GL_MODELVIEW：モデルビュー変換行列）
 	glLoadIdentity();//行列の初期化
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(0, 700, 1000, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 0, 500, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
