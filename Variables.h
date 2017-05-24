@@ -9,7 +9,7 @@
 #define SECOND 120//管足振る周期の半分
 
 #define M_BODY 0
-#define M_ARM 0
+#define M_ARM 1
 #define M_TF 1
 
 #define LENGTH 12

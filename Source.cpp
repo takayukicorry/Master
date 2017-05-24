@@ -32,6 +32,7 @@ GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
 
 //Userindex==int‚Ì`
 map<int, bool> TF_contact;//ŠÇ‘«‚ª‹z’…‚µ‚Ä‚é‚©‚Ç‚¤‚©
+map<int, bool> TF_light;//ŠÇ‘«‚ªŒõóM‚µ‚Ä‚é‚Ç‚¤‚©
 map<int, btTypedConstraint*> TF_constraint_amp;//ŠÇ‘«‚Æ•r”X‚ÌS‘©
 map<int, btTypedConstraint*> TF_constraint_ground;//ŠÇ‘«‚Æ’n–Ê‚ÌS‘©
 map<int, btRigidBody*> BODY_object;//“·‘Ì(Rigid Body)
@@ -326,14 +327,14 @@ void CreateStarfish()
     vector<btTypedConstraint* > constraints;
     
 /***‘Ì***/
-    /*btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
+    btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
     BODY_object[0] = body_body;
     bodies_body.push_back(body_body);
     for (int i = 0; i < 5; i++) {
         btRigidBody* body_arm = initArm(btVector3(RADIUS*6, LENGTH, RADIUS*2), RotateY(btVector3(RADIUS*10, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/5), btQuaternion(btVector3(0, 1, 0), M_PI*2*i/5));
         BODY_object[i+1] = body_arm;
         bodies_body.push_back(body_arm);
-    }*/
+    }
     
 /***ŠÇ‘«***/
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
