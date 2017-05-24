@@ -454,7 +454,7 @@ void ControllTubeFeet()
             mt19937 mt(rnd());
             uniform_int_distribution<> rand200(150, 250);
             
-            h -= rand200(mt)/100.0*RADIUS;
+            //h -= rand200(mt)/100.0*RADIUS;//ノイズ入れて地面に届いたり届かなかったり
             
             //前後
             double d = pos[0]+velocity_all*3.5/FPS;
