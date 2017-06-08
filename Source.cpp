@@ -30,19 +30,19 @@ btAlignedObjectArray<btCollisionShape*> collisionShapes;
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
 
-//Userindex==int‚Ì`
-map<int, bool> TF_contact;//ŠÇ‘«‚ª‹z’…‚µ‚Ä‚é‚©‚Ç‚¤‚©
-map<int, bool> TF_light;//ŠÇ‘«‚ªŒõóM‚µ‚Ä‚é‚Ç‚¤‚©
-map<int, btTypedConstraint*> TF_constraint_amp;//ŠÇ‘«‚Æ•r”X‚ÌS‘©
-map<int, btTypedConstraint*> TF_constraint_ground;//ŠÇ‘«‚Æ’n–Ê‚ÌS‘©
-map<int, btRigidBody*> BODY_object;//“·‘Ì(Rigid Body)
-map<int, btRigidBody*> TF_object;//ŠÇ‘«(Rigid Body)
-map<int, btRigidBody*> TF_object_amp;//ŠÇ‘«‚ÆŒq‚ª‚Á‚Ä‚é•r”XiRigid Bodyj
-map<int, btRotationalLimitMotor* > motor_tY;//ŠÇ‘«‚Æ•r”X‚Ìƒ‚[ƒ^[iƒnƒ“ƒhƒ‹j
-map<int, btRotationalLimitMotor* > motor_tZ;//ŠÇ‘«‚Æ•r”X‚Ìƒ‚[ƒ^[iÔ—Öj
-map<int, btRotationalLimitMotor* > motor_to_groundY;//ŠÇ‘«‚Æ’n–Ê‚Ìƒ‚[ƒ^[iƒnƒ“ƒhƒ‹j
-map<int, btRotationalLimitMotor* > motor_to_groundZ;//ŠÇ‘«‚Æ’n–Ê‚Ìƒ‚[ƒ^[iÔ—Öj
-map<int, int> ResumeTime_tf;//ŠÇ‘«‚Æ•r”X‚Ìƒ‚[ƒ^[‚ÌŠJn
+//Userindex==intÃ‡ÃƒÃ…`
+map<int, bool> TF_contact;//Ã¤Â«Ã«Â´Ã‡â„¢Ã£zÃ­Ã–Ã‡ÂµÃ‡Æ’Ã‡ÃˆÃ‡Â©Ã‡Â«Ã‡Â§Ã‡Â©
+map<int, bool> TF_light;//Ã¤Â«Ã«Â´Ã‡â„¢Ã¥Ä±Ã©Ã›ÃªMÃ‡ÂµÃ‡Æ’Ã‡ÃˆÃ‡Â«Ã‡Â§Ã‡Â©
+map<int, btTypedConstraint*> TF_constraint_amp;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã¯rÃ®XÃ‡ÃƒÃ§SÃ«Â©
+map<int, btTypedConstraint*> TF_constraint_ground;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã­nÃ±Â Ã‡ÃƒÃ§SÃ«Â©
+map<int, btRigidBody*> BODY_object;//Ã¬âˆ‘Ã«Ãƒ(Rigid Body)
+map<int, btRigidBody*> TF_object;//Ã¤Â«Ã«Â´(Rigid Body)
+map<int, btRigidBody*> TF_object_amp;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã¥qÃ‡â„¢Ã‡Â¡Ã‡Æ’Ã‡ÃˆÃ¯rÃ®XÃ…iRigid BodyÃ…j
+map<int, btRotationalLimitMotor* > motor_tY;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã¯rÃ®XÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[Ã…iÃ‰nÃ‰Ã¬Ã‰hÃ‰Ã£Ã…j
+map<int, btRotationalLimitMotor* > motor_tZ;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã¯rÃ®XÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[Ã…iÃ©â€˜Ã³Ã·Ã…j
+map<int, btRotationalLimitMotor* > motor_to_groundY;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã­nÃ±Â Ã‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[Ã…iÃ‰nÃ‰Ã¬Ã‰hÃ‰Ã£Ã…j
+map<int, btRotationalLimitMotor* > motor_to_groundZ;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã­nÃ±Â Ã‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[Ã…iÃ©â€˜Ã³Ã·Ã…j
+map<int, int> ResumeTime_tf;//Ã¤Â«Ã«Â´Ã‡âˆ†Ã¯rÃ®XÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[Ã‡ÃƒÃ¤JÃ©nÃ©Ã»Ã§Ã¨
 
 
 int time_step = 0;
@@ -56,7 +56,7 @@ enum CollisionGroup{
 };
 
 //----------------------------------------------------
-// •¨¿¿Š´‚Ì’è‹`
+// Ã¯Â®Ã©Ã¸Ã©Ã¸Ã¤Â¥Ã‡ÃƒÃ­Ã‹Ã£`
 //----------------------------------------------------
 struct MaterialStruct {
 	GLfloat ambient[4];
@@ -64,29 +64,29 @@ struct MaterialStruct {
 	GLfloat specular[4];
 	GLfloat shininess;
 };
-//jade(ãÅ‰)
+//jade(â€â‰ˆÃªÃ¢)
 MaterialStruct ms_jade = {
 	{ 0.135, 0.2225, 0.1575, 1.0 },
 	{ 0.54, 0.89, 0.63, 1.0 },
 	{ 0.316228, 0.316228, 0.316228, 1.0 },
 	12.8 };
-//ruby(ƒ‹ƒr[)
+//ruby(Ã‰Ã£Ã‰rÃ…[)
 MaterialStruct ms_ruby = {
 	{ 0.1745, 0.01175, 0.01175, 1.0 },
 	{ 0.61424, 0.04136, 0.04136, 1.0 },
 	{ 0.727811, 0.626959, 0.626959, 1.0 },
 	76.8 };
 //----------------------------------------------------
-// F‚Ì’è‹`‚Ì’è‹`
+// ÃªFÃ‡ÃƒÃ­Ã‹Ã£`Ã‡ÃƒÃ­Ã‹Ã£`
 //----------------------------------------------------
-GLfloat red[] = { 0.8, 0.2, 0.2, 1.0 }; //ÔF
-GLfloat green[] = { 0.2, 0.8, 0.2, 1.0 };//—ÎF
-GLfloat blue[] = { 0.2, 0.2, 0.8, 1.0 };//ÂF
-GLfloat yellow[] = { 0.8, 0.8, 0.2, 1.0 };//‰©F
-GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };//”’F
-GLfloat shininess = 30.0;//Œõ‘ò‚Ì‹­‚³
+GLfloat red[] = { 0.8, 0.2, 0.2, 1.0 }; //Ãªâ€˜ÃªF
+GLfloat green[] = { 0.2, 0.8, 0.2, 1.0 };//Ã³Å’ÃªF
+GLfloat blue[] = { 0.2, 0.2, 0.8, 1.0 };//ÃªÂ¬ÃªF
+GLfloat yellow[] = { 0.8, 0.8, 0.2, 1.0 };//Ã¢Â©ÃªF
+GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };//Ã®Ã­ÃªF
+GLfloat shininess = 30.0;//Ã¥Ä±Ã«ÃšÃ‡ÃƒÃ£â‰ Ã‡â‰¥
 //-----------------------------------------
-//ŒvZ‚·‚éŠÖ”
+//Ã¥vÃ©ZÃ‡âˆ‘Ã‡ÃˆÃ¤Ã·ÃªÃ®
 //-----------------------------------------
 
 btVector3 RotateY(const btVector3 bef, double alpha)
@@ -130,14 +130,14 @@ btRigidBody::btRigidBodyConstructionInfo calcInertia(btScalar mass, btVector3 po
     groundTransform.setIdentity();
     groundTransform.setOrigin(position);
     
-    // Ã“I‚È„‘Ì‚ğì‚è‚Ü‚·
+    // ÃªâˆšÃ¬IÃ‡Â»Ã§Ã‘Ã«ÃƒÃ‡ï£¿Ã§ÃÃ‡Ã‹Ã‡â€¹Ã‡âˆ‘
     bool isDynamic = (mass != 0.f);
     
     btVector3 localInertia(0, 0, 0);
     if (isDynamic)
         groundShape->calculateLocalInertia(mass, localInertia);
         
-    // ƒfƒtƒHƒ‹ƒg‚Ìƒ‚[ƒVƒ‡ƒ“ƒXƒe[ƒg‚ğì¬
+    // Ã‰fÃ‰tÃ‰HÃ‰Ã£Ã‰gÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰VÃ‰Ã¡Ã‰Ã¬Ã‰XÃ‰eÃ…[Ã‰gÃ‡ï£¿Ã§ÃÃªÂ¨
     btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
     
@@ -168,10 +168,10 @@ btRigidBody* getByUserIndex(int index)
 }
 //---------------------------------------------
 
-// ƒOƒ‰ƒ“ƒh‚Ì¶¬
+// Ã‰OÃ‰Ã¢Ã‰Ã¬Ã‰hÃ‡ÃƒÃªâˆ‚ÃªÂ¨
 void CreateGround()
 {
-	// ƒVƒFƒCƒv‚Ì¶¬
+	// Ã‰VÃ‰FÃ‰CÃ‰vÃ‡ÃƒÃªâˆ‚ÃªÂ¨
     btVector3 scale = btVector3(btScalar(500.), btScalar(50.), btScalar(500.));
     groundShape = new btBoxShape(scale);
 	collisionShapes.push_back(groundShape);
@@ -181,14 +181,14 @@ void CreateGround()
 
 	btScalar mass(0.);
 
-	// Ã“I‚È„‘Ì‚ğì‚è‚Ü‚·
+	// ÃªâˆšÃ¬IÃ‡Â»Ã§Ã‘Ã«ÃƒÃ‡ï£¿Ã§ÃÃ‡Ã‹Ã‡â€¹Ã‡âˆ‘
 	bool isDynamic = (mass != 0.f);
 
 	btVector3 localInertia(0, 0, 0);
 	if (isDynamic)
 		groundShape->calculateLocalInertia(mass, localInertia);
 
-	// ƒfƒtƒHƒ‹ƒg‚Ìƒ‚[ƒVƒ‡ƒ“ƒXƒe[ƒg‚ğì¬
+	// Ã‰fÃ‰tÃ‰HÃ‰Ã£Ã‰gÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰VÃ‰Ã¡Ã‰Ã¬Ã‰XÃ‰eÃ…[Ã‰gÃ‡ï£¿Ã§ÃÃªÂ¨
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
@@ -196,24 +196,24 @@ void CreateGround()
     body->setActivationState(DISABLE_DEACTIVATION);
     body->setUserIndex(1);
     
-	// ì¬‚µ‚½„‘Ì‚ğƒ[ƒ‹ƒh‚Ö“o˜^
+	// Ã§ÃÃªÂ¨Ã‡ÂµÃ‡Î©Ã§Ã‘Ã«ÃƒÃ‡ï£¿Ã‰Ã¨Ã…[Ã‰Ã£Ã‰hÃ‡Ã·Ã¬oÃ²^
     dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
     ///dynamicsWorld->addRigidBody(body);
 }
 
-// ‹…‚Ì¶¬
+// Ã£Ã–Ã‡ÃƒÃªâˆ‚ÃªÂ¨
 btRigidBody* initAmp(btScalar scale, const btVector3 position)
 {
 	btCollisionShape* colShape = new btSphereShape(scale);
 	collisionShapes.push_back(colShape);
 
-	// ƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚ğì¬
+	// Ã‰gÃ‰Ã¢Ã‰Ã¬Ã‰XÃ‰tÃ‰HÃ…[Ã‰Ã„Ã‡ï£¿Ã§ÃÃªÂ¨
 	btTransform startTransform;
 	startTransform.setIdentity();
 
 	btScalar mass(0.f);
 
-	// ¿—Ê‚ğ1‚Æ‚µ‚½‚Ì‚Åƒ_ƒCƒiƒ~ƒbƒN
+	// Ã©Ã¸Ã³Â Ã‡ï£¿1Ã‡âˆ†Ã‡ÂµÃ‡Î©Ã‡ÃƒÃ‡â‰ˆÃ‰_Ã‰CÃ‰iÃ‰~Ã‰bÃ‰N
 	bool isDynamic = (mass != 0.f);
 
 	btVector3 localInertia(0, 0, 0);
@@ -222,7 +222,7 @@ btRigidBody* initAmp(btScalar scale, const btVector3 position)
 
 	startTransform.setOrigin(position);
 
-	// ƒ‚[ƒVƒ‡ƒ“ƒXƒe[ƒg‚ğì¬
+	// Ã‰Ã‡Ã…[Ã‰VÃ‰Ã¡Ã‰Ã¬Ã‰XÃ‰eÃ…[Ã‰gÃ‡ï£¿Ã§ÃÃªÂ¨
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
 	btRigidBody* body = new btRigidBody(rbInfo);
@@ -232,7 +232,7 @@ btRigidBody* initAmp(btScalar scale, const btVector3 position)
     return  body;
 }
 
-//ƒqƒgƒf‚Ì“·‘Ì¶¬
+//Ã‰qÃ‰gÃ‰fÃ‡ÃƒÃ¬âˆ‘Ã«ÃƒÃªâˆ‚ÃªÂ¨
 btRigidBody* initBody(const btVector3 scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btBoxShape(scale);
@@ -250,7 +250,7 @@ btRigidBody* initBody(const btVector3 scale, const btVector3 position)
     if (isDynamic)
         groundShape->calculateLocalInertia(mass, localInertia);
     
-    // ƒfƒtƒHƒ‹ƒg‚Ìƒ‚[ƒVƒ‡ƒ“ƒXƒe[ƒg‚ğì¬
+    // Ã‰fÃ‰tÃ‰HÃ‰Ã£Ã‰gÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰VÃ‰Ã¡Ã‰Ã¬Ã‰XÃ‰eÃ…[Ã‰gÃ‡ï£¿Ã§ÃÃªÂ¨
     btDefaultMotionState* myMotionState = new btDefaultMotionState(sBodyTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sBodyShape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
@@ -260,7 +260,7 @@ btRigidBody* initBody(const btVector3 scale, const btVector3 position)
     return body;
 }
 
-//ƒqƒgƒf‚Ì˜r¶¬
+//Ã‰qÃ‰gÃ‰fÃ‡ÃƒÃ²rÃªâˆ‚ÃªÂ¨
 btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
 {
 	btCollisionShape* sBodyShape = new btBoxShape(scale);
@@ -273,7 +273,7 @@ btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQu
 	if (isDynamic)
 		groundShape->calculateLocalInertia(mass1, localInertia1);
 
-	// ƒfƒtƒHƒ‹ƒg‚Ìƒ‚[ƒVƒ‡ƒ“ƒXƒe[ƒg‚ğì¬
+	// Ã‰fÃ‰tÃ‰HÃ‰Ã£Ã‰gÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰VÃ‰Ã¡Ã‰Ã¬Ã‰XÃ‰eÃ…[Ã‰gÃ‡ï£¿Ã§ÃÃªÂ¨
 
 	btTransform sBodyTransform;
 	sBodyTransform.setIdentity();
@@ -290,7 +290,7 @@ btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQu
 
 }
 
-//ƒqƒgƒf‚ÌŠÇ‘«¶¬
+//Ã‰qÃ‰gÃ‰fÃ‡ÃƒÃ¤Â«Ã«Â´Ãªâˆ‚ÃªÂ¨
 btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
@@ -303,7 +303,7 @@ btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
     if (isDynamic)
         groundShape->calculateLocalInertia(mass1, localInertia1);
     
-    // ƒfƒtƒHƒ‹ƒg‚Ìƒ‚[ƒVƒ‡ƒ“ƒXƒe[ƒg‚ğì¬
+    // Ã‰fÃ‰tÃ‰HÃ‰Ã£Ã‰gÃ‡ÃƒÃ‰Ã‡Ã…[Ã‰VÃ‰Ã¡Ã‰Ã¬Ã‰XÃ‰eÃ…[Ã‰gÃ‡ï£¿Ã§ÃÃªÂ¨
     
     btTransform sBodyTransform;
     sBodyTransform.setIdentity();
@@ -318,7 +318,7 @@ btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
     return body;
 }
 
-// ƒqƒgƒf‚Ì¶¬
+// Ã‰qÃ‰gÃ‰fÃ‡ÃƒÃªâˆ‚ÃªÂ¨
 void CreateStarfish()
 {
     vector<btRigidBody* > bodies_body;
@@ -326,8 +326,8 @@ void CreateStarfish()
     vector<btRigidBody* > bodies_amp;
     vector<btTypedConstraint* > constraints;
     
-/***‘Ì***/
-    btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
+/***Ã«Ãƒ***/
+    /*btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
     BODY_object[0] = body_body;
     bodies_body.push_back(body_body);
     for (int i = 0; i < 5; i++) {
@@ -336,13 +336,13 @@ void CreateStarfish()
         bodies_body.push_back(body_arm);
     }
     
-/***ŠÇ‘«***/
+/***Ã¤Â«Ã«Â´***/
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
     btVector3 pos_tf, pos_amp;
     int col, row;
     int h = INIT_POS_Y-RADIUS*2-LENGTH/2;
     int from_x = RADIUS*2;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
@@ -379,7 +379,7 @@ void CreateStarfish()
     }
 
     
-    ////“o˜^////
+    ////Ã¬oÃ²^////
     
     for (int i = 0; i < bodies_body.size(); i++) {
         dynamicsWorld->addRigidBody(bodies_body[i], RX_COL_BODY, RX_COL_GROUND);
@@ -418,7 +418,7 @@ void ControllTubeFeet()
         }
     }
     
-    //–{‘Ì‚Ì‘OŒã‚Ì“®‚«
+    //Ã±{Ã«ÃƒÃ‡ÃƒÃ«OÃ¥â€Ã‡ÃƒÃ¬Ã†Ã‡Â´
     for (auto itr = BODY_object.begin(); itr != BODY_object.end(); ++itr) {
         btRigidBody* body = itr->second;
         
@@ -434,7 +434,7 @@ void ControllTubeFeet()
         }
     }
     
-    //•r”X‚Ìã‰º•‘OŒã‚Ì“®‚«
+    //Ã¯rÃ®XÃ‡ÃƒÃ¨â€Ã¢âˆ«Ã…Ã¯Ã«OÃ¥â€Ã‡ÃƒÃ¬Ã†Ã‡Â´
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
         int index = itr->first;
@@ -452,7 +452,7 @@ void ControllTubeFeet()
         }
     }
     
-    //ŠÇ‘«‚Ìƒ‚[ƒ^[
+    //Ã¤Â«Ã«Â´Ã‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[
     for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
         
         int index = itr->first;
@@ -476,7 +476,7 @@ void ControllTubeFeet()
         }
     }
     
-    //’n–Ê‚Æ‚Ìƒ‚[ƒ^[
+    //Ã­nÃ±Â Ã‡âˆ†Ã‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[
     for (auto itr = motor_to_groundZ.begin(); itr != motor_to_groundZ.end(); ++itr) {
         
         int index = itr->first;
@@ -498,7 +498,7 @@ void ContactAction()
     int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
     for (int i = 0; i < numManifolds; i++)
     {
-        //ŠÇ‘«Õ“Ëó‘ÔXV
+        //Ã¤Â«Ã«Â´Ã¨â€™Ã¬Ã€Ã¨Ã›Ã«â€˜Ã§XÃªV
         btPersistentManifold* contactManifold =  dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
         const btCollisionObject* obA = contactManifold->getBody0();
         const btCollisionObject* obB = contactManifold->getBody1();
@@ -507,10 +507,10 @@ void ContactAction()
 
         int obID = obA->getUserIndex();
         
-        //’n–Ê‚Æ‚ÌÕ“Ë‚¾‚Á‚½
+        //Ã­nÃ±Â Ã‡âˆ†Ã‡ÃƒÃ¨â€™Ã¬Ã€Ã‡Ã¦Ã‡Â¡Ã‡Î©Ã©Ã»
         if (obID==1) {
             
-            //Õ“Ëî•ñæ“¾
+            //Ã¨â€™Ã¬Ã€Ã¨Ã“Ã¯Ã’Ã©ÃŠÃ¬Ã¦
             int numContacts = contactManifold->getNumContacts();
             
             for (int j = 0; j < numContacts; j++)
@@ -528,7 +528,7 @@ void ContactAction()
                     bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
                     double angle = euler[2];
                     
-                    //‹z’…‚µ‚Ä‚È‚©‚Á‚½ê‡
+                    //Ã£zÃ­Ã–Ã‡ÂµÃ‡Æ’Ã‡Â»Ã‡Â©Ã‡Â¡Ã‡Î©Ã¨ÃÃ§Ã¡
                     if (!TF_contact[index] && angle<ANGLE_ATTACH) {
                         
                         dynamicsWorld->removeRigidBody(TF_object_amp[index]);
@@ -537,34 +537,34 @@ void ContactAction()
                         TF_contact[index] = true;
                         
                         
-                        //Õ“Ë“_‚É’n–Ê‚Æ‚ÌS‘©ì¬
-                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//‘S•”ƒOƒ[ƒoƒ‹
+                        //Ã¨â€™Ã¬Ã€Ã¬_Ã‡â€¦Ã­nÃ±Â Ã‡âˆ†Ã‡ÃƒÃ§SÃ«Â©Ã§ÃÃªÂ¨
+                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//Ã«SÃ¯Ã®Ã‰OÃ‰Ã§Ã…[Ã‰oÃ‰Ã£
                         //univ->setLowerLimit(-ANGLE, -ANGLE);
                         //univ->setUpperLimit(ANGLE, ANGLE);
                         TF_constraint_ground[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                     
-                        //ƒ‚[ƒ^[
-                        btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//Ô—Ö
-                        btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ƒXƒeƒAƒŠƒ“ƒO
+                        //Ã‰Ã‡Ã…[Ã‰^Ã…[
+                        btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//Ã©â€˜Ã³Ã·
+                        btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//Ã‰XÃ‰eÃ‰AÃ‰Ã¤Ã‰Ã¬Ã‰O
                         motor1->m_enableMotor = true;
                         motor2->m_enableMotor = true;
                         motor_to_groundZ[index] = motor1;
                         motor_to_groundY[index] = motor2;
                     }
-                    //‹z’…‚µ‚Ä‚½ê‡
+                    //Ã£zÃ­Ã–Ã‡ÂµÃ‡Æ’Ã‡Î©Ã¨ÃÃ§Ã¡
                     else if (TF_contact[index])
                     {
-                        /**’n–Ê‚©‚ç—£’E©Šp“x”»’è**/
+                        /**Ã­nÃ±Â Ã‡Â©Ã‡ÃÃ³Â£Ã­EÃ…Â©Ã¤pÃ¬xÃ®ÂªÃ­Ã‹**/
                         if (angle>ANGLE_DETACH)
                         {
-                            /*’n–Ê‚Æ‚ÌS‘©íœ*/
+                            /*Ã­nÃ±Â Ã‡âˆ†Ã‡ÃƒÃ§SÃ«Â©Ã§ÃŒÃ¨Ãº*/
                             dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
                             motor_to_groundY.erase(index);
                             motor_to_groundZ.erase(index);
                             TF_contact[index] = false;
                             
-                            /*•r”X•œŠˆ*/
+                            /*Ã¯rÃ®XÃ¯ÃºÃ¤Ã */
                             btVector3 pos_tf = bodyB->getCenterOfMassPosition();
                             btVector3 pos_amp = btVector3(pos_tf[0]-(LENGTH/2+RADIUS*2)*sin(angle), pos_tf[1]+(LENGTH/2+RADIUS*2)*cos(angle), pos_tf[2]);
                             
@@ -572,7 +572,7 @@ void ContactAction()
                             TF_object_amp[index] = body_amp;
                             dynamicsWorld->addRigidBody(body_amp);
                             
-                            /*•r”X‚ÆŠÇ‘«‚Ìƒ‚[ƒ^[*/
+                            /*Ã¯rÃ®XÃ‡âˆ†Ã¤Â«Ã«Â´Ã‡ÃƒÃ‰Ã‡Ã…[Ã‰^Ã…[*/
                             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(0, 0, 1));
                             univ->setLowerLimit(-ANGLE+angle, -ANGLE);
                             univ->setUpperLimit(ANGLE+angle, ANGLE);
@@ -609,10 +609,10 @@ void Render()
     glEnable(GL_LIGHT1);
     //glDisable(GL_LIGHT1);
 
-	/* ƒ‚ƒfƒ‹ƒrƒ…[•ÏŠ·s—ñ‚Ì•Û‘¶ */
+	/* Ã‰Ã‡Ã‰fÃ‰Ã£Ã‰rÃ‰Ã–Ã…[Ã¯Å“Ã¤âˆ‘Ã§sÃ³Ã’Ã‡ÃƒÃ¯â‚¬Ã«âˆ‚ */
 	glPushMatrix();
     
-	// „‘Ì‚ÌÀ•W‚ğƒvƒŠƒ“ƒg
+	// Ã§Ã‘Ã«ÃƒÃ‡ÃƒÃ§Â¿Ã¯WÃ‡ï£¿Ã‰vÃ‰Ã¤Ã‰Ã¬Ã‰g
 	for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
 	{
 		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
@@ -628,7 +628,7 @@ void Render()
 			glPushMatrix();
             glTranslatef(pos[0], pos[1], pos[2]);
             glRotated(rot, axis[0], axis[1], axis[2]);
-            //’n–Ê
+            //Ã­nÃ±Â 
             if (j == 0)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
@@ -638,7 +638,7 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
 				glutSolidCube(1);
 			}
-            //“·‘Ì@˜r
+            //Ã¬âˆ‘Ã«ÃƒÃ…@Ã²r
 			else if (shape == BOX_SHAPE_PROXYTYPE)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
@@ -648,7 +648,7 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
 				glutSolidCube(1);
 			}
-            //•r”X
+            //Ã¯rÃ®X
 			else if (shape == SPHERE_SHAPE_PROXYTYPE)
 			{/*
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
@@ -658,7 +658,7 @@ void Render()
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
 				glutSolidSphere(1, 100, 100);*/
 			}
-            //ŠÇ‘«
+            //Ã¤Â«Ã«Â´
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
                 glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
@@ -673,7 +673,7 @@ void Render()
 		}
 	}
 
-	/* ƒ‚ƒfƒ‹ƒrƒ…[•ÏŠ·s—ñ‚Ì•œ‹A */
+	/* Ã‰Ã‡Ã‰fÃ‰Ã£Ã‰rÃ‰Ã–Ã…[Ã¯Å“Ã¤âˆ‘Ã§sÃ³Ã’Ã‡ÃƒÃ¯ÃºÃ£A */
 	glPopMatrix();
 
 	glDisable(GL_LIGHTING);
@@ -692,8 +692,8 @@ void init(void)
     //glCullFace(GL_BACK);
 	//glCullFace(GL_FRONT);
 
-	glMatrixMode(GL_PROJECTION);//s—ñƒ‚[ƒh‚Ìİ’èiGL_PROJECTION : “§‹•ÏŠ·s—ñ‚Ìİ’èAGL_MODELVIEWFƒ‚ƒfƒ‹ƒrƒ…[•ÏŠ·s—ñj
-	glLoadIdentity();//s—ñ‚Ì‰Šú‰»
+	glMatrixMode(GL_PROJECTION);//Ã§sÃ³Ã’Ã‰Ã‡Ã…[Ã‰hÃ‡ÃƒÃªâ€ºÃ­Ã‹Ã…iGL_PROJECTION : Ã¬ÃŸÃ©Ã£Ã¯Å“Ã¤âˆ‘Ã§sÃ³Ã’Ã‡ÃƒÃªâ€ºÃ­Ã‹Ã…AGL_MODELVIEWÃ…FÃ‰Ã‡Ã‰fÃ‰Ã£Ã‰rÃ‰Ã–Ã…[Ã¯Å“Ã¤âˆ‘Ã§sÃ³Ã’Ã…j
+	glLoadIdentity();//Ã§sÃ³Ã’Ã‡ÃƒÃ¨Ã¢Ã¤Ë™Ã¢Âª
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
 	gluLookAt(0, 700, 1000, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
@@ -705,10 +705,10 @@ void idle(void)
     ControllTubeFeet();
 }
 
-// I—¹ˆ—
+// Ã¨IÃ³Ï€Ã¨Ã Ã³Ã¹
 void CleanupBullet()
 {
-    // „‘Ì‚ğíœ
+    // Ã§Ã‘Ã«ÃƒÃ‡ï£¿Ã§ÃŒÃ¨Ãº
     for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
     {
         btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
@@ -721,7 +721,7 @@ void CleanupBullet()
         delete obj;
     }
     
-    // Õ“ËƒVƒFƒCƒv‚ğíœ
+    // Ã¨â€™Ã¬Ã€Ã‰VÃ‰FÃ‰CÃ‰vÃ‡ï£¿Ã§ÃŒÃ¨Ãº
     for (int j = 0; j<collisionShapes.size(); j++)
     {
         btCollisionShape* shape = collisionShapes[j];
@@ -735,37 +735,37 @@ void CleanupBullet()
         delete constraint;
     }
     
-    // ƒ[ƒ‹ƒh‚ğíœ
+    // Ã‰Ã¨Ã…[Ã‰Ã£Ã‰hÃ‡ï£¿Ã§ÃŒÃ¨Ãº
     delete dynamicsWorld;
     
-    // ƒ\ƒ‹ƒo[‚ğíœ
+    // Ã‰\Ã‰Ã£Ã‰oÃ…[Ã‡ï£¿Ã§ÃŒÃ¨Ãº
     delete solver;
     
-    // Õ“ËŒŸ’m‚Ìƒuƒ[ƒhƒtƒFƒCƒY‚ğíœ
+    // Ã¨â€™Ã¬Ã€Ã¥Ã¼Ã­mÃ‡ÃƒÃ‰uÃ‰Ã§Ã…[Ã‰hÃ‰tÃ‰FÃ‰CÃ‰YÃ‡ï£¿Ã§ÃŒÃ¨Ãº
     delete overlappingPairCache;
     
-    // ƒfƒBƒXƒpƒbƒ`ƒƒ‚ğíœ
+    // Ã‰fÃ‰BÃ‰XÃ‰pÃ‰bÃ‰`Ã‰Ã‰Ã‡ï£¿Ã§ÃŒÃ¨Ãº
     delete dispatcher;
     
     delete collisionConfiguration;
     
-    // ƒIƒvƒVƒ‡ƒ“A‚È‚­‚Ä‚à—Ç‚¢
+    // Ã‰IÃ‰vÃ‰VÃ‰Ã¡Ã‰Ã¬Ã…AÃ‡Â»Ã‡â‰ Ã‡Æ’Ã‡â€¡Ã³Â«Ã‡Â¢
     collisionShapes.clear();
 }
 
-// ‰Šú‰»
+// Ã¨Ã¢Ã¤Ë™Ã¢Âª
 void InitBullet()
 {
-    // ƒfƒtƒHƒ‹ƒg‚ÌÕ“ËŒŸ’mƒAƒ‹ƒSƒŠƒYƒ€
+    // Ã‰fÃ‰tÃ‰HÃ‰Ã£Ã‰gÃ‡ÃƒÃ¨â€™Ã¬Ã€Ã¥Ã¼Ã­mÃ‰AÃ‰Ã£Ã‰SÃ‰Ã¤Ã‰YÃ‰Ã„
     collisionConfiguration = new btDefaultCollisionConfiguration();
     
-    // ƒfƒtƒHƒ‹ƒg‚ÌÕ“ËƒfƒBƒXƒpƒbƒ`ƒƒ
+    // Ã‰fÃ‰tÃ‰HÃ‰Ã£Ã‰gÃ‡ÃƒÃ¨â€™Ã¬Ã€Ã‰fÃ‰BÃ‰XÃ‰pÃ‰bÃ‰`Ã‰Ã‰
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
     
-    // ŠK‘w“I‚ÈÕ“ËŒŸ’mƒAƒ‹ƒSƒŠƒYƒ€
+    // Ã¤KÃ«wÃ¬IÃ‡Â»Ã¨â€™Ã¬Ã€Ã¥Ã¼Ã­mÃ‰AÃ‰Ã£Ã‰SÃ‰Ã¤Ã‰YÃ‰Ã„
     overlappingPairCache = new btDbvtBroadphase();
     
-    // ƒV[ƒPƒ“ƒVƒƒƒ‹(”ñ•À—ñ)‚ÈƒCƒ“ƒpƒ‹ƒX‰ğ–@
+    // Ã‰VÃ…[Ã‰PÃ‰Ã¬Ã‰VÃ‰Ã‰Ã‰Ã£(Ã®Ã’Ã¯Â¿Ã³Ã’)Ã‡Â»Ã‰CÃ‰Ã¬Ã‰pÃ‰Ã£Ã‰XÃ¢ï£¿Ã±@
     solver = new btSequentialImpulseConstraintSolver;
     
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
@@ -775,16 +775,16 @@ void InitBullet()
 
 
 
-// ƒƒCƒ“
+// Ã‰Ã…Ã‰CÃ‰Ã¬
 int main(int argc, char** argv)
 {
-    // ‰Šú‰»
+    // Ã¨Ã¢Ã¤Ë™Ã¢Âª
     InitBullet();
 
-	// ƒOƒ‰ƒ“ƒh‚Ìì¬
+	// Ã‰OÃ‰Ã¢Ã‰Ã¬Ã‰hÃ‡ÃƒÃ§ÃÃªÂ¨
 	CreateGround();
 
-    //ƒqƒgƒf‚Ì¶¬
+    //Ã‰qÃ‰gÃ‰fÃ‡ÃƒÃªâˆ‚ÃªÂ¨
     CreateStarfish();
 	
 	glutInitWindowPosition(100, 100);
@@ -797,6 +797,6 @@ int main(int argc, char** argv)
 	init();
 	glutMainLoop();
 
-	// I—¹ˆ—
+	// Ã¨IÃ³Ï€Ã¨Ã Ã³Ã¹
 	CleanupBullet();
 }
