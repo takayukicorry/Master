@@ -451,7 +451,7 @@ void ControllTubeFeet()
         
             btTransform tran;
             tran.setIdentity();
-            tran.setOrigin(btVector3(pos[0]+velocity_all*0/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all*1/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
         
             body->setCenterOfMassTransform(tran);
         }
