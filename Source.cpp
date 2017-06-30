@@ -376,7 +376,7 @@ void CreateStarfish()
             motor2->m_enableMotor = true;
             motor_tZ[index] = motor1;
             motor_tY[index] = motor2;
-            ResumeTime_tf[index] = SECOND*( rand100(mt)/100.0 );
+            ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
             //for next
             pos_tf = RotateY(pos_tf, M_PI*2/5);
             pos_amp = RotateY(pos_amp, M_PI*2/5);
@@ -422,7 +422,7 @@ void ControllTubeFeet()
             }
         }
     }
-    cout << velocity_all << endl;
+
     //ñ{ëÃÇÃëOå„ÇÃìÆÇ´
     for (auto itr = BODY_object.begin(); itr != BODY_object.end(); ++itr) {
         btRigidBody* body = itr->second;
@@ -451,7 +451,7 @@ void ControllTubeFeet()
         
             btTransform tran;
             tran.setIdentity();
-            tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all*0/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
         
             body->setCenterOfMassTransform(tran);
         }
@@ -497,7 +497,7 @@ void ControllTubeFeet()
         motor->m_maxMotorForce = 100000000;
         motor_to_groundY[index]->m_maxMotorForce = 100000000;
         
-        motor->m_targetVelocity = 0;////////-ANGLE_VELOCITY_GROUND;
+        motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
     }
     
 
