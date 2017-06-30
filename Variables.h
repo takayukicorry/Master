@@ -6,7 +6,7 @@
 #define FPS 60.f
 
 #define RADIAN 180/M_PI
-#define SECOND 120//管足振る周期の半分
+#define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
 #define M_BODY 0
 #define M_ARM 0
@@ -17,10 +17,10 @@
 #define INIT_POS_Y 24
 
 /*以下、要調整*/
-#define ANGLE M_PI/3//管足の限度
-#define ANGLE_ATTACH -M_PI/8//管足、地面との吸着判定角度上限
-#define ANGLE_DETACH ANGLE/2//管足、地面からの離脱判定角度下限
-#define ANGLE_VELOCITY_TF ANGLE*60/SECOND//管足振る角速度
-#define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度
+#define ANGLE M_PI/3//管足の限度//kannsokunogenndo
+#define ANGLE_ATTACH -M_PI/8//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
+#define ANGLE_DETACH ANGLE/2//管足、地面からの離脱判定角度下限//kannsoku,jimenntonoridatuhannteikakudojougenn
+#define ANGLE_VELOCITY_TF ANGLE*60/SECOND//管足振る角速度//kannsokufurukakusokudo
+#define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 #endif

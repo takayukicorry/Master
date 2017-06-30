@@ -367,6 +367,7 @@ void CreateStarfish()
             btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
             btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
             motor1->m_enableMotor = true;
+            motor1->m_targetVelocity = ANGLE_VELOCITY_TF;
             motor2->m_enableMotor = true;
             motor_tZ[index] = motor1;
             motor_tY[index] = motor2;
@@ -462,10 +463,12 @@ void ControllTubeFeet()
 
         if (!TF_contact[index])
         {
-            if (((time_step-ResumeTime_tf[index])/SECOND+1) / 2 % 2 == 0) {
-                motor->m_targetVelocity = ANGLE_VELOCITY_TF;
-            }else{
-                motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
+            btVector3 euler;
+            TF_object[index]->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
+            double angle = euler[2];
+            cout << angle << endl;
+            if (angle <= -(ANGLE-0.1) || ANGLE-0.1 <= angle) {
+                motor->m_targetVelocity *= -1.0;
             }
         }
         else
@@ -581,6 +584,7 @@ void ContactAction()
                             btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);
                             btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);
                             motor1->m_enableMotor = true;
+                            motor1->m_targetVelocity = ANGLE_VELOCITY_TF;
                             motor2->m_enableMotor = true;
                             motor_tZ[index] = motor1;
                             motor_tY[index] = motor2;
