@@ -43,7 +43,7 @@ map<int, btRotationalLimitMotor* > motor_tZ;//ä«ë´Ç∆ïrîXÇÃÉÇÅ[É^�
 map<int, btRotationalLimitMotor* > motor_to_groundY;//ä«ë´Ç∆ínñ ÇÃÉÇÅ[É^Å[ÅiÉnÉìÉhÉãÅj
 map<int, btRotationalLimitMotor* > motor_to_groundZ;//ä«ë´Ç∆ínñ ÇÃÉÇÅ[É^Å[Åié‘ó÷Åj
 map<int, int> ResumeTime_tf;//ä«ë´Ç∆ïrîXÇÃÉÇÅ[É^Å[ÇÃäJénéûçè
-
+map<int, btVector3> TF_direction;//瓶脳管足・地面管足が進む方向
 
 int time_step = 0;
 
@@ -360,6 +360,7 @@ void CreateStarfish()
             TF_object[index] = body_tf;
             TF_object_amp[index] = body_amp;
             TF_contact[index] = false;
+            TF_direction[index] = btVector3(-1, 0, 0);
             bodies_tf.push_back(body_tf);
             bodies_amp.push_back(body_amp);
             //constraint
@@ -433,7 +434,7 @@ void ControllTubeFeet()
             
             btTransform tran;
             tran.setIdentity();
-            tran.setOrigin(btVector3(pos[0]+velocity_all*3.5/FPS, pos[1], pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all*1/FPS, pos[1], pos[2]));
             
             body->setCenterOfMassTransform(tran);
         }
@@ -457,7 +458,7 @@ void ControllTubeFeet()
         }
     }
     
-    //ä«ë´ÇÃÉÇÅ[É^Å[
+    //amp - kannsoku
     for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
         
         int index = itr->first;
@@ -465,7 +466,15 @@ void ControllTubeFeet()
         
         motor->m_maxMotorForce = 100000000;
         motor_tY[index]->m_maxMotorForce = 100000000;
-
+        
+        //handle
+        btScalar angle_now = motor_tY[index]->m_currentPosition;
+        btScalar angle_target = atan(TF_direction[index][2]/TF_direction[index][0]);
+        motor_tY[index]->m_targetVelocity = (angle_target - angle_now)/2;//何秒で目的角度まで到達させるか
+        
+        cout << motor_tY[index]->m_currentPosition << endl;
+        
+        //wheel
         if (!TF_contact[index] && ResumeTime_tf[index] < time_step)
         {
             
@@ -488,7 +497,7 @@ void ControllTubeFeet()
         }
     }
     
-    //ínñ Ç∆ÇÃÉÇÅ[É^Å[
+    //jimenn - kannsoku
     for (auto itr = motor_to_groundZ.begin(); itr != motor_to_groundZ.end(); ++itr) {
         
         int index = itr->first;
@@ -548,17 +557,16 @@ void ContactAction()
                         
                         TF_contact[index] = true;
                         
-                        
-                        //è’ìÀì_Ç…ínñ Ç∆ÇÃçSë©çÏê¨
-                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//ëSïîÉOÉçÅ[ÉoÉã
+                        //constraint to ground
+                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//global
                         //univ->setLowerLimit(-ANGLE, -ANGLE);
                         //univ->setUpperLimit(ANGLE, ANGLE);
                         TF_constraint_ground[index] = univ;
                         dynamicsWorld->addConstraint(univ);
-                    
-                        //ÉÇÅ[É^Å[
-                        btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//é‘ó÷
-                        btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//ÉXÉeÉAÉäÉìÉO
+                        
+                        //motor
+                        btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
+                        btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
                         motor1->m_enableMotor = true;
                         motor2->m_enableMotor = true;
                         motor_to_groundZ[index] = motor1;
