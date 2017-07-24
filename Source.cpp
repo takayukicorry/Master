@@ -360,7 +360,7 @@ void CreateStarfish()
             TF_object[index] = body_tf;
             TF_object_amp[index] = body_amp;
             TF_contact[index] = false;
-            TF_direction[index] = btVector3(-1, 0, 0);
+            TF_direction[index] = btVector3(0, 0, 1);
             bodies_tf.push_back(body_tf);
             bodies_amp.push_back(body_amp);
             //constraint
@@ -558,7 +558,7 @@ void ContactAction()
                         TF_contact[index] = true;
                         
                         //constraint to ground
-                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), btVector3(0, 0, 1));//global
+                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), TF_direction[index]);//global
                         //univ->setLowerLimit(-ANGLE, -ANGLE);
                         //univ->setUpperLimit(ANGLE, ANGLE);
                         TF_constraint_ground[index] = univ;
@@ -586,6 +586,7 @@ void ContactAction()
                             
                             /*ïrîXïúäà*/
                             btVector3 pos_tf = bodyB->getCenterOfMassPosition();
+                            ///////////////////////////////ここ変えるべし//////////////////////////////////////////////
                             btVector3 pos_amp = btVector3(pos_tf[0]-(LENGTH/2+RADIUS*2)*sin(angle), pos_tf[1]+(LENGTH/2+RADIUS*2)*cos(angle), pos_tf[2]);
                             
                             btRigidBody* body_amp = initAmp(RADIUS, pos_amp);
@@ -593,7 +594,7 @@ void ContactAction()
                             dynamicsWorld->addRigidBody(body_amp);
                             
                             /*ïrîXÇ∆ä«ë´ÇÃÉÇÅ[É^Å[*/
-                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(0, 0, 1));
+                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), TF_direction[index]);//global
                             univ->setLowerLimit(-ANGLE+angle, -ANGLE);
                             univ->setUpperLimit(ANGLE+angle, ANGLE);
                             TF_constraint_amp[index] = univ;
