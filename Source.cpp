@@ -42,8 +42,10 @@ map<int, btRotationalLimitMotor* > motor_tY;//tubefeet - amp (handle motor)
 map<int, btRotationalLimitMotor* > motor_tZ;//tubefeet - amp (wheel motor)
 map<int, btRotationalLimitMotor* > motor_to_groundY;//tubefeet - ground (handle motor)
 map<int, btRotationalLimitMotor* > motor_to_groundZ;//tubefeet - ground (wheel motor)
-map<int, int> ResumeTime_tf;//
 map<int, btVector3> TF_direction;//tubefeet - amp & tubefeet - ground (motor direction)
+map<int, double> TF_previousAngle_ground;//tubefeet - ground (angle at one step before) for realizing whether swinging or stopping
+map<int, double> TF_previousAngle_amp;//tubefeet - amp (angle at one step before) for realizing whether swinging or stopping
+map<int, int> ResumeTime_tf;//time to start swinging
 
 int time_step = 0;
 
@@ -174,7 +176,7 @@ btRigidBody* getByUserIndex(int index)
 void CreateGround()
 {
 	
-    btVector3 scale = btVector3(btScalar(500.), btScalar(50.), btScalar(500.));
+    btVector3 scale = btVector3(btScalar(100.), btScalar(50.), btScalar(100.));
     groundShape = new btBoxShape(scale);
 	collisionShapes.push_back(groundShape);
 	btTransform groundTransform;
@@ -182,7 +184,6 @@ void CreateGround()
 	groundTransform.setOrigin(btVector3(0, -56, 0));
 
 	btScalar mass(0.);
-
 	
 	bool isDynamic = (mass != 0.f);
 
@@ -346,7 +347,7 @@ void CreateStarfish()
     int col, row;
     int h = INIT_POS_Y-RADIUS*2-LENGTH/2;
     int from_x = RADIUS*2;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10; i++) {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
@@ -466,8 +467,8 @@ void ControllTubeFeet()
         int index = itr->first;
         btRotationalLimitMotor* motor = itr->second;
         
-        motor->m_maxMotorForce = 100000000;
-        motor_tY[index]->m_maxMotorForce = 100000000;
+        motor->m_maxMotorForce = 1000000000000000;
+        motor_tY[index]->m_maxMotorForce = 1000000000000000;
         
         //handle motor
         btScalar angle_now = motor_tY[index]->m_currentPosition;
@@ -512,8 +513,8 @@ void ControllTubeFeet()
         int index = itr->first;
         btRotationalLimitMotor* motor = itr->second;
         
-        motor->m_maxMotorForce = 100000000;
-        motor_to_groundY[index]->m_maxMotorForce = 100000000;
+        motor->m_maxMotorForce = 1000000000000000;
+        motor_to_groundY[index]->m_maxMotorForce = 1000000000000000;
         
         motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
     }
@@ -556,10 +557,10 @@ void ContactAction()
                     bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
                     double angle = euler[2];
                     
-                    /////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////
                     //////////////////////　getEulerZYX[2]   は反時計回りが正　///////////////////////
                     //////////////////////　m_targetVelocity は反時計回りが負　///////////////////////
-                    /////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////
 
                     //when a tubefeet atend to attach
                     if (!TF_contact[index] && angle<ANGLE_ATTACH) {
