@@ -346,12 +346,12 @@ void CreateStarfish()
     int col, row;
     int h = INIT_POS_Y-RADIUS*2-LENGTH/2;
     int from_x = RADIUS*2;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1; i++) {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(from_x + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
-        for (int j = 1; j <= 5; j++) {
+        for (int j = 1; j <= 1; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
@@ -365,8 +365,8 @@ void CreateStarfish()
             bodies_amp.push_back(body_amp);
             //tf - amp (constraint)
             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-            univ->setLowerLimit(-ANGLE, -ANGLE);
-            univ->setUpperLimit(ANGLE, ANGLE);
+            univ->setLowerLimit(-ANGLE, -0);
+            univ->setUpperLimit(ANGLE, 0);
             TF_constraint_amp[index] = univ;
             constraints.push_back(univ);
             //tf - amp (motor)
@@ -442,7 +442,7 @@ void ControllTubeFeet()
         }
     }
     
-    //interaction of tf with each other (X direction)
+    //interaction of tf with amp (X direction)
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
         int index = itr->first;
@@ -472,23 +472,30 @@ void ControllTubeFeet()
         //handle motor
         btScalar angle_now = motor_tY[index]->m_currentPosition;
         btScalar angle_target = atan(TF_direction[index][2]/TF_direction[index][0]);
-        motor_tY[index]->m_targetVelocity = (angle_target - angle_now)/2;//何秒で目的角度まで到達させるか
-        
-        cout << motor_tY[index]->m_currentPosition << endl;
+        motor_tY[index]->m_targetVelocity = (angle_target - angle_now)/2;//target angular velocity (rad/sec)
         
         //wheel motor
         if (!TF_contact[index] && ResumeTime_tf[index] < time_step)
         {
-            
-            if (motor->m_targetVelocity == 0) {
+            double target_velocity = motor->m_targetVelocity;
+            if (target_velocity == 0) {
                 motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
             }
             
             btVector3 euler;
             TF_object[index]->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
             double angle = euler[2];
+            /////////////////////////////////////////////////////////////////////////////////////
+            //////////////////////　getEulerZYX[2]   は反時計回りが正　///////////////////////
+            //////////////////////　m_targetVelocity は反時計回りが負　///////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////
 
-            if (angle <= -(ANGLE-0.1) || ANGLE-0.1 <= angle) {
+
+            if (angle <= -(ANGLE-0.1) && target_velocity >= 0) {
+                motor->m_targetVelocity *= -1.0;
+            }
+            
+            if (ANGLE-0.1 <= angle  && target_velocity <= 0) {
                 motor->m_targetVelocity *= -1.0;
             }
         }
@@ -499,7 +506,7 @@ void ControllTubeFeet()
         }
     }
     
-    //tubefeet - ground (wheel motor)
+    //motion of tubefeet - ground (wheel motor)
     for (auto itr = motor_to_groundZ.begin(); itr != motor_to_groundZ.end(); ++itr) {
         
         int index = itr->first;
@@ -549,9 +556,16 @@ void ContactAction()
                     bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
                     double angle = euler[2];
                     
+                    /////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////　getEulerZYX[2]   は反時計回りが正　///////////////////////
+                    //////////////////////　m_targetVelocity は反時計回りが負　///////////////////////
+                    /////////////////////////////////////////////////////////////////////////////////////
+
                     //when a tubefeet atend to attach
                     if (!TF_contact[index] && angle<ANGLE_ATTACH) {
-                        
+                        cout << "===========" << endl;
+                        cout << angle << endl;
+
                         //remove tubefeet - amp (object & constraint & motor)
                         dynamicsWorld->removeRigidBody(TF_object_amp[index]);
                         dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
@@ -561,8 +575,8 @@ void ContactAction()
                         
                         //create tubefeet - ground (constraint)
                         btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), TF_direction[index]);//global
-                        univ->setLowerLimit(-ANGLE, -ANGLE);
-                        univ->setUpperLimit(ANGLE, ANGLE);
+                        univ->setLowerLimit(-ANGLE, -0);
+                        univ->setUpperLimit(ANGLE, 0);
                         TF_constraint_ground[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                         
@@ -577,6 +591,9 @@ void ContactAction()
                     //when a tubefeet atend to dettach
                     else if (TF_contact[index])
                     {
+                        cout << "-------------" << endl;
+                        cout << angle << endl;
+                        cout << motor_to_groundZ[index]->m_targetVelocity << endl;
                         
                         if (angle>ANGLE_DETACH)
                         {
@@ -597,8 +614,8 @@ void ContactAction()
                             
                             //create tubefeet - amp (constraint)
                             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), TF_direction[index]);//global
-                            univ->setLowerLimit(-ANGLE+angle, -ANGLE);
-                            univ->setUpperLimit(ANGLE+angle, ANGLE);
+                            univ->setLowerLimit(-ANGLE, -0);
+                            univ->setUpperLimit(ANGLE, 0);
                             TF_constraint_amp[index] = univ;
                             dynamicsWorld->addConstraint(univ);
                             
@@ -676,12 +693,12 @@ void Render()
 			else if (shape == SPHERE_SHAPE_PROXYTYPE)
 			{/*
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
-				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-				glutSolidSphere(1, 100, 100);*/
-			}
+				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
+				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+				glutSolidSphere(3, 100, 100);
+			*/}
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
@@ -723,7 +740,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//çsóÒÉÇÅ[ÉhÇÃê›íËÅiGL_PROJECTION : ìßéãïœä∑çsóÒÇÃê›íËÅAGL_MODELVIEWÅFÉÇÉfÉãÉrÉÖÅ[ïœä∑çsóÒÅj
 	glLoadIdentity();//çsóÒÇÃèâä˙âª
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(0, 700, 1000, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 0, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
