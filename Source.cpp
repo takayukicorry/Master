@@ -351,7 +351,7 @@ void CreateStarfish()
         row = i / 2;
         pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(from_x + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
-        for (int j = 1; j <= 1; j++) {
+        for (int j = 1; j <= 5; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
