@@ -43,8 +43,7 @@ map<int, btRotationalLimitMotor* > motor_tZ;//tubefeet - amp (wheel motor)
 map<int, btRotationalLimitMotor* > motor_to_groundY;//tubefeet - ground (handle motor)
 map<int, btRotationalLimitMotor* > motor_to_groundZ;//tubefeet - ground (wheel motor)
 map<int, btVector3> TF_direction;//tubefeet - amp & tubefeet - ground (motor direction)
-map<int, double> TF_previousAngle_ground;//tubefeet - ground (angle at one step before) for realizing whether swinging or stopping
-map<int, double> TF_previousAngle_amp;//tubefeet - amp (angle at one step before) for realizing whether swinging or stopping
+map<int, int> DeleteTime_tf;//time to delete tf - ground
 map<int, int> ResumeTime_tf;//time to start swinging
 
 int time_step = 0;
@@ -588,15 +587,22 @@ void ContactAction()
                         motor2->m_enableMotor = true;
                         motor_to_groundZ[index] = motor1;
                         motor_to_groundY[index] = motor2;
+                        DeleteTime_tf[index] = time_step + static_cast<int>((ANGLE_DETACH - ANGLE_ATTACH)/ANGLE_VELOCITY_GROUND);
                     }
                     //when a tubefeet atend to dettach
                     else if (TF_contact[index])
                     {
-                        cout << "-------------" << endl;
-                        cout << angle << endl;
-                        cout << motor_to_groundZ[index]->m_targetVelocity << endl;
-                        
-                        if (angle>ANGLE_DETACH)
+                         if (time_step > DeleteTime_tf[index]) {
+                             //remove tubefeet - ground (constraint & motor)
+                             dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
+                             motor_to_groundY.erase(index);
+                             motor_to_groundZ.erase(index);
+                             TF_contact[index] = false;
+                             
+                             //remove tubefeet
+                             dynamicsWorld->removeRigidBody(TF_object[index]);
+                        }
+                         if (angle>ANGLE_DETACH)
                         {
                             //remove tubefeet - ground (constraint & motor)
                             dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
