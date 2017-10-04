@@ -563,9 +563,6 @@ void ContactAction()
 
                     //when a tubefeet atend to attach
                     if (!TF_contact[index] && angle<ANGLE_ATTACH) {
-                        cout << "===========" << endl;
-                        cout << angle << endl;
-
                         //remove tubefeet - amp (object & constraint & motor)
                         dynamicsWorld->removeRigidBody(TF_object_amp[index]);
                         dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
@@ -587,7 +584,9 @@ void ContactAction()
                         motor2->m_enableMotor = true;
                         motor_to_groundZ[index] = motor1;
                         motor_to_groundY[index] = motor2;
-                        DeleteTime_tf[index] = time_step + static_cast<int>((ANGLE_DETACH - ANGLE_ATTACH)/ANGLE_VELOCITY_GROUND);
+                        DeleteTime_tf[index] = time_step + int(double(ANGLE_DETACH - ANGLE_ATTACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 2.0);
+                        
+                        
                     }
                     //when a tubefeet atend to dettach
                     else if (TF_contact[index])
