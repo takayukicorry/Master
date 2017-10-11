@@ -586,10 +586,8 @@ void ContactAction()
                 //when a tubefeet attempt to dettach
                 else if (TF_contact[index])
                 {
-                    //delete the tubefeet attaching too long time
-                    //& after that, create new one
-                     if (time_step > DeleteTime_tf[index]) {
-                         cout << "delete the tubefeet" << endl;
+                    //delete the tubefeet attaching too long time & after that, create new one
+                    if (time_step > DeleteTime_tf[index]) {
                          //remove tubefeet - ground (constraint & motor)
                          dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
                          TF_constraint_ground.erase(index);
