@@ -156,8 +156,6 @@ btRigidBody* getByUserIndex(int index)
         }
     }
     
-    assert(1);
-    
     btCollisionShape* colShape = new btSphereShape(1);
     btTransform groundTransform;
     groundTransform.setIdentity();
@@ -174,33 +172,30 @@ btRigidBody* getByUserIndex(int index)
 // create a ground
 void CreateGround()
 {
-	
-    btVector3 scale = btVector3(btScalar(100.), btScalar(50.), btScalar(100.));
+    btTransform groundTransform;
+    btVector3 scale = btVector3(btScalar(100.), btScalar(10.), btScalar(100.));
     groundShape = new btBoxShape(scale);
-	collisionShapes.push_back(groundShape);
-	btTransform groundTransform;
-	groundTransform.setIdentity();
-	groundTransform.setOrigin(btVector3(0, -56, 0));
-
-	btScalar mass(0.);
-	
-	bool isDynamic = (mass != 0.f);
-
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
-		groundShape->calculateLocalInertia(mass, localInertia);
-
-	
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-	btRigidBody* body = new btRigidBody(rbInfo);
-
-    body->setActivationState(DISABLE_DEACTIVATION);
-    body->setUserIndex(1);
+    btScalar mass(0.);
+    bool isDynamic = (mass != 0.f);
+    btVector3 localInertia(0, 0, 0);
+    if (isDynamic)
+        groundShape->calculateLocalInertia(mass, localInertia);
     
-	
-    dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
-    
+    for (int i = 0; i < NUM_GROUND; i++) {
+        for (int j = 0; j < NUM_GROUND; j++) {
+            collisionShapes.push_back(groundShape);
+            groundTransform.setIdentity();
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-i*2)*scale[0], -16, (NUM_GROUND-1-j*2)*scale[2]));
+            
+            btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+            btRigidBody* body = new btRigidBody(rbInfo);
+            body->setActivationState(DISABLE_DEACTIVATION);
+            body->setUserIndex(1+NUM_GROUND*i+j);
+            
+            dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+        }
+    }
 }
 
 // create an amp
@@ -327,10 +322,10 @@ void CreateStarfish()
     vector<btTypedConstraint* > constraints;
     
 /*** create body ***/
-    /*btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
+    btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
     BODY_object[0] = body_body;
     bodies_body.push_back(body_body);
-    for (int i = 0; i < 5; i++) {
+    /*for (int i = 0; i < 5; i++) {
         btRigidBody* body_arm = initArm(btVector3(RADIUS*6, LENGTH, RADIUS*2), RotateY(btVector3(RADIUS*10, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/5), btQuaternion(btVector3(0, 1, 0), M_PI*2*i/5));
         BODY_object[i+1] = body_arm;
         bodies_body.push_back(body_arm);
@@ -436,7 +431,7 @@ void ControllTubeFeet()
             
             btTransform tran;
             tran.setIdentity();
-            tran.setOrigin(btVector3(pos[0]+velocity_all*1/FPS, pos[1], pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all*1.5/FPS, pos[1], pos[2]));
             
             body->setCenterOfMassTransform(tran);
         }
@@ -485,12 +480,7 @@ void ControllTubeFeet()
             btVector3 euler;
             TF_object[index]->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
             double angle = euler[2];
-            /////////////////////////////////////////////////////////////////////////////////////
-            //////////////////////　getEulerZYX[2]   は反時計回りが正　///////////////////////
-            //////////////////////　m_targetVelocity は反時計回りが負　///////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////
-
-
+            
             if (angle <= -(ANGLE-0.1) && target_velocity >= 0) {
                 motor->m_targetVelocity *= -1.0;
             }
@@ -538,104 +528,164 @@ void ContactAction()
         int obID = obA->getUserIndex();
         
         //when a tubefeet attach ground
-        if (obID==1) {
-            
+        if (obID==1 || obID==2 || obID==3 || obID==4) {
             
             int numContacts = contactManifold->getNumContacts();
-            
-            for (int j = 0; j < numContacts; j++)
-            {
-                btManifoldPoint& pt = contactManifold->getContactPoint(j);
-                if (pt.getDistance() < 0.5f)
-                {
-                    const btVector3& ptB = pt.getPositionWorldOnB();
 
-                    int index = obB->getUserIndex();
-                    
-                    btVector3 euler;
-                    bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
-                    double angle = euler[2];
-                    
-                    //////////////////////////////////////////////////////////////////////////////
-                    //////////////////////　getEulerZYX[2]   は反時計回りが正　///////////////////////
-                    //////////////////////　m_targetVelocity は反時計回りが負　///////////////////////
-                    //////////////////////////////////////////////////////////////////////////////
+            if (numContacts >= 1) {
+                int k = -1;
+                for (int j = 0; j < numContacts; j++) {
+                    btManifoldPoint& pt = contactManifold->getContactPoint(j);
 
-                    //when a tubefeet atend to attach
-                    if (!TF_contact[index] && angle<ANGLE_ATTACH) {
-                        //remove tubefeet - amp (object & constraint & motor)
-                        dynamicsWorld->removeRigidBody(TF_object_amp[index]);
-                        dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
-                        motor_tY.erase(index);
-                        motor_tZ.erase(index);
-                        TF_contact[index] = true;
+                    if (pt.getDistance() < 0.5f)
+                    {
+                        k = j;
+                        break;
+                    }
+                }
+                if (k == -1) {
+                    break;
+                }
+                
+                btManifoldPoint& pt = contactManifold->getContactPoint(k);
+                const btVector3& ptB = pt.getPositionWorldOnB();
+
+                int index = obB->getUserIndex();
+                
+                btVector3 euler;
+                bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
+                double angle = euler[2];
                         
-                        //create tubefeet - ground (constraint)
-                        btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0), TF_direction[index]);//global
+                //when a tubefeet attempt to attach
+                if (!TF_contact[index] && angle<ANGLE_ATTACH) {
+                    //remove tubefeet - amp (object & constraint & motor)
+                    dynamicsWorld->removeRigidBody(TF_object_amp[index]);
+                    dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
+                    motor_tY.erase(index);
+                    motor_tZ.erase(index);
+                    TF_contact[index] = true;
+                    
+                    //create tubefeet - ground (constraint)
+                    btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0),TF_direction[index]);//global
+                    univ->setLowerLimit(-ANGLE, -0);
+                    univ->setUpperLimit(ANGLE, 0);
+                    TF_constraint_ground[index] = univ;
+                    dynamicsWorld->addConstraint(univ);
+                    
+                    //create tubefeet - ground (motor)
+                    btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
+                    btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
+                    motor1->m_enableMotor = true;
+                    motor2->m_enableMotor = true;
+                    motor_to_groundZ[index] = motor1;
+                    motor_to_groundY[index] = motor2;
+                    DeleteTime_tf[index] = time_step + int(double(ANGLE_DETACH - ANGLE_ATTACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 2.0);
+                    
+                    
+                }
+                //when a tubefeet attempt to dettach
+                else if (TF_contact[index])
+                {
+                    //delete the tubefeet attaching too long time
+                    //& after that, create new one
+                     if (time_step > DeleteTime_tf[index]) {
+                         cout << "delete the tubefeet" << endl;
+                         //remove tubefeet - ground (constraint & motor)
+                         dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
+                         TF_constraint_ground.erase(index);
+                         motor_to_groundY.erase(index);
+                         motor_to_groundZ.erase(index);
+                         TF_contact[index] = false;
+                         
+                         //remove tubefeet
+                         dynamicsWorld->removeRigidBody(TF_object[index]);
+                         TF_object.erase(index);
+                         
+                         //create new one
+                         btRigidBody* body_centor = BODY_object[0];
+                         if (body_centor && body_centor->getMotionState())
+                         {
+                             btVector3 pos = body_centor->getCenterOfMassPosition();
+                             std::random_device rnd;
+                             std::mt19937 mt(rnd());
+                             std::uniform_int_distribution<> rand100(0, 99);
+                             btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
+                             int n = index % 10;//j
+                             int m = (index-100)/10;//i
+                             int col = m % 2;
+                             int row = m / 2;
+                             int h = INIT_POS_Y-RADIUS*2-LENGTH/2;
+                             int from_x = RADIUS*2;
+                             btVector3 pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
+                             btVector3 pos_amp = btVector3(from_x + row * RADIUS * 4 , INIT_POS_Y, pow(-1, col) * RADIUS * 2);
+                             pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
+                             pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
+                             pos_tf[0] += pos[0];
+                             pos_tf[2] += pos[2];
+                             pos_amp[0] += pos[0];
+                             pos_amp[2] += pos[2];
+                             //tf - amp (object)
+                             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
+                             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
+                             body_tf->setUserIndex(index);
+                             TF_object[index] = body_tf;
+                             TF_object_amp[index] = body_amp;
+                             TF_contact[index] = false;
+                             TF_direction[index] = btVector3(0, 0, 1);
+                             dynamicsWorld->addRigidBody(body_tf, RX_COL_TF, RX_COL_GROUND);
+                             dynamicsWorld->addRigidBody(body_amp, RX_COL_AMP, RX_COL_GROUND);
+                             //tf - amp (constraint)
+                             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
+                             univ->setLowerLimit(-ANGLE, -0);
+                             univ->setUpperLimit(ANGLE, 0);
+                             TF_constraint_amp[index] = univ;
+                             dynamicsWorld->addConstraint(univ);
+                             //tf - amp (motor)
+                             btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
+                             btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
+                             motor1->m_enableMotor = true;
+                             motor1->m_targetVelocity = 0;
+                             motor2->m_enableMotor = true;
+                             motor_tZ[index] = motor1;
+                             motor_tY[index] = motor2;
+                             ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
+                         }
+                         
+                    }
+                     if (angle>ANGLE_DETACH)
+                    {
+                        //remove tubefeet - ground (constraint & motor)
+                        dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
+                        motor_to_groundY.erase(index);
+                        motor_to_groundZ.erase(index);
+                        TF_contact[index] = false;
+                        
+                        //create amp (object)
+                        btVector3 pos_tf = bodyB->getCenterOfMassPosition();
+                        ///////////////////////////////ここ変えるべし//////////////////////////////////////////////
+                        btVector3 pos_amp = btVector3(pos_tf[0]-(LENGTH/2+RADIUS*2)*sin(angle), pos_tf[1]+(LENGTH/2+RADIUS*2)*cos(angle), pos_tf[2]);
+                        
+                        btRigidBody* body_amp = initAmp(RADIUS, pos_amp);
+                        TF_object_amp[index] = body_amp;
+                        dynamicsWorld->addRigidBody(body_amp);
+                                
+                        //create tubefeet - amp (constraint)
+                        btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), TF_direction[index]);//global
                         univ->setLowerLimit(-ANGLE, -0);
                         univ->setUpperLimit(ANGLE, 0);
-                        TF_constraint_ground[index] = univ;
+                        TF_constraint_amp[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                         
-                        //create tubefeet - ground (motor)
+                        //create tubefeet - amp (motor)
                         btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
                         btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
                         motor1->m_enableMotor = true;
+                        motor1->m_targetVelocity = ANGLE_VELOCITY_TF;
                         motor2->m_enableMotor = true;
-                        motor_to_groundZ[index] = motor1;
-                        motor_to_groundY[index] = motor2;
-                        DeleteTime_tf[index] = time_step + int(double(ANGLE_DETACH - ANGLE_ATTACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 2.0);
-                        
-                        
-                    }
-                    //when a tubefeet atend to dettach
-                    else if (TF_contact[index])
-                    {
-                         if (time_step > DeleteTime_tf[index]) {
-                             //remove tubefeet - ground (constraint & motor)
-                             dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
-                             motor_to_groundY.erase(index);
-                             motor_to_groundZ.erase(index);
-                             TF_contact[index] = false;
-                             
-                             //remove tubefeet
-                             dynamicsWorld->removeRigidBody(TF_object[index]);
-                        }
-                         if (angle>ANGLE_DETACH)
-                        {
-                            //remove tubefeet - ground (constraint & motor)
-                            dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
-                            motor_to_groundY.erase(index);
-                            motor_to_groundZ.erase(index);
-                            TF_contact[index] = false;
-                            
-                            //create amp (object)
-                            btVector3 pos_tf = bodyB->getCenterOfMassPosition();
-                            ///////////////////////////////ここ変えるべし//////////////////////////////////////////////
-                            btVector3 pos_amp = btVector3(pos_tf[0]-(LENGTH/2+RADIUS*2)*sin(angle), pos_tf[1]+(LENGTH/2+RADIUS*2)*cos(angle), pos_tf[2]);
-                            
-                            btRigidBody* body_amp = initAmp(RADIUS, pos_amp);
-                            TF_object_amp[index] = body_amp;
-                            dynamicsWorld->addRigidBody(body_amp);
-                            
-                            //create tubefeet - amp (constraint)
-                            btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), TF_direction[index]);//global
-                            univ->setLowerLimit(-ANGLE, -0);
-                            univ->setUpperLimit(ANGLE, 0);
-                            TF_constraint_amp[index] = univ;
-                            dynamicsWorld->addConstraint(univ);
-                            
-                            //create tubefeet - amp (motor)
-                            btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
-                            btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
-                            motor1->m_enableMotor = true;
-                            motor1->m_targetVelocity = ANGLE_VELOCITY_TF;
-                            motor2->m_enableMotor = true;
-                            motor_tZ[index] = motor1;
-                            motor_tY[index] = motor2;
-                            ResumeTime_tf[index] = time_step;
-                            
-                        }
+                        motor_tZ[index] = motor1;
+                        motor_tY[index] = motor2;
+                        ResumeTime_tf[index] = time_step;
+                                
                     }
                 }
             }
@@ -676,7 +726,7 @@ void Render()
             glTranslatef(pos[0], pos[1], pos[2]);
             glRotated(rot, axis[0], axis[1], axis[2]);
             //ground
-            if (j == 0)
+            if (j == 0 || j == 1 || j == 2 || j == 3)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
@@ -746,7 +796,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//çsóÒÉÇÅ[ÉhÇÃê›íËÅiGL_PROJECTION : ìßéãïœä∑çsóÒÇÃê›íËÅAGL_MODELVIEWÅFÉÇÉfÉãÉrÉÖÅ[ïœä∑çsóÒÅj
 	glLoadIdentity();//çsóÒÇÃèâä˙âª
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(0, 0, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 500, 600, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)

@@ -4,7 +4,6 @@
 #define _USE_MATH_DEFINES
 
 #define FPS 60.f
-
 #define RADIAN 180/M_PI
 #define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
@@ -15,6 +14,7 @@
 #define LENGTH 12
 #define RADIUS 4
 #define INIT_POS_Y 24
+#define NUM_GROUND 2
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
