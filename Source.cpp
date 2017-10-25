@@ -341,12 +341,12 @@ void CreateStarfish()
     int col, row;
     int h = INIT_POS_Y-RADIUS*2-LENGTH/2;
     int from_x = RADIUS*2;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1; i++) {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(from_x + row * RADIUS * 4, h, pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(from_x + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
-        for (int j = 1; j <= 5; j++) {
+        for (int j = 1; j <= 1; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
@@ -480,11 +480,6 @@ void ControllTubeFeet()
         } else {
             angle_target = atan(TF_axis_direction[index][2]/TF_axis_direction[index][0]);
         }
-        if (index==101) {
-            cout << "--------" << endl;
-            cout << angle_now << endl;
-            cout << angle_target << endl;
-        }
         motor_tY[index]->m_targetVelocity = (angle_target - angle_now)/2;//target angular velocity (rad/sec)
         
         //wheel motor
@@ -510,7 +505,6 @@ void ControllTubeFeet()
         else
         {
             motor->m_targetVelocity = 0;
-            
         }
     }
     
@@ -569,7 +563,7 @@ void ContactAction()
                 const btVector3& ptB = pt.getPositionWorldOnB();
 
                 int index = obB->getUserIndex();
-                
+                /**********************てかオイラー角じゃなくて、motor[index]の角度でいんじゃね？*****************************/
                 btVector3 euler;
                 bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
                 double angle = euler[2];
@@ -810,7 +804,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//çsóÒÉÇÅ[ÉhÇÃê›íËÅiGL_PROJECTION : ìßéãïœä∑çsóÒÇÃê›íËÅAGL_MODELVIEWÅFÉÇÉfÉãÉrÉÖÅ[ïœä∑çsóÒÅj
 	glLoadIdentity();//çsóÒÇÃèâä˙âª
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(0, 500, 60, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 500, 600, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
