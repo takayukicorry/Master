@@ -465,9 +465,8 @@ void ControllTubeFeet()
         motor->m_maxMotorForce = 1000000000000000;
         motor_tY[index]->m_maxMotorForce = 1000000000000000;
         
-        //handle motor
-        /**********************どのくらいずつ振るか要調整**************************/
-        btScalar angle_now = motor_tY[index]->m_currentPosition + M_PI/2;//m_currentPosition is the relative angle with the start position, so fix the angular difference by plusing M_PI/2
+        //handle motor/**********************どのくらいずつ振るか要調整**************************/
+        btScalar angle_now = motor_tY[index]->m_currentPosition + M_PI/2;//relative angle with the start position
         btScalar angle_target;
         if (TF_axis_direction[index][0] == 0) {
             if (TF_axis_direction[index][2] < 0) {
@@ -483,22 +482,19 @@ void ControllTubeFeet()
         motor_tY[index]->m_targetVelocity = (angle_target - angle_now)/2;//target angular velocity (rad/sec)
         
         //wheel motor
-        if (!TF_contact[index] && ResumeTime_tf[index] < time_step)
+        if (!TF_contact[index])// && ResumeTime_tf[index] < time_step)
         {
             double target_velocity = motor->m_targetVelocity;
             if (target_velocity == 0) {
                 motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
             }
             
-            btVector3 euler;
-            TF_object[index]->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
-            double angle = euler[2];
-            
-            if (angle <= -(ANGLE-0.1) && target_velocity >= 0) {
+            btScalar angle = motor->m_currentPosition;
+            if (ANGLE-0.1 <= angle && target_velocity >= 0) {
                 motor->m_targetVelocity *= -1.0;
             }
             
-            if (ANGLE-0.1 <= angle  && target_velocity <= 0) {
+            if (angle <= -(ANGLE-0.1)  && target_velocity <= 0) {
                 motor->m_targetVelocity *= -1.0;
             }
         }
@@ -563,13 +559,17 @@ void ContactAction()
                 const btVector3& ptB = pt.getPositionWorldOnB();
 
                 int index = obB->getUserIndex();
-                /**********************てかオイラー角じゃなくて、motor[index]の角度でいんじゃね？*****************************/
-                btVector3 euler;
-                bodyB->getWorldTransform().getBasis().getEulerZYX(euler[2], euler[1], euler[0]);
-                double angle = euler[2];
-                        
+                
+                btScalar angle;
+                if (TF_contact[index]) {
+                    angle = motor_to_groundZ[index]->m_currentPosition;
+                } else {
+                    angle = motor_tZ[index]->m_currentPosition;
+                }
                 //when a tubefeet attempt to attach
-                if (!TF_contact[index] && angle<ANGLE_ATTACH) {
+                if (!TF_contact[index] && angle>ANGLE_ATTACH) {
+                    btScalar angle_Y = motor_tY[index]->m_currentPosition + M_PI/2;
+                    
                     //remove tubefeet - amp (object & constraint & motor)
                     dynamicsWorld->removeRigidBody(TF_object_amp[index]);
                     dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
@@ -578,7 +578,7 @@ void ContactAction()
                     TF_contact[index] = true;
                     
                     //create tubefeet - ground (constraint)
-                    btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0),btVector3(0, 0, 1));//global/*****************現在の角度から、地面とのモーターのz軸方向設定せな*******************/
+                    btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0),btVector3(cos(angle_Y), 0, sin(angle_Y)));//global/*****************現在の角度から、地面とのモーターのz軸方向設定せな*******************/
                     univ->setLowerLimit(-ANGLE, -M_PI);
                     univ->setUpperLimit(ANGLE, M_PI);
                     TF_constraint_ground[index] = univ;
@@ -662,7 +662,7 @@ void ContactAction()
                          
                     }
                     //when a tubefeet attempt to dettach
-                     if (angle>ANGLE_DETACH)
+                     if (angle<ANGLE_DETACH)
                     {
                         //remove tubefeet - ground (constraint & motor)
                         dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
@@ -804,7 +804,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//çsóÒÉÇÅ[ÉhÇÃê›íËÅiGL_PROJECTION : ìßéãïœä∑çsóÒÇÃê›íËÅAGL_MODELVIEWÅFÉÇÉfÉãÉrÉÖÅ[ïœä∑çsóÒÅj
 	glLoadIdentity();//çsóÒÇÃèâä˙âª
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(0, 500, 600, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(100, 500, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
