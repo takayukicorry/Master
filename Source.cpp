@@ -42,7 +42,7 @@ map<int, btRotationalLimitMotor* > motor_tY;//tubefeet - amp (handle motor)
 map<int, btRotationalLimitMotor* > motor_tZ;//tubefeet - amp (wheel motor)
 map<int, btRotationalLimitMotor* > motor_to_groundY;//tubefeet - ground (handle motor)
 map<int, btRotationalLimitMotor* > motor_to_groundZ;//tubefeet - ground (wheel motor)
-map<int, btVector3> TF_direction;//tubefeet - amp & tubefeet - ground (motor direction)
+map<int, btVector3> TF_axis_direction;//tubefeet - amp & tubefeet - ground (motor direction)
 map<int, int> DeleteTime_tf;//time to delete tf - ground
 map<int, int> ResumeTime_tf;//time to start swinging
 
@@ -355,13 +355,13 @@ void CreateStarfish()
             TF_object[index] = body_tf;
             TF_object_amp[index] = body_amp;
             TF_contact[index] = false;
-            TF_direction[index] = btVector3(0, 0, 1);
+            TF_axis_direction[index] = btVector3(1, 0, 0);
             bodies_tf.push_back(body_tf);
             bodies_amp.push_back(body_amp);
             //tf - amp (constraint)
             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-            univ->setLowerLimit(-ANGLE, -0);
-            univ->setUpperLimit(ANGLE, 0);
+            univ->setLowerLimit(-ANGLE, -M_PI);
+            univ->setUpperLimit(ANGLE, M_PI);
             TF_constraint_amp[index] = univ;
             constraints.push_back(univ);
             //tf - amp (motor)
@@ -370,6 +370,7 @@ void CreateStarfish()
             motor1->m_enableMotor = true;
             motor1->m_targetVelocity = 0;
             motor2->m_enableMotor = true;
+            motor2->m_targetVelocity = 0;
             motor_tZ[index] = motor1;
             motor_tY[index] = motor2;
             ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
@@ -465,8 +466,25 @@ void ControllTubeFeet()
         motor_tY[index]->m_maxMotorForce = 1000000000000000;
         
         //handle motor
-        btScalar angle_now = motor_tY[index]->m_currentPosition;
-        btScalar angle_target = atan(TF_direction[index][2]/TF_direction[index][0]);
+        /**********************どのくらいずつ振るか要調整**************************/
+        btScalar angle_now = motor_tY[index]->m_currentPosition + M_PI/2;//m_currentPosition is the relative angle with the start position, so fix the angular difference by plusing M_PI/2
+        btScalar angle_target;
+        if (TF_axis_direction[index][0] == 0) {
+            if (TF_axis_direction[index][2] < 0) {
+                angle_target = -M_PI/2;
+            } else if (TF_axis_direction[index][2] > 0) {
+                angle_target = M_PI/2;
+            } else {
+                angle_target = 0;
+            }
+        } else {
+            angle_target = atan(TF_axis_direction[index][2]/TF_axis_direction[index][0]);
+        }
+        if (index==101) {
+            cout << "--------" << endl;
+            cout << angle_now << endl;
+            cout << angle_target << endl;
+        }
         motor_tY[index]->m_targetVelocity = (angle_target - angle_now)/2;//target angular velocity (rad/sec)
         
         //wheel motor
@@ -566,9 +584,9 @@ void ContactAction()
                     TF_contact[index] = true;
                     
                     //create tubefeet - ground (constraint)
-                    btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0),TF_direction[index]);//global
-                    univ->setLowerLimit(-ANGLE, -0);
-                    univ->setUpperLimit(ANGLE, 0);
+                    btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS ,ptB[2] ), btVector3(0, 1, 0),btVector3(0, 0, 1));//global/*****************現在の角度から、地面とのモーターのz軸方向設定せな*******************/
+                    univ->setLowerLimit(-ANGLE, -M_PI);
+                    univ->setUpperLimit(ANGLE, M_PI);
                     TF_constraint_ground[index] = univ;
                     dynamicsWorld->addConstraint(univ);
                     
@@ -583,7 +601,6 @@ void ContactAction()
                     
                     
                 }
-                //when a tubefeet attempt to dettach
                 else if (TF_contact[index])
                 {
                     //delete the tubefeet attaching too long time & after that, create new one
@@ -629,13 +646,12 @@ void ContactAction()
                              TF_object[index] = body_tf;
                              TF_object_amp[index] = body_amp;
                              TF_contact[index] = false;
-                             TF_direction[index] = btVector3(0, 0, 1);
                              dynamicsWorld->addRigidBody(body_tf, RX_COL_TF, RX_COL_GROUND);
                              dynamicsWorld->addRigidBody(body_amp, RX_COL_AMP, RX_COL_GROUND);
                              //tf - amp (constraint)
                              btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-                             univ->setLowerLimit(-ANGLE, -0);
-                             univ->setUpperLimit(ANGLE, 0);
+                             univ->setLowerLimit(-ANGLE, -M_PI);
+                             univ->setUpperLimit(ANGLE, M_PI);
                              TF_constraint_amp[index] = univ;
                              dynamicsWorld->addConstraint(univ);
                              //tf - amp (motor)
@@ -644,12 +660,14 @@ void ContactAction()
                              motor1->m_enableMotor = true;
                              motor1->m_targetVelocity = 0;
                              motor2->m_enableMotor = true;
+                             motor2->m_targetVelocity = 0;
                              motor_tZ[index] = motor1;
                              motor_tY[index] = motor2;
                              ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
                          }
                          
                     }
+                    //when a tubefeet attempt to dettach
                      if (angle>ANGLE_DETACH)
                     {
                         //remove tubefeet - ground (constraint & motor)
@@ -660,17 +678,15 @@ void ContactAction()
                         
                         //create amp (object)
                         btVector3 pos_tf = bodyB->getCenterOfMassPosition();
-                        ///////////////////////////////ここ変えるべし//////////////////////////////////////////////
                         btVector3 pos_amp = btVector3(pos_tf[0]-(LENGTH/2+RADIUS*2)*sin(angle), pos_tf[1]+(LENGTH/2+RADIUS*2)*cos(angle), pos_tf[2]);
-                        
                         btRigidBody* body_amp = initAmp(RADIUS, pos_amp);
                         TF_object_amp[index] = body_amp;
                         dynamicsWorld->addRigidBody(body_amp);
                                 
                         //create tubefeet - amp (constraint)
-                        btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), TF_direction[index]);//global
-                        univ->setLowerLimit(-ANGLE, -0);
-                        univ->setUpperLimit(ANGLE, 0);
+                        btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(0, 0, 1));//global
+                        univ->setLowerLimit(-ANGLE, -M_PI);
+                        univ->setUpperLimit(ANGLE, M_PI);
                         TF_constraint_amp[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                         
@@ -794,7 +810,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);//çsóÒÉÇÅ[ÉhÇÃê›íËÅiGL_PROJECTION : ìßéãïœä∑çsóÒÇÃê›íËÅAGL_MODELVIEWÅFÉÇÉfÉãÉrÉÖÅ[ïœä∑çsóÒÅj
 	glLoadIdentity();//çsóÒÇÃèâä˙âª
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(0, 500, 600, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0, 500, 60, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
