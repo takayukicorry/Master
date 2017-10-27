@@ -469,7 +469,7 @@ void ControllTubeFeet()
         motor_tY[index]->m_maxMotorForce = 1000000000000000;
         
         //handle motor/**********************どのくらいずつ振るか要調整**************************/
-        btScalar angle_now = motor_tY[index]->m_currentPosition + M_PI/2;//relative angle with the start position
+        btScalar angle_now = motor_tY[index]->m_currentPosition + TF_axis_angle[index];//relative angle with the start position
         btScalar angle_target;
         if (TF_axis_direction[index][0] == 0) {
             if (TF_axis_direction[index][2] < 0) {
@@ -689,9 +689,9 @@ void ContactAction()
                         dynamicsWorld->addRigidBody(body_amp);
                                 
                         //create tubefeet - amp (constraint)
-                        btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(-sin(angle), cos(angle), 0), btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));//global
-                        univ->setLowerLimit(-ANGLE, -M_PI);
-                        univ->setUpperLimit(ANGLE, M_PI);
+                        btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, btVector3(pos_amp[0]-pos_tf[0], pos_amp[1]-pos_tf[1], pos_amp[2]-pos_tf[2]), btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));//global
+                        univ->setLowerLimit(0, -M_PI);
+                        univ->setUpperLimit(2*ANGLE, M_PI);
                         TF_constraint_amp[index] = univ;
                         dynamicsWorld->addConstraint(univ);
                         
@@ -766,14 +766,14 @@ void Render()
 			}
             //sphere
 			else if (shape == SPHERE_SHAPE_PROXYTYPE)
-			{/*
+			{
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
 				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
 				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
-				glutSolidSphere(3, 100, 100);
-			*/}
+				glutSolidSphere(1, 100, 100);
+			}
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
@@ -812,10 +812,10 @@ void init(void)
     //glCullFace(GL_BACK);
 	//glCullFace(GL_FRONT);
 
-	glMatrixMode(GL_PROJECTION);//çsóÒÉÇÅ[ÉhÇÃê›íËÅiGL_PROJECTION : ìßéãïœä∑çsóÒÇÃê›íËÅAGL_MODELVIEWÅFÉÇÉfÉãÉrÉÖÅ[ïœä∑çsóÒÅj
-	glLoadIdentity();//çsóÒÇÃèâä˙âª
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(100, 0, 300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(100,0,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
