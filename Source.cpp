@@ -341,13 +341,13 @@ void CreateStarfish()
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
     btVector3 pos_tf, pos_amp;
     int col, row;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10; i++) {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y-(RADIUS*2+LENGTH/2), pow(-1, col) * RADIUS * 2);
         //pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4 - (RADIUS*2+LENGTH/2)*sin(ANGLE_DETACH), INIT_POS_Y-(RADIUS*2+LENGTH/2)*cos(ANGLE_DETACH), pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
-        for (int j = 1; j <= 1; j++) {
+        for (int j = 1; j <= 5; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
@@ -408,7 +408,8 @@ void CreateStarfish()
 void ControllTubeFeet()
 {
     
-    btScalar velocity_all = 0;
+    btScalar velocity_all_x = 0;
+    btScalar velocity_all_z = 0;
     //calculate interaction of tf
     for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
         
@@ -418,14 +419,16 @@ void ControllTubeFeet()
         if (body && body->getMotionState() && TF_contact[index])
         {
             btScalar velocity_x = body->getLinearVelocity()[0];
+            btScalar velocity_z = body->getLinearVelocity()[1];
             
-            if (velocity_x < velocity_all) {
-                velocity_all = velocity_x;
+            if (velocity_x < velocity_all_x) {
+                velocity_all_x = velocity_x;
+                velocity_all_z = velocity_z;
             }
         }
     }
     
-    //interaction of tf with body (X direction)
+    //interacting of tf with body (X direction)/*********************X、Z軸両方向に関して影響与えねばならん************************/
     for (auto itr = BODY_object.begin(); itr != BODY_object.end(); ++itr) {
         btRigidBody* body = itr->second;
         
@@ -435,13 +438,13 @@ void ControllTubeFeet()
             
             btTransform tran;
             tran.setIdentity();
-            tran.setOrigin(btVector3(pos[0]+velocity_all*1.5/FPS, pos[1], pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
             
             body->setCenterOfMassTransform(tran);
         }
     }
     
-    //interaction of tf with amp (X direction)
+    //interacting of tf with amp (X direction)/*********************X、Z軸両方向に関して影響与えねばならん************************/
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
         int index = itr->first;
@@ -453,7 +456,7 @@ void ControllTubeFeet()
         
             btTransform tran;
             tran.setIdentity();
-            tran.setOrigin(btVector3(pos[0]+velocity_all*1/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]));
+            tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]+velocity_all_z/FPS));
         
             body->setCenterOfMassTransform(tran);
         }
@@ -815,7 +818,7 @@ void init(void)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-	gluLookAt(100,0,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(100,300,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void idle(void)
