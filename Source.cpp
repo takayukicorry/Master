@@ -2,61 +2,14 @@
 // proj301
 //
 
-//#include "btBulletDynamicsCommon.h"
-#include <BulletDynamics/btBulletDynamicsCommon.h>
-#include <stdio.h>
-#include <stdlib.h>
-//#include <GL/glut.h>
-#include <GLUT/GLUT.h>
-#include <OpenGL/OpenGL.h>
-#include <iostream>
-#include <vector>
-#include "Variables.h"
-#include <math.h>
-#include <map>
-#include <random>
-//#include <OpenGL/DemoApplication.h>
+#include "Source.h"
 
 using namespace std;
 
-btDefaultCollisionConfiguration* collisionConfiguration;
-btCollisionDispatcher* dispatcher;
-btBroadphaseInterface* overlappingPairCache;
-btSequentialImpulseConstraintSolver* solver;
-btDiscreteDynamicsWorld* dynamicsWorld;
-btCollisionShape* groundShape;
-btAlignedObjectArray<btCollisionShape*> collisionShapes;
-
+static Ophiuroid2* ophiuroid2 = 0;
 
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
 GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
-
-//Userindex==int
-map<int, bool> TF_contact;//tubefeet - ground (attach)
-map<int, int> TF_contact_times;//tubefeet - ground (attach times)
-map<int, btTypedConstraint*> TF_constraint_amp;//tubefeet - amp (constraint)
-map<int, btTypedConstraint*> TF_constraint_ground;//tubefeet - ground (constraint)
-map<int, btRigidBody*> BODY_object;//arm (object)
-map<int, btRigidBody*> TF_object;//tubefeet (object)
-map<int, btRigidBody*> TF_object_amp;//amp (object)
-map<int, btRotationalLimitMotor* > motor_tY;//tubefeet - amp (handle motor)
-map<int, btRotationalLimitMotor* > motor_tZ;//tubefeet - amp (wheel motor)
-map<int, btRotationalLimitMotor* > motor_to_groundY;//tubefeet - ground (handle motor)
-map<int, btRotationalLimitMotor* > motor_to_groundZ;//tubefeet - ground (wheel motor)
-map<int, btVector3> TF_axis_direction;//tubefeet - amp & tubefeet - ground (motor direction)
-map<int, btScalar> TF_axis_angle;//tubefeet - amp & tubefeet - ground (current motor angle to XZ)
-map<int, int> DeleteTime_tf;//time to delete tf - ground
-map<int, int> ResumeTime_tf;//time to start swinging
-
-int time_step = 0;
-
-enum CollisionGroup{
-    RX_COL_NOTHING = 0, // 0000
-    RX_COL_GROUND = 1, // 0001
-    RX_COL_BODY = 2,  // 0010
-    RX_COL_TF = 4,  // 0100
-    RX_COL_AMP = 8   // 1000
-};
 
 //----------------------------------------------------
 // color definition
@@ -92,7 +45,7 @@ GLfloat shininess = 30.0;//åıëÚÇÃã≠Ç≥
 //private function
 //-----------------------------------------
 
-btVector3 RotateY(const btVector3 bef, double alpha)
+btVector3 Ophiuroid2::RotateY(const btVector3 bef, double alpha)
 {
     btVector3 aft = bef;
     aft[0] = bef[0] * cos(alpha) - bef[2] * sin(alpha);
@@ -101,7 +54,7 @@ btVector3 RotateY(const btVector3 bef, double alpha)
     return aft;
 }
 
-btVector3 acrossb(btVector3 r, btVector3 t)
+btVector3 Ophiuroid2::acrossb(btVector3 r, btVector3 t)
 {
     btVector3 b = {0, 0, 0};
     b[0]=r[1]*t[2]-r[2]*t[1];
@@ -111,7 +64,7 @@ btVector3 acrossb(btVector3 r, btVector3 t)
     return b;
 }
 
-void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 position)
+void Ophiuroid2::glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 position)
 {
     glBegin(GL_POLYGON);
     
@@ -126,7 +79,7 @@ void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 posi
     glEnd();
 }
 
-btRigidBody::btRigidBodyConstructionInfo calcInertia(btScalar mass, btVector3 position)
+btRigidBody::btRigidBodyConstructionInfo Ophiuroid2::calcInertia(btScalar mass, btVector3 position)
 {
 
     btTransform groundTransform;
@@ -147,7 +100,7 @@ btRigidBody::btRigidBodyConstructionInfo calcInertia(btScalar mass, btVector3 po
     return rbInfo;
 }
 
-btRigidBody* getByUserIndex(int index)
+btRigidBody* Ophiuroid2::getByUserIndex(int index)
 {
     for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
     {
@@ -172,7 +125,7 @@ btRigidBody* getByUserIndex(int index)
 //-----------------------------------------
 
 // create a ground
-void CreateGround()
+void Ophiuroid2::CreateGround()
 {
     btTransform groundTransform;
     btVector3 scale = btVector3(btScalar(100.), btScalar(10.), btScalar(100.));
@@ -201,7 +154,7 @@ void CreateGround()
 }
 
 // create an amp
-btRigidBody* initAmp(btScalar scale, const btVector3 position)
+btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
 {
 	btCollisionShape* colShape = new btSphereShape(scale);
 	collisionShapes.push_back(colShape);
@@ -232,7 +185,7 @@ btRigidBody* initAmp(btScalar scale, const btVector3 position)
 }
 
 //create body
-btRigidBody* initBody(const btVector3 scale, const btVector3 position)
+btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btBoxShape(scale);
     collisionShapes.push_back(sBodyShape);
@@ -260,7 +213,7 @@ btRigidBody* initBody(const btVector3 scale, const btVector3 position)
 }
 
 //create an arm
-btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
+btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
 {
 	btCollisionShape* sBodyShape = new btBoxShape(scale);
 	collisionShapes.push_back(sBodyShape);
@@ -289,7 +242,7 @@ btRigidBody* initArm(const btVector3 scale, const btVector3 position, const btQu
 }
 
 //create a tubefeet
-btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
+btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
     collisionShapes.push_back(sBodyShape);
@@ -316,7 +269,7 @@ btRigidBody* initTubefeet(btScalar* scale, const btVector3 position)
 }
 
 // create starfish
-void CreateStarfish()
+void Ophiuroid2::CreateStarfish()
 {
     vector<btRigidBody* > bodies_body;
     vector<btRigidBody* > bodies_tf;
@@ -405,7 +358,7 @@ void CreateStarfish()
 }
 
 //motion of tubefeet
-void ControllTubeFeet()
+void Ophiuroid2::ControllTubeFeet()
 {
     
     btScalar velocity_all_x = 0;
@@ -533,7 +486,7 @@ void ControllTubeFeet()
 }
 
 //action when tubefeet attach ground
-void ContactAction()
+void Ophiuroid2::ContactAction()
 {
     vector<int > contacts;
     
@@ -718,10 +671,10 @@ void ContactAction()
     }
 }
 
-void Render()
+static void Render()
 {
-    time_step++;
-    dynamicsWorld->stepSimulation(1.f / FPS, 10);
+    ophiuroid2->time_step++;
+    ophiuroid2->dynamicsWorld->stepSimulation(1.f / FPS, 10);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -735,9 +688,9 @@ void Render()
 	glPushMatrix();
     
 	//draw each object
-	for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+	for (int j = ophiuroid2->dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
 	{
-		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
+		btCollisionObject* obj = ophiuroid2->dynamicsWorld->getCollisionObjectArray()[j];
 		btRigidBody* body = btRigidBody::upcast(obj);
 		if (body && body->getMotionState())
 		{
@@ -788,7 +741,7 @@ void Render()
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
+                ophiuroid2->glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
                 
             }
 			glPopMatrix();
@@ -808,7 +761,7 @@ void Render()
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 
-void init(void)
+void Ophiuroid2::init(void)
 {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
@@ -824,14 +777,14 @@ void init(void)
 	gluLookAt(100,300,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
-void idle(void)
+static void idle(void)
 {
-    ContactAction();
+    ophiuroid2->ContactAction();
 	glutPostRedisplay();
-    ControllTubeFeet();
+    ophiuroid2->ControllTubeFeet();
 }
 
-void CleanupBullet()
+void Ophiuroid2::CleanupBullet()
 {
     for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
     {
@@ -871,7 +824,7 @@ void CleanupBullet()
     collisionShapes.clear();
 }
 
-void InitBullet()
+void Ophiuroid2::InitBullet()
 {
     collisionConfiguration = new btDefaultCollisionConfiguration();
     
@@ -886,15 +839,13 @@ void InitBullet()
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
-
-
-int main(int argc, char** argv)
+void sourcemain(int argc, char** argv, Ophiuroid2* oph2)
 {
-    InitBullet();
+    ophiuroid2 = oph2;
 
-	CreateGround();
-
-    CreateStarfish();
+    oph2->InitBullet();
+	oph2->CreateGround();
+    oph2->CreateStarfish();
 	
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 480);
@@ -902,9 +853,9 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutCreateWindow(argv[0]);
 	glutDisplayFunc(Render);
-	glutIdleFunc(idle);
-	init();
+    glutIdleFunc(idle);
+	oph2->init();
 	glutMainLoop();
 
-	CleanupBullet();
+	oph2->CleanupBullet();
 }
