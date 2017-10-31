@@ -419,14 +419,17 @@ void ControllTubeFeet()
         if (body && body->getMotionState() && TF_contact[index])
         {
             btScalar velocity_x = body->getLinearVelocity()[0];
-            btScalar velocity_z = body->getLinearVelocity()[1];
+            btScalar velocity_z = body->getLinearVelocity()[2];
             
             if (velocity_x < velocity_all_x) {
                 velocity_all_x = velocity_x;
+            }
+            if (velocity_z > velocity_all_z) {
                 velocity_all_z = velocity_z;
             }
         }
     }
+    
     
     //interacting of tf with body (X direction)/*********************X、Z軸両方向に関して影響与えねばならん************************/
     for (auto itr = BODY_object.begin(); itr != BODY_object.end(); ++itr) {

@@ -3,6 +3,17 @@
 #define Variables_h
 #define _USE_MATH_DEFINES
 
+/*卒論で使用*/
+#define ARRAY_LENGTH 100
+#define NUM_LEGS 5
+#define CONECT_LENGTH 5
+#define POOL_SIZE 100
+#define MAX_CYCLE 5000
+#define MIN_CYCLE 1500
+#define MAX_ANGLE M_PI
+#define MIN_ANGLE M_PI/3
+
+
 #define FPS 60.f
 #define RADIAN 180/M_PI
 #define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
