@@ -16,7 +16,7 @@
 
 class Master {
     
-public:
+private:
     btDefaultCollisionConfiguration* collisionConfiguration;
     btCollisionDispatcher* dispatcher;
     btBroadphaseInterface* overlappingPairCache;
@@ -38,6 +38,7 @@ public:
     int getTime() { return time_step; }
     void setStarfish(int i, Starfish* s) { Starfishes[i] = s; }
     std::map<int, Starfish*> getStarfishes() { return Starfishes; }
+    void createGround();
     
 };
 

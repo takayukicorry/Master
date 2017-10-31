@@ -169,3 +169,30 @@ void Master::CleanupBullet() {
     delete collisionConfiguration;
     collisionShapes.clear();
 }
+
+void Master::createGround() {
+    btTransform groundTransform;
+    btVector3 scale = btVector3(btScalar(100.), btScalar(10.), btScalar(100.));
+    groundShape = new btBoxShape(scale);
+    btScalar mass(0.);
+    bool isDynamic = (mass != 0.f);
+    btVector3 localInertia(0, 0, 0);
+    if (isDynamic)
+        groundShape->calculateLocalInertia(mass, localInertia);
+    
+    for (int i = 0; i < NUM_GROUND; i++) {
+        for (int j = 0; j < NUM_GROUND; j++) {
+            collisionShapes.push_back(groundShape);
+            groundTransform.setIdentity();
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-i*2)*scale[0], -16, (NUM_GROUND-1-j*2)*scale[2]));
+            
+            btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+            btRigidBody* body = new btRigidBody(rbInfo);
+            body->setActivationState(DISABLE_DEACTIVATION);
+            body->setUserIndex(1+NUM_GROUND*i+j);
+            
+            dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+        }
+    }
+}

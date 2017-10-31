@@ -42,6 +42,13 @@ GLfloat blue[] = { 0.2, 0.2, 0.8, 1.0 };
 GLfloat yellow[] = { 0.8, 0.8, 0.2, 1.0 };
 GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat shininess = 30.0;
+enum CollisionGroup{
+    RX_COL_NOTHING = 0, // 0000
+    RX_COL_GROUND = 1, // 0001
+    RX_COL_BODY = 2,  // 0010
+    RX_COL_TF = 4,  // 0100
+    RX_COL_AMP = 8   // 1000
+};
 /*卒論で使用*/
 #define ARRAY_LENGTH 100
 #define NUM_LEGS 5

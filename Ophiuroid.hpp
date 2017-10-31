@@ -12,4 +12,13 @@
 #include <stdio.h>
 #include "Starfish.h"
 
+class Ophiuroid : Starfish {
+
+private:
+    
+    
+public:
+    void move() {}
+};
+
 #endif /* Ophiuroid_hpp */
