@@ -18,7 +18,7 @@ private:
     
     
 public:
-    void move() {}
+    void move();
 };
 
 #endif /* Ophiuroid2_hpp */

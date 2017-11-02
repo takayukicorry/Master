@@ -6,14 +6,46 @@
 
 using namespace std;
 
-static Ophiuroid2* ophiuroid2 = 0;
+static Oophiuroid2* ophiuroid2 = 0;
 
+/*色など*/
+GLfloat M_light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
+GLfloat M_light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
+struct M_MaterialStruct {
+    GLfloat ambient[4];
+    GLfloat diffuse[4];
+    GLfloat specular[4];
+    GLfloat shininess;
+};
+M_MaterialStruct M_ms_jade = {
+    { 0.135, 0.2225, 0.1575, 1.0 },
+    { 0.54, 0.89, 0.63, 1.0 },
+    { 0.316228, 0.316228, 0.316228, 1.0 },
+    12.8 };
+M_MaterialStruct M_ms_ruby = {
+    { 0.1745, 0.01175, 0.01175, 1.0 },
+    { 0.61424, 0.04136, 0.04136, 1.0 },
+    { 0.727811, 0.626959, 0.626959, 1.0 },
+    76.8 };
+GLfloat M_red[] = { 0.8, 0.2, 0.2, 1.0 };
+GLfloat M_green[] = { 0.2, 0.8, 0.2, 1.0 };
+GLfloat M_blue[] = { 0.2, 0.2, 0.8, 1.0 };
+GLfloat M_yellow[] = { 0.8, 0.8, 0.2, 1.0 };
+GLfloat M_white[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat M_shininess = 30.0;
+enum M_CollisionGroup{
+    RX_COL_NOTHING = 0, // 0000
+    RX_COL_GROUND = 1, // 0001
+    RX_COL_BODY = 2,  // 0010
+    RX_COL_TF = 4,  // 0100
+    RX_COL_AMP = 8   // 1000
+};
 
 //-----------------------------------------
 //private function
 //-----------------------------------------
 
-btVector3 Ophiuroid2::RotateY(const btVector3 bef, double alpha)
+btVector3 Oophiuroid2::RotateY(const btVector3 bef, double alpha)
 {
     btVector3 aft = bef;
     aft[0] = bef[0] * cos(alpha) - bef[2] * sin(alpha);
@@ -22,7 +54,7 @@ btVector3 Ophiuroid2::RotateY(const btVector3 bef, double alpha)
     return aft;
 }
 
-btVector3 Ophiuroid2::acrossb(btVector3 r, btVector3 t)
+btVector3 Oophiuroid2::acrossb(btVector3 r, btVector3 t)
 {
     btVector3 b = {0, 0, 0};
     b[0]=r[1]*t[2]-r[2]*t[1];
@@ -32,7 +64,7 @@ btVector3 Ophiuroid2::acrossb(btVector3 r, btVector3 t)
     return b;
 }
 
-void Ophiuroid2::glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 position)
+void Oophiuroid2::glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 position)
 {
     glBegin(GL_POLYGON);
     
@@ -47,7 +79,7 @@ void Ophiuroid2::glutSolidCylinder(btScalar radius, btScalar height, int num, bt
     glEnd();
 }
 
-btRigidBody::btRigidBodyConstructionInfo Ophiuroid2::calcInertia(btScalar mass, btVector3 position)
+btRigidBody::btRigidBodyConstructionInfo Oophiuroid2::calcInertia(btScalar mass, btVector3 position)
 {
 
     btTransform groundTransform;
@@ -68,7 +100,7 @@ btRigidBody::btRigidBodyConstructionInfo Ophiuroid2::calcInertia(btScalar mass, 
     return rbInfo;
 }
 
-btRigidBody* Ophiuroid2::getByUserIndex(int index)
+btRigidBody* Oophiuroid2::getByUserIndex(int index)
 {
     for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
     {
@@ -93,7 +125,7 @@ btRigidBody* Ophiuroid2::getByUserIndex(int index)
 //-----------------------------------------
 
 // create a ground
-void Ophiuroid2::CreateGround()
+void Oophiuroid2::CreateGround()
 {
     btTransform groundTransform;
     btVector3 scale = btVector3(btScalar(100.), btScalar(10.), btScalar(100.));
@@ -122,7 +154,7 @@ void Ophiuroid2::CreateGround()
 }
 
 // create an amp
-btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
+btRigidBody* Oophiuroid2::initAmp(btScalar scale, const btVector3 position)
 {
 	btCollisionShape* colShape = new btSphereShape(scale);
 	collisionShapes.push_back(colShape);
@@ -153,7 +185,7 @@ btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
 }
 
 //create body
-btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 position)
+btRigidBody* Oophiuroid2::initBody(const btVector3 scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btBoxShape(scale);
     collisionShapes.push_back(sBodyShape);
@@ -181,7 +213,7 @@ btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 positio
 }
 
 //create an arm
-btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
+btRigidBody* Oophiuroid2::initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
 {
 	btCollisionShape* sBodyShape = new btBoxShape(scale);
 	collisionShapes.push_back(sBodyShape);
@@ -210,7 +242,7 @@ btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position
 }
 
 //create a tubefeet
-btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
+btRigidBody* Oophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
     collisionShapes.push_back(sBodyShape);
@@ -237,7 +269,7 @@ btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 }
 
 // create starfish
-void Ophiuroid2::CreateStarfish()
+void Oophiuroid2::CreateStarfish()
 {
     vector<btRigidBody* > bodies_body;
     vector<btRigidBody* > bodies_tf;
@@ -326,7 +358,7 @@ void Ophiuroid2::CreateStarfish()
 }
 
 //motion of tubefeet
-void Ophiuroid2::ControllTubeFeet()
+void Oophiuroid2::ControllTubeFeet()
 {
     
     btScalar velocity_all_x = 0;
@@ -454,7 +486,7 @@ void Ophiuroid2::ControllTubeFeet()
 }
 
 //action when tubefeet attach ground
-void Ophiuroid2::ContactAction()
+void Oophiuroid2::ContactAction()
 {
     vector<int > contacts;
     
@@ -675,40 +707,40 @@ static void Render()
             if (j == 0 || j == 1 || j == 2 || j == 3)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
-				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+                glMaterialfv(GL_FRONT, GL_AMBIENT, M_ms_jade.ambient);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, M_ms_jade.diffuse);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, M_ms_jade.specular);
+				glMaterialfv(GL_FRONT, GL_SHININESS, &M_ms_jade.shininess);
 				glutSolidCube(1);
 			}
             //box
 			else if (shape == BOX_SHAPE_PROXYTYPE)
 			{
 				glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
-				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, M_ms_ruby.ambient);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, M_ms_ruby.diffuse);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, M_ms_ruby.specular);
+				glMaterialfv(GL_FRONT, GL_SHININESS, &M_ms_ruby.shininess);
 				glutSolidCube(1);
 			}
             //sphere
 			else if (shape == SPHERE_SHAPE_PROXYTYPE)
 			{
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
-				glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, M_ms_jade.ambient);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, M_ms_jade.diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, M_ms_jade.specular);
+                glMaterialfv(GL_FRONT, GL_SHININESS, &M_ms_jade.shininess);
 				glutSolidSphere(1, 100, 100);
 			}
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
                 glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
-                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
+                glMaterialfv(GL_FRONT, GL_AMBIENT, M_ms_ruby.ambient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, M_ms_ruby.diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, M_ms_ruby.specular);
+                glMaterialfv(GL_FRONT, GL_SHININESS, &M_ms_ruby.shininess);
                 ophiuroid2->glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
                 
             }
@@ -729,13 +761,13 @@ static void Render()
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 
-void Ophiuroid2::init(void)
+void Oophiuroid2::init(void)
 {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
-	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
-    glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+	glLightfv(GL_LIGHT0, GL_POSITION, M_light0pos);
+    glLightfv(GL_LIGHT1, GL_POSITION, M_light1pos);
     //glCullFace(GL_BACK);
 	//glCullFace(GL_FRONT);
 
@@ -752,7 +784,7 @@ static void idle(void)
     ophiuroid2->ControllTubeFeet();
 }
 
-void Ophiuroid2::CleanupBullet()
+void Oophiuroid2::CleanupBullet()
 {
     for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
     {
@@ -792,7 +824,7 @@ void Ophiuroid2::CleanupBullet()
     collisionShapes.clear();
 }
 
-void Ophiuroid2::InitBullet()
+void Oophiuroid2::InitBullet()
 {
     collisionConfiguration = new btDefaultCollisionConfiguration();
     
@@ -807,7 +839,7 @@ void Ophiuroid2::InitBullet()
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
-void sourcemain(int argc, char** argv, Ophiuroid2* oph2)
+void sourcemain(int argc, char** argv, Oophiuroid2* oph2)
 {
     ophiuroid2 = oph2;
 

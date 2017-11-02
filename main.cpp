@@ -10,7 +10,7 @@
 #include "Source.h"
 
 int main (int argc, char** argv) {
-    Ophiuroid2 oph;
+    Oophiuroid2 oph;
     sourcemain(argc, argv, &oph);
     return 0;
 }

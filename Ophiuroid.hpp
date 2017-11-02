@@ -9,8 +9,8 @@
 #ifndef Ophiuroid_hpp
 #define Ophiuroid_hpp
 
-#include <stdio.h>
 #include "Starfish.h"
+#include "GA.h"
 
 class Ophiuroid : Starfish {
 
@@ -18,7 +18,9 @@ private:
     
     
 public:
-    void move() {}
+    void move();
+    float evalue(GAparameter);
+    float evalue2(GAparameter);
 };
 
 #endif /* Ophiuroid_hpp */

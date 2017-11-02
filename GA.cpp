@@ -6,12 +6,8 @@
 //  Copyright © 2017年 増田貴行. All rights reserved.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "GA2.h"
-#include "Variables.h"
-#include "Ophiroid.hpp"
+#include "Ophiuroid.hpp"
 
 GAparameter GAmanager::Adam() {
     

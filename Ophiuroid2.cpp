@@ -7,3 +7,8 @@
 //
 
 #include "Ophiuroid2.hpp"
+
+void Ophiuroid2::move() {
+    
+}
+

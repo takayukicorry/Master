@@ -9,7 +9,6 @@
 #ifndef Master_hpp
 #define Master_hpp
 
-#include "Variables.h"
 #include "Ophiuroid.hpp"
 #include "Ophiuroid2.hpp"
 

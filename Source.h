@@ -6,6 +6,9 @@
 //  Copyright © 2017年 増田貴行. All rights reserved.
 //
 
+#ifndef Source_h
+#define Source_h
+
 //#include "btBulletDynamicsCommon.h"
 #include <BulletDynamics/btBulletDynamicsCommon.h>
 #include <stdio.h>
@@ -15,16 +18,13 @@
 #include <OpenGL/OpenGL.h>
 #include <iostream>
 #include <vector>
-#include "Variables.h"
 #include <math.h>
 #include <map>
 #include <random>
 //#include <OpenGL/DemoApplication.h>
+#include "Variables.h"
 
-#ifndef Source_h
-#define Source_h
-
-class Ophiuroid2 {
+class Oophiuroid2 {
     
 public:
     btDefaultCollisionConfiguration* collisionConfiguration;
@@ -84,6 +84,6 @@ public:
 
 };
 
-void sourcemain(int, char**, Ophiuroid2*);
+void sourcemain(int, char**, Oophiuroid2*);
 
 #endif /* Source_h */

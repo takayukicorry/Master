@@ -6,10 +6,10 @@
 //  Copyright © 2017年 増田貴行. All rights reserved.
 //
 
-#include "Variables.h"
-
 #ifndef GA_h
 #define GA_h
+
+#include "Variables.h"
 
 class GAparameter {
 

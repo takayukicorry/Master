@@ -7,3 +7,15 @@
 //
 
 #include "Ophiuroid.hpp"
+
+float Ophiuroid::evalue(GAparameter p) {
+    return 0;
+}
+
+float Ophiuroid::evalue2(GAparameter p) {
+    return 0;
+}
+
+void Ophiuroid::move() {
+    
+}

@@ -6,11 +6,10 @@
 //  Copyright © 2017年 増田貴行. All rights reserved.
 //
 
-#include "Variables.h"
-#include "GA.h"
-
 #ifndef GA2_h
 #define GA2_h
+
+#include "GA.h"
 
 class GAmanager {
 
