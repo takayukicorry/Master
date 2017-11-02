@@ -7,10 +7,14 @@
 //
 
 #include <stdio.h>
-#include "Source.h"
+#include "MasterStuff.hpp"
+#include "Master.hpp"
 
 int main (int argc, char** argv) {
-    Oophiuroid2 oph;
-    sourcemain(argc, argv, &oph);
+    Starfish* oph2 = new Ophiuroid2();
+    Master master;
+    
+    master.setStarfish(oph2);
+    mastermain(argc, argv, &master);
     return 0;
 }

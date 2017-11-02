@@ -19,3 +19,11 @@ float Ophiuroid::evalue2(GAparameter p) {
 void Ophiuroid::move() {
     
 }
+
+void Ophiuroid::idle() {
+    
+}
+
+void Ophiuroid::create() {
+    
+}

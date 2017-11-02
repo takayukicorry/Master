@@ -12,13 +12,15 @@
 #include "Starfish.h"
 #include "GA.h"
 
-class Ophiuroid : Starfish {
+class Ophiuroid : public Starfish {
 
 private:
     
     
 public:
     void move();
+    void idle();
+    void create();
     float evalue(GAparameter);
     float evalue2(GAparameter);
 };

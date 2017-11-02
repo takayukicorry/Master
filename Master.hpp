@@ -16,28 +16,32 @@
 class Master {
     
 private:
-    btDefaultCollisionConfiguration* collisionConfiguration;
-    btCollisionDispatcher* dispatcher;
-    btBroadphaseInterface* overlappingPairCache;
-    btSequentialImpulseConstraintSolver* solver;
-    btDiscreteDynamicsWorld* dynamicsWorld;
-    btCollisionShape* groundShape;
-    btAlignedObjectArray<btCollisionShape*> collisionShapes;
-    int time_step;
+    static btDefaultCollisionConfiguration* collisionConfiguration;
+    static btCollisionDispatcher* dispatcher;
+    static btBroadphaseInterface* overlappingPairCache;
+    static btSequentialImpulseConstraintSolver* solver;
     
-    std::map<int, Starfish*> Starfishes;
+    Starfish* starfish;
     
 public:
+    static int time_step;
+    static btDiscreteDynamicsWorld* dynamicsWorld;
+    static btCollisionShape* groundShape;
+    static btAlignedObjectArray<btCollisionShape*> collisionShapes;
+    
     Master();
     
-    btDiscreteDynamicsWorld* getWorld() { return dynamicsWorld; }
+    //btDiscreteDynamicsWorld* getWorld() { return dynamicsWorld; }
     void Render();
+    void idle();
+    void InitBullet();
     void CleanupBullet();
-    void timer(int t) { time_step += t; }
-    int getTime() { return time_step; }
-    void setStarfish(int i, Starfish* s) { Starfishes[i] = s; }
-    std::map<int, Starfish*> getStarfishes() { return Starfishes; }
+    void init();
+    //void timer(int t) { time_step += t; }
+    void setStarfish(Starfish* s) { starfish = s; }
+    Starfish* getStarfishes() { return starfish; }
     void createGround();
+    void createStarfish();
     
 };
 
