@@ -30,14 +30,11 @@ public:
     static btAlignedObjectArray<btCollisionShape*> collisionShapes;
     
     Master();
-    
-    //btDiscreteDynamicsWorld* getWorld() { return dynamicsWorld; }
     void Render();
     void idle();
     void InitBullet();
     void CleanupBullet();
     void init();
-    //void timer(int t) { time_step += t; }
     void setStarfish(Starfish* s) { starfish = s; }
     Starfish* getStarfishes() { return starfish; }
     void createGround();
