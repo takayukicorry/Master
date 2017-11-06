@@ -33,7 +33,6 @@ private:
     std::map<int, int> ResumeTime_tf;//time to start swinging
     
 public:
-    void move();
     void idle();
     void create();
     btRigidBody* initAmp(btScalar, const btVector3);

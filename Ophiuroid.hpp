@@ -18,7 +18,6 @@ private:
     
     
 public:
-    void move();
     void idle();
     void create();
     float evalue(GAparameter);

@@ -17,10 +17,6 @@ enum CollisionGroup{
     RX_COL_AMP = 8   // 1000
 };
 
-void Ophiuroid2::move() {
-    
-}
-
 void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
@@ -51,13 +47,13 @@ void Ophiuroid2::create() {
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
     btVector3 pos_tf, pos_amp;
     int col, row;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1; i++) {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y-(RADIUS*2+LENGTH/2), pow(-1, col) * RADIUS * 2);
         //pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4 - (RADIUS*2+LENGTH/2)*sin(ANGLE_DETACH), INIT_POS_Y-(RADIUS*2+LENGTH/2)*cos(ANGLE_DETACH), pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
-        for (int j = 1; j <= 5; j++) {
+        for (int j = 1; j <= 1; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
@@ -106,9 +102,8 @@ void Ophiuroid2::create() {
     }
     
     for (int i = 0; i < constraints.size(); i++) {
-        Master::dynamicsWorld->addConstraint(constraints[i]);
+        Master::dynamicsWorld->addConstraint(constraints[i], true);
     }
-
 }
 
 btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
@@ -125,10 +120,9 @@ btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
     
     btVector3 localInertia(0, 0, 0);
     if (isDynamic)
-        colShape->calculateLocalInertia(mass, localInertia);
+        Master::groundShape->calculateLocalInertia(mass, localInertia);
     
     startTransform.setOrigin(position);
-    
     
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
@@ -169,8 +163,8 @@ btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 positio
 //create an arm
 btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
 {
-    btCollisionShape* sBodyShape = new btBoxShape(scale);
-    Master::collisionShapes.push_back(sBodyShape);
+    btCollisionShape* sArmShape = new btBoxShape(scale);
+    Master::collisionShapes.push_back(sArmShape);
     
     btScalar mass1(M_ARM);
     bool isDynamic = (mass1 != 0.f);
@@ -186,7 +180,7 @@ btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position
     sBodyTransform.setRotation(rot);
     btDefaultMotionState* myMotionState1 = new btDefaultMotionState(sBodyTransform);
     
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sArmShape, localInertia1);
     btRigidBody* body = new btRigidBody(rbInfo);
     
     body->setActivationState(DISABLE_DEACTIVATION);
@@ -197,8 +191,8 @@ btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position
 
 btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 {
-    btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
-    Master::collisionShapes.push_back(sBodyShape);
+    btCollisionShape* sTFShape = new btCapsuleShape(scale[0], scale[1]);
+    Master::collisionShapes.push_back(sTFShape);
     
     btScalar mass1(M_TF);
     bool isDynamic = (mass1 != 0.f);
@@ -207,13 +201,12 @@ btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
     if (isDynamic)
         Master::groundShape->calculateLocalInertia(mass1, localInertia1);
     
-    
     btTransform sBodyTransform;
     sBodyTransform.setIdentity();
     sBodyTransform.setOrigin(position);
     btDefaultMotionState* myMotionState1 = new btDefaultMotionState(sBodyTransform);
     
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sTFShape, localInertia1);
     btRigidBody* body = new btRigidBody(rbInfo);
     
     body->setActivationState(DISABLE_DEACTIVATION);
@@ -223,7 +216,6 @@ btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 
 void Ophiuroid2::ControllTubeFeet()
 {
-    
     btScalar velocity_all_x = 0;
     btScalar velocity_all_z = 0;
     //calculate interaction of tf

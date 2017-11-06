@@ -31,7 +31,7 @@ public:
     btCollisionDispatcher* dispatcher;
     btBroadphaseInterface* overlappingPairCache;
     btSequentialImpulseConstraintSolver* solver;
-    btDiscreteDynamicsWorld* dynamicsWorld;
+    //btDiscreteDynamicsWorld* dynamicsWorld;
     btCollisionShape* groundShape;
     btAlignedObjectArray<btCollisionShape*> collisionShapes;
     
@@ -84,6 +84,6 @@ public:
 
 };
 
-void sourcemain(int, char**, Oophiuroid2*);
+void sourcemain(int, char**, Oophiuroid2*, btDiscreteDynamicsWorld*);
 
 #endif /* Source_h */
