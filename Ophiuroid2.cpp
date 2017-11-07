@@ -17,10 +17,18 @@ enum CollisionGroup{
     RX_COL_AMP = 8   // 1000
 };
 
+Ophiuroid2::Ophiuroid2() {
+    
+}
+
 void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
     ControllTubeFeet();
+}
+
+bool Ophiuroid2::checkState() {
+    return false;
 }
 
 void Ophiuroid2::create() {
@@ -59,6 +67,7 @@ void Ophiuroid2::create() {
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
             int index = 100 + 10 * i + j;
             body_tf->setUserIndex(index);
+            body_amp->setUserIndex(index);
             TF_object[index] = body_tf;
             TF_object_amp[index] = body_amp;
             TF_contact[index] = false;
@@ -110,7 +119,6 @@ void Ophiuroid2::create() {
 btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
 {
     btCollisionShape* colShape = new btSphereShape(scale);
-    Master::collisionShapes.push_back(colShape);
     
     btTransform startTransform;
     startTransform.setIdentity();
@@ -139,7 +147,6 @@ btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
 btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btBoxShape(scale);
-    Master::collisionShapes.push_back(sBodyShape);
     
     btTransform sBodyTransform;
     sBodyTransform.setIdentity();
@@ -166,7 +173,6 @@ btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 positio
 btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
 {
     btCollisionShape* sBodyShape = new btBoxShape(scale);
-    Master::collisionShapes.push_back(sBodyShape);
     
     btScalar mass1(M_ARM);
     bool isDynamic = (mass1 != 0.f);
@@ -194,7 +200,6 @@ btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position
 btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
-    Master::collisionShapes.push_back(sBodyShape);
     
     btScalar mass1(M_TF);
     bool isDynamic = (mass1 != 0.f);
@@ -465,6 +470,7 @@ void Ophiuroid2::ContactAction()
                             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
                             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
                             body_tf->setUserIndex(index);
+                            body_amp->setUserIndex(index);
                             TF_object[index] = body_tf;
                             TF_object_amp[index] = body_amp;
                             TF_contact[index] = false;

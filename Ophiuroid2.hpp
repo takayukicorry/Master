@@ -33,7 +33,10 @@ private:
     std::map<int, int> ResumeTime_tf;//time to start swinging
     
 public:
+    Ophiuroid2();
+    
     void idle();
+    bool checkState();
     void create();
     btRigidBody* initAmp(btScalar, const btVector3);
     btRigidBody* initBody(const btVector3, const btVector3);

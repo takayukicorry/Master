@@ -27,7 +27,6 @@ public:
     static int time_step;
     static btDiscreteDynamicsWorld* dynamicsWorld;
     static btCollisionShape* groundShape;
-    static btAlignedObjectArray<btCollisionShape*> collisionShapes;
     
     Master();
     void Render();
@@ -39,7 +38,8 @@ public:
     Starfish* getStarfishes() { return starfish; }
     void createGround();
     void createStarfish();
-    
+    void CleanupStarfish();
+    void checkStarfish();
 };
 
 #endif /* Master_hpp */

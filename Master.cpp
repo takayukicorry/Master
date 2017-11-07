@@ -62,7 +62,6 @@ btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
 btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseConstraintSolver;
 btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
 btCollisionShape* Master::groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(10.), btScalar(100.)));
-btAlignedObjectArray<btCollisionShape*> Master::collisionShapes = *new btAlignedObjectArray<btCollisionShape*>();
 int Master::time_step = 0;
 
 Master::Master() {
@@ -149,6 +148,29 @@ void Master::Render() {
     glutSwapBuffers();
 }
 
+void Master::CleanupStarfish() {
+    for (int i = Master::dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+    {
+        btCollisionObject* obj = Master::dynamicsWorld->getCollisionObjectArray()[i];
+        if (obj->getUserIndex() < 100) {
+            continue;
+        }
+        btRigidBody* body = btRigidBody::upcast(obj);
+        if (body && body->getMotionState())
+        {
+            delete body->getMotionState();
+        }
+        Master::dynamicsWorld->removeCollisionObject(obj);
+        delete obj;
+    }
+    
+    for(int i = Master::dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
+        btTypedConstraint* constraint = Master::dynamicsWorld->getConstraint(i);
+        Master::dynamicsWorld->removeConstraint(constraint);
+        delete constraint;
+    }
+}
+
 void Master::CleanupBullet() {
     for (int i = Master::dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
     {
@@ -161,12 +183,7 @@ void Master::CleanupBullet() {
         Master::dynamicsWorld->removeCollisionObject(obj);
         delete obj;
     }
-    for (int j = 0; j<Master::collisionShapes.size(); j++)
-    {
-        btCollisionShape* shape = Master::collisionShapes[j];
-        Master::collisionShapes[j] = 0;
-        delete shape;
-    }
+    
     for(int i = Master::dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
         btTypedConstraint* constraint = Master::dynamicsWorld->getConstraint(i);
         Master::dynamicsWorld->removeConstraint(constraint);
@@ -177,7 +194,6 @@ void Master::CleanupBullet() {
     delete Master::overlappingPairCache;
     delete Master::dispatcher;
     delete Master::collisionConfiguration;
-    Master::collisionShapes.clear();
 }
 
 void Master::createGround() {
@@ -191,7 +207,6 @@ void Master::createGround() {
     
     for (int i = 0; i < NUM_GROUND; i++) {
         for (int j = 0; j < NUM_GROUND; j++) {
-            Master::collisionShapes.push_back(Master::groundShape);
             groundTransform.setIdentity();
             groundTransform.setOrigin(btVector3((NUM_GROUND-1-i*2)*scale[0], -16, (NUM_GROUND-1-j*2)*scale[2]));
             
@@ -210,10 +225,26 @@ void Master::createStarfish() {
     starfish->create();
 }
 
+void Master::checkStarfish() {
+    if (!starfish->checkState()) {
+        CleanupStarfish();
+        Starfish* oph;
+        if (strcmp("Ophiuroid2",typeid(starfish).name())) {
+            oph= new Ophiuroid();
+        } else {
+            oph= new Ophiuroid2();
+        }
+        setStarfish(oph);
+        createStarfish();
+    }
+}
+
 void Master::idle() {
     Master::time_step++;
     Master::dynamicsWorld->stepSimulation(1.f / FPS, 10);
+    
     starfish->idle();
+    checkStarfish();
 }
 
 void Master::init() {

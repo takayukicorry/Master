@@ -18,7 +18,10 @@ private:
     
     
 public:
+    Ophiuroid();
+    
     void idle();
+    bool checkState();
     void create();
     float evalue(GAparameter);
     float evalue2(GAparameter);
