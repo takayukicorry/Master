@@ -14,7 +14,6 @@
 class Starfish {
     
 public:
-    virtual void move() = 0;
     virtual void idle() = 0;
     virtual void create() = 0;
     virtual ~Starfish() {}

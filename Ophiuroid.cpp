@@ -16,10 +16,6 @@ float Ophiuroid::evalue2(GAparameter p) {
     return 0;
 }
 
-void Ophiuroid::move() {
-    
-}
-
 void Ophiuroid::idle() {
     
 }

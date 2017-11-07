@@ -57,23 +57,15 @@ void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 posi
 }
 /*****************/
 btDefaultCollisionConfiguration* Master::collisionConfiguration = new btDefaultCollisionConfiguration();
-
 btCollisionDispatcher* Master::dispatcher = new btCollisionDispatcher(Master::collisionConfiguration);
-
 btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
-
 btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseConstraintSolver;
-
 btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
-
 btCollisionShape* Master::groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(10.), btScalar(100.)));
-
 btAlignedObjectArray<btCollisionShape*> Master::collisionShapes = *new btAlignedObjectArray<btCollisionShape*>();
-
 int Master::time_step = 0;
 
 Master::Master() {
-
     Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
@@ -220,6 +212,7 @@ void Master::createStarfish() {
 
 void Master::idle() {
     Master::time_step++;
+    Master::dynamicsWorld->stepSimulation(1.f / FPS, 10);
     starfish->idle();
 }
 

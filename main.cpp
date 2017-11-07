@@ -12,7 +12,7 @@
 
 int main (int argc, char** argv) {
     Starfish* oph2 = new Ophiuroid2();
-    Master master;
+    Master master = *new Master();
     
     master.setStarfish(oph2);
     mastermain(argc, argv, &master);

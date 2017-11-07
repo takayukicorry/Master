@@ -17,10 +17,6 @@ enum CollisionGroup{
     RX_COL_AMP = 8   // 1000
 };
 
-void Ophiuroid2::move() {
-    
-}
-
 void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
@@ -155,7 +151,7 @@ btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 positio
     
     btVector3 localInertia(0, 0, 0);
     if (isDynamic)
-        Master::groundShape->calculateLocalInertia(mass, localInertia);
+        sBodyShape->calculateLocalInertia(mass, localInertia);
     
     btDefaultMotionState* myMotionState = new btDefaultMotionState(sBodyTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sBodyShape, localInertia);
@@ -177,7 +173,7 @@ btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position
     
     btVector3 localInertia1(0, 0, 0);
     if (isDynamic)
-        Master::groundShape->calculateLocalInertia(mass1, localInertia1);
+        sBodyShape->calculateLocalInertia(mass1, localInertia1);
     
     
     btTransform sBodyTransform;
