@@ -14,6 +14,7 @@
 class Starfish {
     
 public:
+    btDiscreteDynamicsWorld* dynamicsWorld = 0;
     virtual void idle() = 0;
     virtual void create() = 0;
     virtual ~Starfish() {}

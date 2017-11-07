@@ -85,20 +85,18 @@ GAparameter GAmanager::Adam() {
 
 float GAmanager::evalue(GAparameter p)
 {
-    Ophiuroid ophiuroid;
+    Ophiuroid ophiuroid(dynamicsWorld);
     float value = ophiuroid.evalue(p);
     return value;
-    
     
     //return p.cycle;
 }
 
 float GAmanager::evalue2(GAparameter p)
 {
-    Ophiuroid ophiuroid;
+    Ophiuroid ophiuroid(dynamicsWorld);
     float value = ophiuroid.evalue2(p);
     return value;
-    
     
     //return p.cycle;
 }
@@ -259,8 +257,9 @@ GAparameter GAmanager::Mutate(GAparameter p)
     return c;
 }
 
-GAmanager::GAmanager()
+GAmanager::GAmanager(btDiscreteDynamicsWorld* world)
 {
+    dynamicsWorld = world;
     for (int i = 0; i<POOL_SIZE; i++)
     {
         pool[i] = Adam();

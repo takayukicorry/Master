@@ -56,18 +56,13 @@ void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 posi
     glEnd();
 }
 /*****************/
-btDefaultCollisionConfiguration* Master::collisionConfiguration = new btDefaultCollisionConfiguration();
-btCollisionDispatcher* Master::dispatcher = new btCollisionDispatcher(Master::collisionConfiguration);
-btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
-btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseConstraintSolver;
-btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
 btCollisionShape* Master::groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(10.), btScalar(100.)));
 btAlignedObjectArray<btCollisionShape*> Master::collisionShapes = *new btAlignedObjectArray<btCollisionShape*>();
 int Master::time_step = 0;
 
-Master::Master() {
-
-    Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
+Master::Master(btDiscreteDynamicsWorld* world) {
+    dynamicsWorld = world;
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
 void Master::Render() {
@@ -83,9 +78,9 @@ void Master::Render() {
     glPushMatrix();
     
     //draw each object
-    for (int j = Master::dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+    for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
     {
-        btCollisionObject* obj = Master::dynamicsWorld->getCollisionObjectArray()[j];
+        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
         btRigidBody* body = btRigidBody::upcast(obj);
         if (body && body->getMotionState())
         {
@@ -151,15 +146,15 @@ void Master::Render() {
 }
 
 void Master::CleanupBullet() {
-    for (int i = Master::dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+    for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
     {
-        btCollisionObject* obj = Master::dynamicsWorld->getCollisionObjectArray()[i];
+        btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
         btRigidBody* body = btRigidBody::upcast(obj);
         if (body && body->getMotionState())
         {
             delete body->getMotionState();
         }
-        Master::dynamicsWorld->removeCollisionObject(obj);
+        dynamicsWorld->removeCollisionObject(obj);
         delete obj;
     }
     for (int j = 0; j<Master::collisionShapes.size(); j++)
@@ -168,16 +163,12 @@ void Master::CleanupBullet() {
         Master::collisionShapes[j] = 0;
         delete shape;
     }
-    for(int i = Master::dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
-        btTypedConstraint* constraint = Master::dynamicsWorld->getConstraint(i);
-        Master::dynamicsWorld->removeConstraint(constraint);
+    for(int i = dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
+        btTypedConstraint* constraint = dynamicsWorld->getConstraint(i);
+        dynamicsWorld->removeConstraint(constraint);
         delete constraint;
     }
-    delete Master::dynamicsWorld;
-    delete Master::solver;
-    delete Master::overlappingPairCache;
-    delete Master::dispatcher;
-    delete Master::collisionConfiguration;
+    delete dynamicsWorld;
     Master::collisionShapes.clear();
 }
 
@@ -202,7 +193,7 @@ void Master::createGround() {
             body->setActivationState(DISABLE_DEACTIVATION);
             body->setUserIndex(1+NUM_GROUND*i+j);
             
-            Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+            dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
         }
     }
 }
@@ -213,6 +204,7 @@ void Master::createStarfish() {
 
 void Master::idle() {
     Master::time_step++;
+    dynamicsWorld->stepSimulation(1.f / FPS, 10);
     starfish->idle();
 }
 

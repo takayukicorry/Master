@@ -12,12 +12,14 @@
 #include "GA.h"
 
 class GAmanager {
-
+private:
+    btDiscreteDynamicsWorld* dynamicsWorld;
+    
 public:
     GAparameter f;
     GAparameter pool[POOL_SIZE];
     
-    GAmanager();
+    GAmanager(btDiscreteDynamicsWorld*);
     GAparameter Adam();
     float evalue(GAparameter p);
     float evalue2(GAparameter p);

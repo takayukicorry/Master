@@ -18,6 +18,7 @@ private:
     
     
 public:
+    Ophiuroid(btDiscreteDynamicsWorld*);
     void idle();
     void create();
     float evalue(GAparameter);

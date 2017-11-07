@@ -16,20 +16,15 @@
 class Master {
     
 private:
-    static btDefaultCollisionConfiguration* collisionConfiguration;
-    static btCollisionDispatcher* dispatcher;
-    static btBroadphaseInterface* overlappingPairCache;
-    static btSequentialImpulseConstraintSolver* solver;
-    
+    btDiscreteDynamicsWorld* dynamicsWorld;
     Starfish* starfish;
     
 public:
     static int time_step;
-    static btDiscreteDynamicsWorld* dynamicsWorld;
     static btCollisionShape* groundShape;
     static btAlignedObjectArray<btCollisionShape*> collisionShapes;
     
-    Master();
+    Master(btDiscreteDynamicsWorld*);
     void Render();
     void idle();
     void InitBullet();

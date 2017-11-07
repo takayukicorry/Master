@@ -8,6 +8,10 @@
 
 #include "Ophiuroid.hpp"
 
+Ophiuroid::Ophiuroid(btDiscreteDynamicsWorld* world) {
+    dynamicsWorld = world;
+}
+
 float Ophiuroid::evalue(GAparameter p) {
     return 0;
 }

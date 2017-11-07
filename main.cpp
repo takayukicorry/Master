@@ -8,16 +8,23 @@
 
 #include <stdio.h>
 
-#if 0
+#if 1
 
 #include "MasterStuff.hpp"
 #include "Master.hpp"
 
 int main (int argc, char** argv) {
-    Starfish* oph2 = new Ophiuroid2();
-    Master master = *new Master();
-    
+    /*create Bullet world*/
+    btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
+    btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
+    btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
+    btDiscreteDynamicsWorld* world = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    /*create Master world & Starfish*/
+    Starfish* oph2 = new Ophiuroid2(world);
+    Master master = *new Master(world);
     master.setStarfish(oph2);
+    /*start Master world*/
     mastermain(argc, argv, &master);
     
     return 0;
