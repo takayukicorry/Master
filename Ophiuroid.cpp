@@ -69,7 +69,7 @@ void Ophiuroid::create() {
     btTransform transformY;
     transform.setIdentity();
     transform.setOrigin(vRoot);
-    m_bodies[0] = createRigidBody(btScalar(0.5), offset*transform, m_shapes[0]);
+    m_bodies[0] = createRigidBody(btScalar(0), offset*transform, m_shapes[0]);
     
     // legs
     for ( i=0; i<NUM_LEGS; i++)
@@ -145,16 +145,15 @@ void Ophiuroid::create() {
         hinge2C = new btUniversalConstraint(*m_bodies[0], *m_bodies[1+(NUM_JOINT+1)*i],anchor, parentAxis, childAxis);
         hinge2C->setLinearLowerLimit(btVector3(0,0,0));
         hinge2C->setLinearUpperLimit(btVector3(0,0,0));
-        hinge2C->setAngularLowerLimit(btVector3(0,-M_PI_2,-M_PI_2));//ローカル
+        hinge2C->setAngularLowerLimit(btVector3(0,-M_PI_2,-M_PI_2));
         hinge2C->setAngularUpperLimit(btVector3(0,M_PI_2,M_PI_2));
-        //hinge2C->setLimit(btScalar(-0.1), btScalar(0.1));
         m_joints[(NUM_JOINT+1)*i] = hinge2C;
         Master::dynamicsWorld->addConstraint(m_joints[(NUM_JOINT+1)*i], true);
         
         
         const int AXIS1_ID = 2;
         const int AXIS2_ID = 1;
-        const float MAX_MOTOR_TORQUE = 0.8;
+        const float MAX_MOTOR_TORQUE = 10000000000;
         m_motor1[i] = hinge2C->getRotationalLimitMotor(AXIS1_ID);
         m_motor2[i] = hinge2C->getRotationalLimitMotor(AXIS2_ID);
         m_motor1[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;
@@ -169,12 +168,14 @@ void Ophiuroid::create() {
         for (int k = 1; k <= NUM_JOINT; k++)
         {
             localA.setIdentity(); localB.setIdentity(); localC.setIdentity();
-            localA.getBasis().setEulerZYX(0,-fAngle,0);    localA.setOrigin(JointPoint);//ここ何が正解なんだ？
+            localA.getBasis().setEulerZYX(0,-fAngle,0);
+            localA.setOrigin(JointPoint);
             localB = m_bodies[k+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
             localC = m_bodies[k+1+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
             joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], localB, localC);
-            //hingeC->setLimit(btScalar(-0.01), btScalar(0.01));
             joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            /*************  なんでこれ効かないのや？？  ****************/
+            joint2->setMotorTarget(M_PI, M_PI/10);
             m_joints[k+(NUM_JOINT+1)*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints[k+(NUM_JOINT+1)*i], true);
             JointPoint += btVector3(btScalar(fCos*(fLegLength+2*fLegWidth)*cos(k*theta)),btScalar(-(fLegLength+2*fLegWidth)*sin(k*theta)),btScalar(fSin*(fLegLength+2*fLegWidth)*cos(k*theta)));
