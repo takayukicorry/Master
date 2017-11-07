@@ -33,13 +33,6 @@ GLfloat M_blue[] = { 0.2, 0.2, 0.8, 1.0 };
 GLfloat M_yellow[] = { 0.8, 0.8, 0.2, 1.0 };
 GLfloat M_white[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat M_shininess = 30.0;
-enum M_CollisionGroup{
-    RX_COL_NOTHING = 0, // 0000
-    RX_COL_GROUND = 1, // 0001
-    RX_COL_BODY = 2,  // 0010
-    RX_COL_TF = 4,  // 0100
-    RX_COL_AMP = 8   // 1000
-};
 
 //-----------------------------------------
 //private function

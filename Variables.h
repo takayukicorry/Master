@@ -17,6 +17,14 @@
 #include <random>
 //#include <OpenGL/DemoApplication.h>
 
+enum CollisionGroup{
+    RX_COL_NOTHING = 0, // 0000
+    RX_COL_GROUND = 1, // 0001
+    RX_COL_BODY = 2,  // 0010
+    RX_COL_TF = 4,  // 0100
+    RX_COL_AMP = 8   // 1000
+};
+
 /*卒論で使用*/
 #define ARRAY_LENGTH 100
 #define NUM_LEGS 5
@@ -26,6 +34,7 @@
 #define MIN_CYCLE 1500
 #define MAX_ANGLE M_PI
 #define MIN_ANGLE M_PI/3
+#define NUM_JOINT 3
 
 
 #define FPS 60.f

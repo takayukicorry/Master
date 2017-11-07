@@ -9,14 +9,6 @@
 #include "Ophiuroid2.hpp"
 #include "Utils.hpp"
 
-enum CollisionGroup{
-    RX_COL_NOTHING = 0, // 0000
-    RX_COL_GROUND = 1, // 0001
-    RX_COL_BODY = 2,  // 0010
-    RX_COL_TF = 4,  // 0100
-    RX_COL_AMP = 8   // 1000
-};
-
 Ophiuroid2::Ophiuroid2() {
     
 }
@@ -40,6 +32,7 @@ void Ophiuroid2::create() {
     /*** create body ***/
     btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
     BODY_object[0] = body_body;
+    body_body->setUserIndex(1000);
     bodies_body.push_back(body_body);
     /*for (int i = 0; i < 5; i++) {
      btRigidBody* body_arm = initArm(btVector3(RADIUS*6, LENGTH, RADIUS*2), RotateY(btVector3(RADIUS*10, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/5), btQuaternion(btVector3(0, 1, 0), M_PI*2*i/5));

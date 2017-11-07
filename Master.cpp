@@ -33,13 +33,6 @@ GLfloat blue[] = { 0.2, 0.2, 0.8, 1.0 };
 GLfloat yellow[] = { 0.8, 0.8, 0.2, 1.0 };
 GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat shininess = 30.0;
-enum CollisionGroup{
-    RX_COL_NOTHING = 0, // 0000
-    RX_COL_GROUND = 1, // 0001
-    RX_COL_BODY = 2,  // 0010
-    RX_COL_TF = 4,  // 0100
-    RX_COL_AMP = 8   // 1000
-};
 
 void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 position)
 {
@@ -55,7 +48,14 @@ void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 posi
     
     glEnd();
 }
-/*****************/
+/***********************************/
+/********                  *********/
+/********                  *********/
+/********                  *********/
+/********                  *********/
+/********                  *********/
+/***********************************/
+
 btDefaultCollisionConfiguration* Master::collisionConfiguration = new btDefaultCollisionConfiguration();
 btCollisionDispatcher* Master::dispatcher = new btCollisionDispatcher(Master::collisionConfiguration);
 btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
@@ -136,6 +136,15 @@ void Master::Render() {
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
                 glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
                 
+            }
+            else if (shape == CYLINDER_SHAPE_PROXYTYPE)
+            {
+                glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
+                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
+                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
+                glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
             }
             glPopMatrix();
         }
@@ -259,5 +268,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(100,300,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(100,50,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
