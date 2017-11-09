@@ -77,7 +77,7 @@ void Ophiuroid::create() {
     btTransform transformY;
     transform.setIdentity();
     transform.setOrigin(vRoot);
-    m_bodies[0] = createRigidBody(btScalar(0), offset*transform, m_shapes[0]);
+    m_bodies[0] = createRigidBody(btScalar(0.5), offset*transform, m_shapes[0]);
     
     // legs
     for ( i=0; i<NUM_LEGS; i++)
