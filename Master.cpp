@@ -252,7 +252,7 @@ void Master::checkStarfish() {
         CleanupStarfish();
         Starfish* oph;
         if (strcmp("Ophiuroid2",typeid(starfish).name())) {
-            oph= new Ophiuroid();
+            oph = new Ophiuroid(manager.pool[0]);
         } else {
             oph= new Ophiuroid2();
         }

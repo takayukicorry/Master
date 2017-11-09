@@ -22,17 +22,26 @@ private:
     std::map<int, btRotationalLimitMotor*> m_motor1;//handle
     std::map<int, btRotationalLimitMotor*> m_motor2;//wheel
     std::map<int, btCollisionShape*> m_shapes;
-
+    int leg_state[NUM_LEGS];
+    int turn_direction[NUM_LEGS];
+    GAparameter m_param;
+    
 public:
-    Ophiuroid();
+    Ophiuroid(GAparameter);
     
     void idle();
     bool checkState();
     void create();
-    float evalue(GAparameter);
-    float evalue2(GAparameter);
+    float evalue();
+    float evalue2();
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*);
-    
+    void setMotorTarget(double);
+    void setMotorTarget2(double);
+    void setParam(GAparameter p) {m_param = p;}
+    btTypedConstraint** GetJoints() {return &m_joints[0];}
+    btRigidBody** GetBodies(){return &m_bodies[0];}
+    btRotationalLimitMotor** GetMotor1() {return &m_motor1[0];}
+    btRotationalLimitMotor** GetMotor2() {return &m_motor2[0];}
 };
 
 #endif /* Ophiuroid_hpp */

@@ -85,8 +85,8 @@ GAparameter GAmanager::Adam() {
 
 float GAmanager::evalue(GAparameter p)
 {
-    Ophiuroid ophiuroid;
-    float value = ophiuroid.evalue(p);
+    Ophiuroid ophiuroid(p);
+    float value = ophiuroid.evalue();
     return value;
     
     
@@ -95,8 +95,8 @@ float GAmanager::evalue(GAparameter p)
 
 float GAmanager::evalue2(GAparameter p)
 {
-    Ophiuroid ophiuroid;
-    float value = ophiuroid.evalue2(p);
+    Ophiuroid ophiuroid(p);
+    float value = ophiuroid.evalue2();
     return value;
     
     

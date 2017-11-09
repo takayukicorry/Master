@@ -10,7 +10,9 @@
 #include "Utils.hpp"
 
 Ophiuroid2::Ophiuroid2() {
-    
+    ///////////////////////////////////
+    ///  create() で変数は初期化される  ///
+    ///////////////////////////////////
 }
 
 void Ophiuroid2::idle() {
@@ -20,7 +22,7 @@ void Ophiuroid2::idle() {
 }
 
 bool Ophiuroid2::checkState() {
-    return true;
+    return false;
 }
 
 void Ophiuroid2::create() {
