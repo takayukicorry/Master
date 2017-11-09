@@ -51,20 +51,14 @@ void glutSolidCylinder(btScalar radius, btScalar halfheight, int num)
 
 void glutSolidCapusule(btScalar radius, btScalar halfheight, int num)
 {
-    glBegin(GL_POLYGON);
-    
-    for (int i = 0; i < num; i++) {
-        glVertex3d(radius * cos((M_PI*2/num)*i), halfheight, radius * sin((M_PI*2/num)*i));
-        glVertex3d(radius * cos((M_PI*2/num)*(i+1)), halfheight, radius * sin((M_PI*2/num)*(i+1)));
-        glVertex3d(radius * cos((M_PI*2/num)*(i+1)), - halfheight, radius * sin((M_PI*2/num)*(i+1)));
-        glVertex3d(radius * cos((M_PI*2/num)*i), - halfheight, radius * sin((M_PI*2/num)*i));
-    }
-    
-    glEnd();
-    glScaled(radius, radius, radius);
+    glutSolidCylinder(radius, halfheight, num);
     glTranslated(0, halfheight, 0);
+    glPushMatrix();
+    glScaled(radius, radius, radius);
     glutSolidSphere(1, 100, 100);
+    glPopMatrix();
     glTranslated(0, -2*halfheight, 0);
+    glScaled(radius, radius, radius);
     glutSolidSphere(1, 100, 100);
 }
 
@@ -153,7 +147,7 @@ void Master::Render() {
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                glutSolidCapusule(halfExtent[0], halfExtent[1]-halfExtent[0], 10);
+                glutSolidCapusule(halfExtent[0], halfExtent[1], 10);
 
             }
             else if (shape == CYLINDER_SHAPE_PROXYTYPE)

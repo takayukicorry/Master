@@ -20,7 +20,7 @@ void Ophiuroid2::idle() {
 }
 
 bool Ophiuroid2::checkState() {
-    return false;
+    return true;
 }
 
 void Ophiuroid2::create() {
