@@ -33,12 +33,12 @@ void Ophiuroid::create() {
     // Setup geometry
     //
     float fBodySize = 5;
-    float fLegLength = 8/NUM_JOINT;
-    
-    float fHeight = 15;//落ちる高さ
+    float fLegLength = 15/NUM_JOINT;
+    float fLegWidth = 3;
+
+    float fHeight = 15;
     float alpha = 37*M_PI/36;//thighとshinが何度開いてるか初期値
     float theta = M_PI - alpha;
-    float fLegWidth = 3;
     GAmanager manager;;
     
     m_shapes[0] = new btCylinderShape(btVector3(fBodySize,fLegWidth,fBodySize));
@@ -112,9 +112,9 @@ void Ophiuroid::create() {
     
     for (i = 0; i < m_bodies.size(); ++i)
     {
-        m_bodies[i]->setDamping(0.05, 0.85);
-        m_bodies[i]->setDeactivationTime(1000000000000.f);
-        m_bodies[i]->setSleepingThresholds(1.6, 2.5);
+        //m_bodies[i]->setDamping(0.05, 0.85);
+        //m_bodies[i]->setDeactivationTime(1000000000000.f);
+        //m_bodies[i]->setSleepingThresholds(1.6, 2.5);
         //m_bodies[i]->setSleepingThresholds(0.5f, 0.5f);
         m_bodies[i]->forceActivationState(DISABLE_DEACTIVATION);
         

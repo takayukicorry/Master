@@ -34,20 +34,40 @@ GLfloat yellow[] = { 0.8, 0.8, 0.2, 1.0 };
 GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat shininess = 30.0;
 
-void glutSolidCylinder(btScalar radius, btScalar height, int num, btVector3 position)
+void glutSolidCylinder(btScalar radius, btScalar halfheight, int num)
 {
     glBegin(GL_POLYGON);
     
     for (int i = 0; i < num; i++) {
-        glVertex3d(position[0] + radius * cos((M_PI*2/num)*i), position[1] + height, position[2] + radius * sin((M_PI*2/num)*i));
-        glVertex3d(position[0] + radius * cos((M_PI*2/num)*(i+1)), position[1] + height, position[2] + radius * sin((M_PI*2/num)*(i+1)));
-        glVertex3d(position[0] + radius * cos((M_PI*2/num)*(i+1)), position[1] - height, position[2] + radius * sin((M_PI*2/num)*(i+1)));
-        glVertex3d(position[0] + radius * cos((M_PI*2/num)*i), position[1] - height, position[2] + radius * sin((M_PI*2/num)*i));
+        glVertex3d(radius * cos((M_PI*2/num)*i), halfheight, radius * sin((M_PI*2/num)*i));
+        glVertex3d(radius * cos((M_PI*2/num)*(i+1)), halfheight, radius * sin((M_PI*2/num)*(i+1)));
+        glVertex3d(radius * cos((M_PI*2/num)*(i+1)), - halfheight, radius * sin((M_PI*2/num)*(i+1)));
+        glVertex3d(radius * cos((M_PI*2/num)*i), - halfheight, radius * sin((M_PI*2/num)*i));
         
     }
     
     glEnd();
 }
+
+void glutSolidCapusule(btScalar radius, btScalar halfheight, int num)
+{
+    glBegin(GL_POLYGON);
+    
+    for (int i = 0; i < num; i++) {
+        glVertex3d(radius * cos((M_PI*2/num)*i), halfheight, radius * sin((M_PI*2/num)*i));
+        glVertex3d(radius * cos((M_PI*2/num)*(i+1)), halfheight, radius * sin((M_PI*2/num)*(i+1)));
+        glVertex3d(radius * cos((M_PI*2/num)*(i+1)), - halfheight, radius * sin((M_PI*2/num)*(i+1)));
+        glVertex3d(radius * cos((M_PI*2/num)*i), - halfheight, radius * sin((M_PI*2/num)*i));
+    }
+    
+    glEnd();
+    glScaled(radius, radius, radius);
+    glTranslated(0, halfheight, 0);
+    glutSolidSphere(1, 100, 100);
+    glTranslated(0, -2*halfheight, 0);
+    glutSolidSphere(1, 100, 100);
+}
+
 /***********************************/
 /********                  *********/
 /********                  *********/
@@ -129,13 +149,12 @@ void Master::Render() {
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
-                glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
-                
+                glutSolidCapusule(halfExtent[0], halfExtent[1]-halfExtent[0], 10);
+
             }
             else if (shape == CYLINDER_SHAPE_PROXYTYPE)
             {
@@ -144,7 +163,7 @@ void Master::Render() {
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                glutSolidCylinder(1, 1, 10, btVector3(0, 0, 0));
+                glutSolidCylinder(1, 1, 10);
             }
             glPopMatrix();
         }
