@@ -215,8 +215,6 @@ void Ophiuroid::setMotorTarget(double delta) {
     for (int i = 0; i < NUM_LEGS; i++) {
         btRotationalLimitMotor* motor1 = static_cast<btRotationalLimitMotor*>(m_motor1[i]);
         btRotationalLimitMotor* motor2 = static_cast<btRotationalLimitMotor*>(m_motor2[i]);
-        //btRotationalLimitMotor* motor3 = static_cast<btRotationalLimitMotor*>(m_motor1[(i+NUM_LEGS-1)%NUM_LEGS]);
-        //btRotationalLimitMotor* motor4 = static_cast<btRotationalLimitMotor*>(m_motor1[(i+1)%NUM_LEGS]);
         btUniversalConstraint* hinge2 = static_cast<btUniversalConstraint*>(m_joints[(NUM_JOINT+1)*i]);
 
         int state = leg_state[(i+NUM_LEGS-1)%NUM_LEGS] + leg_state[(i+1)%NUM_LEGS];
@@ -310,7 +308,6 @@ void Ophiuroid::setMotorTarget(double delta) {
                     motor2->m_targetVelocity = fDesiredAngularVel2;
                     
                     for (int k = 1; k<=NUM_JOINT; k++){
-                        
                         btHingeConstraint* hingeC2 = static_cast<btHingeConstraint*>(m_joints[k+(NUM_JOINT+1)*i]);//ここの[]内を変えた
                         btScalar fCurAngle_ankle   = hingeC2->getHingeAngle();//現在のankleの角度
                         
