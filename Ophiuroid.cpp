@@ -155,7 +155,7 @@ void Ophiuroid::create() {
         hinge2C->setLowerLimit(-M_PI_2,-M_PI_2);
         hinge2C->setUpperLimit(M_PI_2,M_PI_2);
         m_joints_hip[i] = hinge2C;
-        Master::dynamicsWorld->addConstraint(m_joints_hip[(NUM_JOINT+1)*i]);
+        Master::dynamicsWorld->addConstraint(m_joints_hip[i]);
         
         
         const int AXIS1_ID = 2;
