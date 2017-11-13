@@ -9,9 +9,7 @@
 #include "Ophiuroid.hpp"
 
 Ophiuroid::Ophiuroid(GAparameter p) {
-    ///////////////////////////////////
-    ///  create() で変数は初期化される  ///
-    ///////////////////////////////////
+    /************  create() で変数は初期化される  **************/
     for (int i = 0; i < NUM_LEGS; i++) {
         leg_state[i] = 0;
     }
@@ -28,7 +26,7 @@ float Ophiuroid::evalue2() {
 
 void Ophiuroid::idle() {
     /***********    turn_pattern獲得前後でここ違う   ***************/
-    setMotorTarget(1);
+    //setMotorTarget(1);
     glutPostRedisplay();
 }
 
@@ -73,7 +71,6 @@ void Ophiuroid::create() {
     btVector3 vRoot = btVector3(btScalar(0.), btScalar(fHeight), btScalar(0.));
     btTransform transform;
     btTransform transformS;
-    btTransform transformY;
     transform.setIdentity();
     transform.setOrigin(vRoot);
     m_bodies[0] = createRigidBody(btScalar(0.5), offset*transform, m_shapes[0]);
@@ -91,12 +88,7 @@ void Ophiuroid::create() {
         btVector3 vAxis = vToBone.cross(btVector3(0,1,0));
         btVector3 Point = vBoneOrigin;
         btVector3 spherePoint = btVector3(btScalar(fCos*(fBodySize + fLegWidth )), btScalar(fHeight), btScalar(fSin*(fBodySize + fLegWidth)));
-        
-        
-        transformY.setIdentity();
-        transformY.setOrigin(btVector3(0,0,0));
-        transformY.setRotation(btQuaternion(btVector3(0,1,0), -fAngle));
-        
+       
         transformS.setIdentity();
         transformS.setOrigin(spherePoint);
         
@@ -108,7 +100,7 @@ void Ophiuroid::create() {
             transform.setOrigin(Point);
             transform.setRotation(btQuaternion(vAxis, M_PI_2 - theta * k));//垂直から下側が何度上がって行くか
             
-            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(0.5), offset*transform/*transformY*/, m_shapes[k+1+(NUM_JOINT+1)*i]);//軸だけ回転してて、剛体の初期ポジが横向き疑惑→解決
+            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(0.5), offset*transform, m_shapes[k+1+(NUM_JOINT+1)*i]);
             Point += btVector3(btScalar(fCos*(0.5*fLegLength+fLegWidth)*cos(k*theta)),btScalar(-(0.5*fLegLength+fLegWidth)*sin(k*theta)),btScalar(fSin*(0.5*fLegLength+fLegWidth)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*fLegLength+fLegWidth)*cos((k+1)*theta)),btScalar(-(0.5*fLegLength+fLegWidth)*sin((k+1)*theta)),btScalar(fSin*(0.5*fLegLength+fLegWidth)*cos((k+1)*theta)));
         }
         m_bodies[(NUM_JOINT+1)*(i+1)]->setFriction(5.0);//摩擦
@@ -131,10 +123,7 @@ void Ophiuroid::create() {
     //
     // Setup the constraints
     //
-    btHingeConstraint* joint2;//第1リンクと第2リンクの拘束
-    btUniversalConstraint* hinge2C;
-    
-    btTransform localA, localB, localC;
+    btTransform localA, localB, localC, jP, objP;
     
     for ( i=0; i<NUM_LEGS; i++)
     {
@@ -149,14 +138,13 @@ void Ophiuroid::create() {
         btVector3 childAxis( fSin, 0, -fCos);//第一ジョイント回転軸２（ワールド座標）-->ローカルy軸
         btVector3 anchor( fCos*fBodySize, 10+fHeight, fSin*fBodySize);//上の２軸の交点（ワールド座標）
         
-        hinge2C = new btUniversalConstraint(*m_bodies[0], *m_bodies[1+(NUM_JOINT+1)*i], anchor, parentAxis, childAxis);
+        btUniversalConstraint* hinge2C = new btUniversalConstraint(*m_bodies[0], *m_bodies[1+(NUM_JOINT+1)*i], anchor, parentAxis, childAxis);
         hinge2C->setLinearLowerLimit(btVector3(0,0,0));
         hinge2C->setLinearUpperLimit(btVector3(0,0,0));
         hinge2C->setLowerLimit(-M_PI_2,-M_PI_2);
         hinge2C->setUpperLimit(M_PI_2,M_PI_2);
         m_joints_hip[i] = hinge2C;
         Master::dynamicsWorld->addConstraint(m_joints_hip[i]);
-        
         
         const int AXIS1_ID = 2;
         const int AXIS2_ID = 1;
@@ -175,11 +163,23 @@ void Ophiuroid::create() {
         for (int k = 1; k <= NUM_JOINT; k++)
         {
             localA.setIdentity(); localB.setIdentity(); localC.setIdentity();
-            localA.getBasis().setEulerZYX(0,-fAngle,0);
-            localA.setOrigin(JointPoint);
-            localB = m_bodies[k+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
-            localC = m_bodies[k+1+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
-            joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], localB, localC);
+            //localA.getBasis().setEulerZYX(0,fAngle,0);
+            /*localA.setOrigin(JointPoint);
+            jP = m_bodies[0]->getWorldTransform() * localA;
+            objP = m_bodies[k+(NUM_JOINT+1)*i]->getWorldTransform();
+            localB.setOrigin(btVector3(jP.getOrigin()[0]-objP.getOrigin()[0],jP.getOrigin()[1]-objP.getOrigin()[1],jP.getOrigin()[2]-objP.getOrigin()[2]));
+            objP = m_bodies[k+1+(NUM_JOINT+1)*i]->getWorldTransform();
+            localC.setOrigin(btVector3(jP.getOrigin()[0]-objP.getOrigin()[0],jP.getOrigin()[1]-objP.getOrigin()[1],jP.getOrigin()[2]-objP.getOrigin()[2]));
+            //localB = m_bodies[k+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
+            //localC = m_bodies[k+1+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
+            btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], localB, localC);
+            
+            */
+            btVector3 axisA(0.f, 1.f, 0.f);
+            btVector3 axisB(0.f, 1.f, 0.f);
+            btVector3 pivotA(-5.f, 0.f, 0.f);
+            btVector3 pivotB( 5.f, 0.f, 0.f);
+            btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
             joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i]);
@@ -207,7 +207,7 @@ btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startT
 
 void Ophiuroid::setMotorTarget(double delta) {
     for (int i = 0; i<BODYPART_COUNT; i++){
-        m_bodies[i]->activate(true);
+        //m_bodies[i]->activate(true);
     }
     
     for (int i = 0; i < NUM_LEGS; i++) {
@@ -224,8 +224,8 @@ void Ophiuroid::setMotorTarget(double delta) {
                 tran.setIdentity();
                 rigid1->getMotionState()->getWorldTransform(tran);
                 btScalar y = tran.getOrigin().getY();
-                btVector3 pos  = rigid1->getCenterOfMassPosition();
-                btScalar rot   = btScalar(rigid1->getOrientation().getAngle()*RADIAN);
+                btVector3 pos = rigid1->getCenterOfMassPosition();
+                btScalar rot = btScalar(rigid1->getOrientation().getAngle()*RADIAN);
                 
                 if(rot>120){
                     if (y < 0.6){
@@ -397,7 +397,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         default: fAngleError1 = fTargetLimitAngle1 - fCurAngle1; break;
     }
     btScalar fDesiredAngularVel1 = fAngleError1/5;
-    m_motor1[i]->m_targetVelocity = fDesiredAngularVel1;
+    //m_motor1[i]->m_targetVelocity = fDesiredAngularVel1;
     
     //wheel
     btScalar fCurAngle2 = hinge2->getAngle2();
@@ -411,10 +411,10 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
     }
     btScalar fAngleError2 = fTargetLimitAngle2  - fCurAngle2;
     btScalar fDesiredAngularVel2 = fAngleError2/5;
-    switch (sW) {
-        case 2: m_motor2[i]->m_targetVelocity = fDesiredAngularVel2 * f; break;
-        default:m_motor2[i]->m_targetVelocity = fDesiredAngularVel2; break;
-    }
+ //   switch (sW) {
+ //       case 2: m_motor2[i]->m_targetVelocity = fDesiredAngularVel2 * f; break;
+ //       default:m_motor2[i]->m_targetVelocity = fDesiredAngularVel2; break;
+ //   }
     
     for (int k = 1; k<=NUM_JOINT; k++){
         btHingeConstraint* hingeC2 = m_joints_ankle[k-1+NUM_JOINT*i];
@@ -434,9 +434,9 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         }
         btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;
         btScalar fDesiredAngularVel_ankle = fAngleError_ankle/5;
-        switch (sW) {
-            case 2: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle * f, 0.5); break;
-            default: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 0.5f); break;
-        }
+   //     switch (sW) {
+   //         case 2: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle * f, 0.5); break;
+   //         default: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 0.5f); break;
+   //     }
     }
 }

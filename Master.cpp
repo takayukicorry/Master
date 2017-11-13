@@ -62,10 +62,39 @@ void glutSolidCapusule(btScalar radius, btScalar halfheight, int num)
     glutSolidSphere(1, 100, 100);
 }
 
+void vertex(btVector3 &v)
+{
+    glVertex3d(v.getX(), v.getY(), v.getZ());
+}
+
+void drawFrame(btTransform &tr)//ロボットについてる軸
+{
+    const float fSize = 10.f;
+    
+    glBegin(GL_LINES);
+    
+    // x
+    glColor3f(255,0,0);
+    btVector3 vX = tr*btVector3(fSize,0,0);
+    vertex(tr.getOrigin());    vertex(vX);
+    
+    // y
+    glColor3f(0,255,0);
+    btVector3 vY = tr*btVector3(0,fSize,0);
+    vertex(tr.getOrigin());    vertex(vY);
+    
+    // z
+    glColor3f(0,0,255);
+    btVector3 vZ = tr*btVector3(0,0,fSize);
+    vertex(tr.getOrigin());    vertex(vZ);
+    
+    glEnd();
+}
+
 /***********************************/
 /********                  *********/
 /********                  *********/
-/********                  *********/
+/******** ↑ LOCAL FUNCTION *********/
 /********                  *********/
 /********                  *********/
 /***********************************/
@@ -79,7 +108,7 @@ btCollisionShape* Master::groundShape = new btBoxShape(btVector3(btScalar(100.),
 int Master::time_step = 0;
 
 Master::Master() {
-    Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    //Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
 void Master::Render() {
@@ -99,6 +128,8 @@ void Master::Render() {
     {
         btCollisionObject* obj = Master::dynamicsWorld->getCollisionObjectArray()[j];
         btRigidBody* body = btRigidBody::upcast(obj);
+        drawFrame(body->getWorldTransform());
+        
         if (body && body->getMotionState())
         {
             btVector3 pos = body->getCenterOfMassPosition();
@@ -281,5 +312,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(100,50,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(100,100,0, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
