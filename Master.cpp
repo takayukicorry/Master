@@ -73,18 +73,17 @@ void drawFrame(btTransform &tr)//ロボットについてる軸
     
     glBegin(GL_LINES);
     
+    std::cout << tr.getOrigin()[0] << "," << tr.getOrigin()[1] << "," << tr.getOrigin()[2] << std::endl;
+    
     // x
-    glColor3f(255,0,0);
     btVector3 vX = tr*btVector3(fSize,0,0);
     vertex(tr.getOrigin());    vertex(vX);
     
     // y
-    glColor3f(0,255,0);
     btVector3 vY = tr*btVector3(0,fSize,0);
     vertex(tr.getOrigin());    vertex(vY);
     
     // z
-    glColor3f(0,0,255);
     btVector3 vZ = tr*btVector3(0,0,fSize);
     vertex(tr.getOrigin());    vertex(vZ);
     
@@ -128,7 +127,6 @@ void Master::Render() {
     {
         btCollisionObject* obj = Master::dynamicsWorld->getCollisionObjectArray()[j];
         btRigidBody* body = btRigidBody::upcast(obj);
-        drawFrame(body->getWorldTransform());
         
         if (body && body->getMotionState())
         {
@@ -163,13 +161,14 @@ void Master::Render() {
             }
             //sphere
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
-            {
+            {        drawFrame(body->getWorldTransform());
+
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
-                glutSolidSphere(1, 100, 100);
+                //glutSolidSphere(1, 100, 100);
             }
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
@@ -178,17 +177,17 @@ void Master::Render() {
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                glutSolidCapusule(halfExtent[0], halfExtent[1], 10);
+                //glutSolidCapusule(halfExtent[0], halfExtent[1], 10);
 
             }
             else if (shape == CYLINDER_SHAPE_PROXYTYPE)
             {
                 glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
-                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                glutSolidCylinder(1, 1, 10);
+                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
+                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+                //glutSolidCylinder(1, 1, 10);
             }
             glPopMatrix();
         }
@@ -312,5 +311,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(100,100,0, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(50,100,0, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }

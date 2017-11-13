@@ -42,7 +42,7 @@ void Ophiuroid::create() {
     float fLegLength = 15/NUM_JOINT;
     float fLegWidth = 3;
     
-    float fHeight = 15;
+    float fHeight = 4;
     float alpha = 37*M_PI/36;//thighとshinが何度開いてるか初期値
     float theta = M_PI - alpha;
     GAmanager manager;;
@@ -63,17 +63,13 @@ void Ophiuroid::create() {
     //
     // Setup rigid bodies
     //
-    btTransform offset;
-    offset.setIdentity();
-    offset.setOrigin(btVector3(0,10,0));
-    
     // root
     btVector3 vRoot = btVector3(btScalar(0.), btScalar(fHeight), btScalar(0.));
     btTransform transform;
     btTransform transformS;
     transform.setIdentity();
     transform.setOrigin(vRoot);
-    m_bodies[0] = createRigidBody(btScalar(0.5), offset*transform, m_shapes[0]);
+    m_bodies[0] = createRigidBody(btScalar(0.5), transform, m_shapes[0]);
     
     // legs
     for ( i=0; i<NUM_LEGS; i++)
@@ -82,8 +78,7 @@ void Ophiuroid::create() {
         float fSin = sin(fAngle);
         float fCos = cos(fAngle);
         
-        
-        btVector3 vBoneOrigin = btVector3(btScalar(fCos*(fBodySize + fLegWidth + (0.5*fLegLength+2*fLegWidth)*cos(theta))), btScalar(fHeight + (0.5*fLegLength+2*fLegWidth)*sin(theta)), btScalar(fSin*(fBodySize + fLegWidth + (0.5*fLegLength+2*fLegWidth)*cos(theta))));
+        btVector3 vBoneOrigin = btVector3(btScalar(fCos*(fBodySize + fLegWidth + (0.5*fLegLength+2*fLegWidth)*cos(theta))), btScalar(fHeight - (0.5*fLegLength+2*fLegWidth)*sin(theta)), btScalar(fSin*(fBodySize + fLegWidth + (0.5*fLegLength+2*fLegWidth)*cos(theta))));
         btVector3 vToBone = (vBoneOrigin - vRoot).normalize();
         btVector3 vAxis = vToBone.cross(btVector3(0,1,0));
         btVector3 Point = vBoneOrigin;
@@ -91,16 +86,21 @@ void Ophiuroid::create() {
        
         transformS.setIdentity();
         transformS.setOrigin(spherePoint);
+        btQuaternion quat;
+        quat.setEulerZYX(0, -fAngle, 0);
+        transformS.setRotation(quat);
+        //transformS.setRotation(btQuaternion(btVector3(0, 1, 0), -fAngle));
         
-        m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(0.5), offset*transformS, m_shapes[1+(NUM_JOINT+1)*i]);
+        m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(0.5), transformS, m_shapes[1+(NUM_JOINT+1)*i]);
         
         for (int k = 1; k <= NUM_JOINT; k++)
         {
             transform.setIdentity();
             transform.setOrigin(Point);
+            transform.setRotation(btQuaternion(btVector3(0, 1, 0), fAngle));
             transform.setRotation(btQuaternion(vAxis, M_PI_2 - theta * k));//垂直から下側が何度上がって行くか
             
-            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(0.5), offset*transform, m_shapes[k+1+(NUM_JOINT+1)*i]);
+            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(0.5), transform, m_shapes[k+1+(NUM_JOINT+1)*i]);
             Point += btVector3(btScalar(fCos*(0.5*fLegLength+fLegWidth)*cos(k*theta)),btScalar(-(0.5*fLegLength+fLegWidth)*sin(k*theta)),btScalar(fSin*(0.5*fLegLength+fLegWidth)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*fLegLength+fLegWidth)*cos((k+1)*theta)),btScalar(-(0.5*fLegLength+fLegWidth)*sin((k+1)*theta)),btScalar(fSin*(0.5*fLegLength+fLegWidth)*cos((k+1)*theta)));
         }
         m_bodies[(NUM_JOINT+1)*(i+1)]->setFriction(5.0);//摩擦
