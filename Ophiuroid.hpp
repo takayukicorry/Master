@@ -15,9 +15,10 @@
 #include "Master.hpp"
 
 class Ophiuroid : public Starfish {
-
+    
 private:
-    std::map<int, btTypedConstraint*> m_joints;
+    std::map<int, btHingeConstraint*> m_joints_ankle;
+    std::map<int, btUniversalConstraint*> m_joints_hip;
     std::map<int, btRigidBody*> m_bodies;
     std::map<int, btRotationalLimitMotor*> m_motor1;//handle
     std::map<int, btRotationalLimitMotor*> m_motor2;//wheel
@@ -37,11 +38,9 @@ public:
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*);
     void setMotorTarget(double);
     void setMotorTarget2(double);
+    void calcMotorTarget(int, int = 0, float = 0);
     void setParam(GAparameter p) {m_param = p;}
-    btTypedConstraint** GetJoints() {return &m_joints[0];}
-    btRigidBody** GetBodies(){return &m_bodies[0];}
-    btRotationalLimitMotor** GetMotor1() {return &m_motor1[0];}
-    btRotationalLimitMotor** GetMotor2() {return &m_motor2[0];}
 };
 
 #endif /* Ophiuroid_hpp */
+

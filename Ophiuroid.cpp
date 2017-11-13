@@ -43,7 +43,7 @@ void Ophiuroid::create() {
     float fBodySize = 5;
     float fLegLength = 15/NUM_JOINT;
     float fLegWidth = 3;
-
+    
     float fHeight = 15;
     float alpha = 37*M_PI/36;//thighとshinが何度開いてるか初期値
     float theta = M_PI - alpha;
@@ -57,12 +57,11 @@ void Ophiuroid::create() {
     {
         m_shapes[1 + (NUM_JOINT+1)*i] = new btSphereShape(fLegWidth);
         for (int k = 1; k <= NUM_JOINT; k++)
-            
         {
             m_shapes[k + 1 + (NUM_JOINT+1)*i] = new btCapsuleShape(btScalar(fLegWidth), btScalar(fLegLength));
         }
     }
-
+    
     //
     // Setup rigid bodies
     //
@@ -104,7 +103,7 @@ void Ophiuroid::create() {
         m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(0.5), offset*transformS, m_shapes[1+(NUM_JOINT+1)*i]);
         
         for (int k = 1; k <= NUM_JOINT; k++)
-        {            
+        {
             transform.setIdentity();
             transform.setOrigin(Point);
             transform.setRotation(btQuaternion(vAxis, M_PI_2 - theta * k));//垂直から下側が何度上がって行くか
@@ -155,8 +154,8 @@ void Ophiuroid::create() {
         hinge2C->setLinearUpperLimit(btVector3(0,0,0));
         hinge2C->setLowerLimit(-M_PI_2,-M_PI_2);
         hinge2C->setUpperLimit(M_PI_2,M_PI_2);
-        m_joints[(NUM_JOINT+1)*i] = hinge2C;
-        Master::dynamicsWorld->addConstraint(m_joints[(NUM_JOINT+1)*i]);
+        m_joints_hip[i] = hinge2C;
+        Master::dynamicsWorld->addConstraint(m_joints_hip[(NUM_JOINT+1)*i]);
         
         
         const int AXIS1_ID = 2;
@@ -182,8 +181,8 @@ void Ophiuroid::create() {
             localC = m_bodies[k+1+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
             joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], localB, localC);
             joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
-            m_joints[k+(NUM_JOINT+1)*i] = joint2;
-            Master::dynamicsWorld->addConstraint(m_joints[k+(NUM_JOINT+1)*i]);
+            m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
+            Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i]);
             JointPoint += btVector3(btScalar(fCos*(fLegLength+2*fLegWidth)*cos(k*theta)),btScalar(-(fLegLength+2*fLegWidth)*sin(k*theta)),btScalar(fSin*(fLegLength+2*fLegWidth)*cos(k*theta)));
             
         }
@@ -201,75 +200,39 @@ btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startT
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,shape,localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
     
-    Master::dynamicsWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND);
+    Master::dynamicsWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND | RX_COL_BODY);
     
     return body;
 }
 
 void Ophiuroid::setMotorTarget(double delta) {
     for (int i = 0; i<BODYPART_COUNT; i++){
-        btRigidBody* rigid1 = static_cast<btRigidBody*>(m_bodies[i]);
-        rigid1->activate(true);
+        m_bodies[i]->activate(true);
     }
     
     for (int i = 0; i < NUM_LEGS; i++) {
-        btRotationalLimitMotor* motor1 = static_cast<btRotationalLimitMotor*>(m_motor1[i]);
-        btRotationalLimitMotor* motor2 = static_cast<btRotationalLimitMotor*>(m_motor2[i]);
-        btUniversalConstraint* hinge2 = static_cast<btUniversalConstraint*>(m_joints[(NUM_JOINT+1)*i]);
-
+        
         int state = leg_state[(i+NUM_LEGS-1)%NUM_LEGS] + leg_state[(i+1)%NUM_LEGS];
         
         if (m_param.turn < NUM_TURN) {
             if (leg_state[i] == 0) {
-                btScalar fCurAngle1  = hinge2->getAngle1();//現在のaxis1（ツイスト）の角度
-                btScalar fCurAngle2  = hinge2->getAngle2();//現在のaxis2（車輪）の角度
                 
-                btScalar fTargetPercent_hip1 = m_param.targetpercent[(NUM_JOINT + 2)*i] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;//周期に対する現時刻の割合（往復を1とした時の値）
-                btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;//m_time/1000の/1000はなくしちゃダメ
-                btScalar fTargetAngle_hip1   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip1));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                btScalar fTargetAngle_hip2   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip2));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                btScalar fTargetLimitAngle1 = m_param.lowerlimit[(NUM_JOINT + 2)*i] + fTargetAngle_hip1 * (m_param.upperlimit[(NUM_JOINT + 2)*i] - m_param.lowerlimit[(NUM_JOINT + 2)*i]);//目標角度１
-                btScalar fTargetLimitAngle2 = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1] + fTargetAngle_hip2 * (m_param.upperlimit[(NUM_JOINT + 2)*i +1] - m_param.lowerlimit[(NUM_JOINT + 2)*i +1]);//目標角度２
+                calcMotorTarget(i);
                 
-                btScalar fAngleError1   = fTargetLimitAngle1  - fCurAngle1;//動くべき角度１
-                btScalar fAngleError2   = fTargetLimitAngle2  - fCurAngle2;//動くべき角度２
-                btScalar fDesiredAngularVel1 = fAngleError1/10;//角速度１
-                btScalar fDesiredAngularVel2 = fAngleError2/10;//角速度２
-                
-                motor1->m_targetVelocity = fDesiredAngularVel1;
-                motor2->m_targetVelocity = fDesiredAngularVel2;
-                
-                for (int k = 1; k<=NUM_JOINT; k++){
-                    
-                    btHingeConstraint* hingeC2 = static_cast<btHingeConstraint*>(m_joints[k+(NUM_JOINT+1)*i]);//ここの[]内を変えた
-                    btScalar fCurAngle_ankle   = hingeC2->getHingeAngle();//現在のankleの角度
-                    
-                    btScalar fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1 + k] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle;//周期に対する現時刻の割合（往復を1とした時の値）
-                    btScalar fTargetAngle_ankle   = 0.5 * (1 + sin(2 * M_PI * fTargetPercent_ankle));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                    btScalar fTargetLimitAngle_ankle = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k] + fTargetAngle_ankle * (m_param.upperlimit[(NUM_JOINT + 2)*i + 1 + k] - m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k]);//目標角度
-                    btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;//動くべき角度
-                    btScalar fDesiredAngularVel_ankle = fAngleError_ankle/10;//角速度
-                    
-                    hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 0.5f);
-                }
-                
-                //btCollisionObject* colObj = Master::dynamicsWorld->getCollisionObjectArray()[1 + (NUM_JOINT+1)*(i+1)];
-                btRigidBody* rigid1 = static_cast<btRigidBody*>(m_bodies[(NUM_JOINT+1)*(i+1)]);//ここがそもそもあってるのか問題
+                btRigidBody* rigid1 = m_bodies[(NUM_JOINT+1)*(i+1)];
                 btTransform tran;
                 tran.setIdentity();
                 rigid1->getMotionState()->getWorldTransform(tran);
-                btScalar y = tran.getOrigin().getY();//脚先端の剛体のｙ座標
-                
+                btScalar y = tran.getOrigin().getY();
                 btVector3 pos  = rigid1->getCenterOfMassPosition();
                 btScalar rot   = btScalar(rigid1->getOrientation().getAngle()*RADIAN);
-                //btVector3 axis = rigid1->getOrientation().getAxis();
                 
                 if(rot>120){
                     if (y < 0.6){
                         m_param.turn += 1;
                         leg_state[i] = 1;
                         turn_direction[i] = 1;//右ねじの正
-                        m_param.turn_pattern[i] = 1;//i本目がturn判定出したことを保存
+                        m_param.turn_pattern[i] = 1;
                     }
                 }
                 if(rot<-120){
@@ -277,89 +240,28 @@ void Ophiuroid::setMotorTarget(double delta) {
                         m_param.turn += 1;
                         leg_state[i] = 1;
                         turn_direction[i] = -1;//右ねじの負
-                        m_param.turn_pattern[i] = 1;//i本目がturn判定出したことを保存
+                        m_param.turn_pattern[i] = 1;
                     }
                 }
             }
         }
         //turn済//
-    
+        
         if (m_param.turn >= NUM_TURN){
             //支脚以外の動き//
             if (leg_state[i] == 0){
                 //not支脚隣//
                 if (state == 0){
-                    btScalar fCurAngle1  = hinge2->getAngle1();//現在のaxis1（ツイスト）の角度
-                    btScalar fCurAngle2  = hinge2->getAngle2();//現在のaxis2（車輪）の角度
-                    
-                    btScalar fTargetPercent_hip1 = m_param.targetpercent[(NUM_JOINT + 2)*i] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;//周期に対する現時刻の割合（往復を1とした時の値）
-                    btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;//m_time/1000の/1000はなくしちゃダメ
-                    btScalar fTargetAngle_hip1   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip1));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                    btScalar fTargetAngle_hip2   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip2));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                    btScalar fTargetLimitAngle1 = m_param.lowerlimit[(NUM_JOINT + 2)*i] + fTargetAngle_hip1 * (m_param.upperlimit[(NUM_JOINT + 2)*i] - m_param.lowerlimit[(NUM_JOINT + 2)*i]);//目標角度１
-                    btScalar fTargetLimitAngle2 = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1] + fTargetAngle_hip2 * (m_param.upperlimit[(NUM_JOINT + 2)*i +1] - m_param.lowerlimit[(NUM_JOINT + 2)*i +1]);//目標角度２
-                    
-                    btScalar fAngleError1   = fTargetLimitAngle1  - fCurAngle1;//動くべき角度１
-                    btScalar fAngleError2   = fTargetLimitAngle2  - fCurAngle2;//動くべき角度２
-                    btScalar fDesiredAngularVel1 = fAngleError1/10;//角速度１
-                    btScalar fDesiredAngularVel2 = fAngleError2/10;//角速度２
-                    
-                    motor1->m_targetVelocity = fDesiredAngularVel1;
-                    motor2->m_targetVelocity = fDesiredAngularVel2;
-                    
-                    for (int k = 1; k<=NUM_JOINT; k++){
-                        btHingeConstraint* hingeC2 = static_cast<btHingeConstraint*>(m_joints[k+(NUM_JOINT+1)*i]);//ここの[]内を変えた
-                        btScalar fCurAngle_ankle   = hingeC2->getHingeAngle();//現在のankleの角度
-                        
-                        btScalar fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1 + k] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle;//周期に対する現時刻の割合（往復を1とした時の値）
-                        btScalar fTargetAngle_ankle   = 0.5 * (1 + sin(2 * M_PI * fTargetPercent_ankle));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                        btScalar fTargetLimitAngle_ankle = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k] + fTargetAngle_ankle * (m_param.upperlimit[(NUM_JOINT + 2)*i + 1 + k] - m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k]);//目標角度
-                        btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;//動くべき角度
-                        btScalar fDesiredAngularVel_ankle = fAngleError_ankle/10;//角速度
-                        
-                        hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 0.5);
-                    }
+                    calcMotorTarget(i);
                 }
-            
+                
                 //片方or両方支脚隣
                 //蹴りだすor持ち上げる
                 if (state == 1 || state == 2){
-                    
-                    btScalar fCurAngle1  = hinge2->getAngle1();//現在のaxis1（ツイスト）の角度
-                    btScalar fCurAngle2  = hinge2->getAngle2();//現在のaxis2（車輪）の角度
-                    
-                    
-                    btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;//m_time/1000の/1000はなくしちゃダメ
-                    btScalar fTargetAngle_hip2   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip2));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                    btScalar fTargetLimitAngle2 = -M_PI_2 + fTargetAngle_hip2 * M_PI;//目標角度２
-                    
-                    btScalar fAngleError1   =  - fCurAngle1;//動くべき角度１
-                    btScalar fAngleError2   = fTargetLimitAngle2  - fCurAngle2;//動くべき角度２
-                    btScalar fDesiredAngularVel1 = fAngleError1/10;//角速度１
-                    btScalar fDesiredAngularVel2 = fAngleError2/10;//角速度２
-                    
-                    motor1->m_targetVelocity = fDesiredAngularVel1;
-                    motor2->m_targetVelocity = fDesiredAngularVel2;
-                    
-                    
-                    
-                    for (int k = 1; k<=NUM_JOINT; k++){
-                    
-                        btHingeConstraint* hingeC2 = static_cast<btHingeConstraint*>(m_joints[k+(NUM_JOINT+1)*i]);//ここの[]内を変えた
-                        btScalar fCurAngle_ankle   = hingeC2->getHingeAngle();//現在のankleの角度
-                        
-                        btScalar fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle;//周期に対する現時刻の割合（往復を1とした時の値）
-                        btScalar fTargetAngle_ankle   = 0.5 * (1 + sin(2 * M_PI * fTargetPercent_ankle));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                        btScalar fTargetLimitAngle_ankle = -M_PI_4 + fTargetAngle_ankle * M_PI_4;//目標角度
-                        btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;//動くべき角度
-                        btScalar fDesiredAngularVel_ankle = fAngleError_ankle/10;//角速度
-                        
-                        hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 0.5);
-                        
-                    }
+                    calcMotorTarget(i, 1);
                 }
             }
-        
+            
             //支脚//
             if (leg_state[i] == 1){
                 
@@ -371,8 +273,7 @@ void Ophiuroid::setMotorTarget(double delta) {
 void Ophiuroid::setMotorTarget2(double delta) {
     //動かなくならんように//
     for (int i = 0; i<BODYPART_COUNT; i++){
-        btRigidBody* rigid1 = static_cast<btRigidBody*>(m_bodies[i]);//ここがそもそもあってるのか問題
-        rigid1->activate(true);
+        m_bodies[i]->activate(true);
     }
     
     //turn_pattern獲得後のため、センサからの入力値はわかってる。for文の外で出力値まで計算しちゃう。
@@ -401,61 +302,19 @@ void Ophiuroid::setMotorTarget2(double delta) {
     
     //脚動き//
     for (int i=0; i<NUM_LEGS; i++){
-        btRotationalLimitMotor* motors1 = static_cast<btRotationalLimitMotor*>(m_motor1[i]);
-        btRotationalLimitMotor* motors2 = static_cast<btRotationalLimitMotor*>(m_motor2[i]);
-        
-        
-        btUniversalConstraint* hinge2 = static_cast<btUniversalConstraint*>(m_joints[(NUM_JOINT+1)*i]);
-        
-        
         //第一段階（turn本数待ち）//
         if(m_param.turn < NUM_TURN){
-            
-            //    printf("%d¥n",turn);
-            
             //支脚以外の動き//
             if (leg_state[i] == 0){
                 
-                btScalar fCurAngle1  = hinge2->getAngle1();//現在のaxis1（ツイスト）の角度
-                btScalar fCurAngle2  = hinge2->getAngle2();//現在のaxis2（車輪）の角度
-                
-                btScalar fTargetPercent_hip1 = m_param.targetpercent[(NUM_JOINT + 2)*i] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;//周期に対する現時刻の割合（往復を1とした時の値）
-                btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;//m_time/1000の/1000はなくしちゃダメ
-                btScalar fTargetAngle_hip1   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip1));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                btScalar fTargetAngle_hip2   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip2));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                btScalar fTargetLimitAngle1 = m_param.lowerlimit[(NUM_JOINT + 2)*i] + fTargetAngle_hip1 * (m_param.upperlimit[(NUM_JOINT + 2)*i] - m_param.lowerlimit[(NUM_JOINT + 2)*i]);//目標角度１
-                btScalar fTargetLimitAngle2 = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1] + fTargetAngle_hip2 * (m_param.upperlimit[(NUM_JOINT + 2)*i +1] - m_param.lowerlimit[(NUM_JOINT + 2)*i +1]);//目標角度２
-                
-                btScalar fAngleError1   = fTargetLimitAngle1  - fCurAngle1;//動くべき角度１
-                btScalar fAngleError2   = fTargetLimitAngle2  - fCurAngle2;//動くべき角度２
-                btScalar fDesiredAngularVel1 = fAngleError1/10;//角速度１
-                btScalar fDesiredAngularVel2 = fAngleError2/10;//角速度２
-                
-                motors1->m_targetVelocity = fDesiredAngularVel1;
-                motors2->m_targetVelocity = fDesiredAngularVel2;
-                
-                for (int k = 1; k<=NUM_JOINT; k++){
-                    
-                    btHingeConstraint* hingeC2 = static_cast<btHingeConstraint*>(m_joints[k+(NUM_JOINT+1)*i]);//ここの[]内を変えた
-                    btScalar fCurAngle_ankle   = hingeC2->getHingeAngle();//現在のankleの角度
-                    
-                    btScalar fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1 + k] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle;//周期に対する現時刻の割合（往復を1とした時の値）
-                    btScalar fTargetAngle_ankle   = 0.5 * (1 + sin(2 * M_PI * fTargetPercent_ankle));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                    btScalar fTargetLimitAngle_ankle = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k] + fTargetAngle_ankle * (m_param.upperlimit[(NUM_JOINT + 2)*i + 1 + k] - m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k]);//目標角度
-                    btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;//動くべき角度
-                    btScalar fDesiredAngularVel_ankle = fAngleError_ankle/10;//角速度
-                    
-                    hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 0.5);
-                }
+                calcMotorTarget(i);
                 
                 //turn判定//
-                btRigidBody* rigid1 = static_cast<btRigidBody*>(m_bodies[(NUM_JOINT+1)*(i+1)]);
-                
+                btRigidBody* rigid1 = m_bodies[(NUM_JOINT+1)*(i+1)];
                 btTransform tran;
                 tran.setIdentity();
                 rigid1->getMotionState()->getWorldTransform(tran);
-                btScalar y = tran.getOrigin().getY();//脚先端の剛体のｙ座標
-                
+                btScalar y = tran.getOrigin().getY();
                 btTransform tr = rigid1->getWorldTransform();
                 btVector3 vY = tr*btVector3(0,1,0);
                 btVector3 v_origin = tr.getOrigin();
@@ -500,63 +359,15 @@ void Ophiuroid::setMotorTarget2(double delta) {
             }
             
         }
-        
-        
         //第二段階（turn後）//
         
         if (m_param.turn >= NUM_TURN){
             
             //支脚以外//
             if (leg_state[i] == 0){
-                
                 float a = m_param.a[i];//シグモイド関数のパラメータ
                 float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
-                /*        //トルクで振るver.
-                 btRigidBody* rigid1 = static_cast<btRigidBody*>(m_rigs[0]->GetBodies()[(NUM_JOINT+1)*(i+1)]);//各腕端
-                 
-                 btScalar fCurAngle1  = hinge2->getAngle1();//現在のaxis1（ツイスト）の角度
-                 btScalar fAngleError1   =  - fCurAngle1;//動くべき角度１
-                 btScalar fDesiredAngularVel1 = 100000.f * fAngleError1/ms;//角速度１
-                 motors1->m_targetVelocity = fDesiredAngularVel1 ;
-                 
-                 rigid1->applyTorqueImpulse(btVector3(0,f*0.01,0));
-                 
-                 //トルクで振る終
-                 */
-                
-                //目標閣で振るver.
-                
-                btScalar fCurAngle1  = hinge2->getAngle1();//現在のaxis1（ツイスト）の角度
-                btScalar fCurAngle2  = hinge2->getAngle2();//現在のaxis2（車輪）の角度
-                
-                btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step ) % int(m_param.cycle*3)) / (m_param.cycle*3.0);//m_time/1000の/1000はなくしちゃダメ
-                btScalar fTargetAngle_hip2   = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip2));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                btScalar fTargetLimitAngle1 = (m_param.swing[i] - 4) * M_PI_4; //目標角度１
-                btScalar fTargetLimitAngle2 = fTargetAngle_hip2 * SWING_ANGLE;//目標角度２
-                
-                
-                btScalar fAngleError1   = fTargetLimitAngle1 - fCurAngle1;//動くべき角度１
-                btScalar fAngleError2   = fTargetLimitAngle2 - fCurAngle2;//動くべき角度２
-                btScalar fDesiredAngularVel1 = fAngleError1/10;//角速度１
-                btScalar fDesiredAngularVel2 = fAngleError2/10;//角速度２
-                
-                motors1->m_targetVelocity = fDesiredAngularVel1 ;
-                motors2->m_targetVelocity = fDesiredAngularVel2 * f;
-                
-                for (int k = 1; k<=NUM_JOINT; k++){
-                    
-                    btHingeConstraint* hingeC2 = static_cast<btHingeConstraint*>(m_joints[k+(NUM_JOINT+1)*i]);//ここの[]内を変えた
-                    btScalar fCurAngle_ankle   = hingeC2->getHingeAngle();//現在のankleの角度
-                    
-                    btScalar fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step) % int(m_param.cycle*3)) / (m_param.cycle*3.0);//周期に対する現時刻の割合（往復を1とした時の値）
-                    btScalar fTargetAngle_ankle   = 0.5 * (1 + sin(2 * M_PI * fTargetPercent_ankle));//足の動きを波の高さ0.5、中心0.5、周期２PIの波としたときに、現時刻でどこにあるべきか
-                    btScalar fTargetLimitAngle_ankle = fTargetAngle_ankle * M_PI_4;//目標角度
-                    btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;//動くべき角度
-                    btScalar fDesiredAngularVel_ankle = fAngleError_ankle/10;//角速度
-                    
-                    hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle * f, 0.5);
-                }
-                //目標閣で振る終
+                calcMotorTarget(i, 2, f);
             }
             
             //支脚
@@ -568,3 +379,64 @@ void Ophiuroid::setMotorTarget2(double delta) {
     
 }
 
+void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
+    btUniversalConstraint* hinge2 = m_joints_hip[i];
+    
+    //handle
+    btScalar fCurAngle1 = hinge2->getAngle1();
+    btScalar fTargetPercent_hip1 = m_param.targetpercent[(NUM_JOINT + 2)*i] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;
+    btScalar fTargetAngle_hip1 = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip1));
+    btScalar fTargetLimitAngle1;
+    switch (sW) {
+        case 2: fTargetLimitAngle1 = (m_param.swing[i] - 4) * M_PI_4; break;
+        default: fTargetLimitAngle1 = m_param.lowerlimit[(NUM_JOINT + 2)*i] + fTargetAngle_hip1 * (m_param.upperlimit[(NUM_JOINT + 2)*i] - m_param.lowerlimit[(NUM_JOINT + 2)*i]); break;
+    }
+    btScalar fAngleError1;
+    switch (sW) {
+        case 1: fAngleError1 = -fCurAngle1; break;
+        default: fAngleError1 = fTargetLimitAngle1 - fCurAngle1; break;
+    }
+    btScalar fDesiredAngularVel1 = fAngleError1/5;
+    m_motor1[i]->m_targetVelocity = fDesiredAngularVel1;
+    
+    //wheel
+    btScalar fCurAngle2 = hinge2->getAngle2();
+    btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;
+    btScalar fTargetAngle_hip2 = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip2));
+    btScalar fTargetLimitAngle2;
+    switch (sW) {
+        case 1: fTargetLimitAngle2 = -M_PI_2 + fTargetAngle_hip2 * M_PI; break;
+        case 2: fTargetLimitAngle2 = fTargetAngle_hip2 * SWING_ANGLE; break;
+        default: fTargetLimitAngle2 = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1] + fTargetAngle_hip2 * (m_param.upperlimit[(NUM_JOINT + 2)*i +1] - m_param.lowerlimit[(NUM_JOINT + 2)*i +1]); break;
+    }
+    btScalar fAngleError2 = fTargetLimitAngle2  - fCurAngle2;
+    btScalar fDesiredAngularVel2 = fAngleError2/5;
+    switch (sW) {
+        case 2: m_motor2[i]->m_targetVelocity = fDesiredAngularVel2 * f; break;
+        default:m_motor2[i]->m_targetVelocity = fDesiredAngularVel2; break;
+    }
+    
+    for (int k = 1; k<=NUM_JOINT; k++){
+        btHingeConstraint* hingeC2 = m_joints_ankle[k-1+NUM_JOINT*i];
+        btScalar fCurAngle_ankle = hingeC2->getHingeAngle();
+        btScalar fTargetPercent_ankle;
+        switch (sW) {
+            case 1: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle; break;
+            case 2: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step) % int(m_param.cycle*3)) / (m_param.cycle*3.0); break;
+            default: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1 + k] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle; break;
+        }
+        btScalar fTargetAngle_ankle = 0.5 * (1 + sin(2 * M_PI * fTargetPercent_ankle));
+        btScalar fTargetLimitAngle_ankle;
+        switch (sW) {
+            case 1: fTargetLimitAngle_ankle = -M_PI_4 + fTargetAngle_ankle * M_PI_4; break;
+            case 2: fTargetLimitAngle_ankle = fTargetAngle_ankle * M_PI_4; break;
+            default: fTargetLimitAngle_ankle = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k] + fTargetAngle_ankle * (m_param.upperlimit[(NUM_JOINT + 2)*i + 1 + k] - m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k]); break;
+        }
+        btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;
+        btScalar fDesiredAngularVel_ankle = fAngleError_ankle/5;
+        switch (sW) {
+            case 2: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle * f, 0.5); break;
+            default: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 0.5f); break;
+        }
+    }
+}

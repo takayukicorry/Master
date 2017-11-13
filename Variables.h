@@ -30,8 +30,8 @@ enum CollisionGroup{
 #define NUM_LEGS 5
 #define CONECT_LENGTH 5
 #define POOL_SIZE 100
-#define MAX_CYCLE 5000
-#define MIN_CYCLE 1500
+#define MAX_CYCLE 500
+#define MIN_CYCLE 100
 #define MAX_ANGLE M_PI
 #define MIN_ANGLE M_PI/3
 #define NUM_JOINT 3
@@ -64,3 +64,4 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 #endif
+
