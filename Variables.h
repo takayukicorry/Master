@@ -32,9 +32,9 @@ enum CollisionGroup{
 #define POOL_SIZE 100
 #define MAX_CYCLE 500
 #define MIN_CYCLE 100
-#define MAX_ANGLE M_PI
-#define MIN_ANGLE M_PI/3
-#define NUM_JOINT 3
+#define MAX_ANGLE -M_PI // -M_PI_2が直線状態
+#define MIN_ANGLE 0
+#define NUM_JOINT 1
 #define BODYPART_COUNT (NUM_JOINT+1) * NUM_LEGS + 1 //+ NUM_LEGS //最後のプラスはturn判定センサ
 #define JOINT_COUNT BODYPART_COUNT - 1 //+ NUM_LEGS
 #define NUM_TURN 2

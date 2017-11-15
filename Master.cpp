@@ -69,22 +69,20 @@ void vertex(btVector3 &v)
 
 void drawFrame(btTransform &tr)//ロボットについてる軸
 {
-    const float fSize = 10.f;
+    const float fSize = 20.f;
     
     glBegin(GL_LINES);
     
-    std::cout << tr.getOrigin()[0] << "," << tr.getOrigin()[1] << "," << tr.getOrigin()[2] << std::endl;
-    
     // x
-    btVector3 vX = tr*btVector3(fSize,0,0);
+    btVector3 vX = tr*btVector3(fSize*2,0,0);
     vertex(tr.getOrigin());    vertex(vX);
     
     // y
     btVector3 vY = tr*btVector3(0,fSize,0);
-    vertex(tr.getOrigin());    vertex(vY);
+    //vertex(tr.getOrigin());    vertex(vY);
     
     // z
-    btVector3 vZ = tr*btVector3(0,0,fSize);
+    btVector3 vZ = tr*btVector3(0,0,fSize*3);
     vertex(tr.getOrigin());    vertex(vZ);
     
     glEnd();
@@ -107,7 +105,7 @@ btCollisionShape* Master::groundShape = new btBoxShape(btVector3(btScalar(100.),
 int Master::time_step = 0;
 
 Master::Master() {
-    //Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
 void Master::Render() {
@@ -122,6 +120,7 @@ void Master::Render() {
     
     glPushMatrix();
     
+    
     //draw each object
     for (int j = Master::dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
     {
@@ -135,7 +134,7 @@ void Master::Render() {
             btScalar rot = body->getOrientation().getAngle() * RADIAN;
             btVector3 axis = body->getOrientation().getAxis();
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
-            
+            if(shape == SPHERE_SHAPE_PROXYTYPE || shape == CAPSULE_SHAPE_PROXYTYPE) drawFrame(body->getWorldTransform());
             glPushMatrix();
             glTranslatef(pos[0], pos[1], pos[2]);
             glRotated(rot, axis[0], axis[1], axis[2]);
@@ -161,14 +160,13 @@ void Master::Render() {
             }
             //sphere
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
-            {        drawFrame(body->getWorldTransform());
-
+            {
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
-                //glutSolidSphere(1, 100, 100);
+                glutSolidSphere(1, 100, 100);
             }
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
@@ -177,7 +175,7 @@ void Master::Render() {
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
-                //glutSolidCapusule(halfExtent[0], halfExtent[1], 10);
+                glutSolidCapusule(halfExtent[0], halfExtent[1], 10);
 
             }
             else if (shape == CYLINDER_SHAPE_PROXYTYPE)
@@ -187,7 +185,7 @@ void Master::Render() {
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
-                //glutSolidCylinder(1, 1, 10);
+                glutSolidCylinder(1, 1, 10);
             }
             glPopMatrix();
         }
@@ -311,5 +309,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(50,100,0, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(100,200,0, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
