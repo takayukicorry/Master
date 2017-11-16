@@ -34,7 +34,7 @@ GAparameter GAmanager::Adam() {
     {
         param.upperlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
         param.lowerlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
-        param.targetpercent[i] = (rand()%1000)/1000.0;
+        param.targetpercent[i] = 0;//(rand()%1000)/1000.0;
         
         while(param.upperlimit[i] < param.lowerlimit[i])
         {

@@ -291,6 +291,7 @@ void Master::checkStarfish() {
 
 void Master::idle() {
     Master::time_step++;
+    std::cout << Master::time_step << std::endl;
     Master::dynamicsWorld->stepSimulation(1.f / FPS);
     
     starfish->idle();
