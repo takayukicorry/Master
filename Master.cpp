@@ -134,7 +134,7 @@ void Master::Render() {
             btScalar rot = body->getOrientation().getAngle() * RADIAN;
             btVector3 axis = body->getOrientation().getAxis();
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
-            if(shape == SPHERE_SHAPE_PROXYTYPE || shape == CAPSULE_SHAPE_PROXYTYPE) drawFrame(body->getWorldTransform());
+            
             glPushMatrix();
             glTranslatef(pos[0], pos[1], pos[2]);
             glRotated(rot, axis[0], axis[1], axis[2]);

@@ -156,28 +156,14 @@ void Ophiuroid::create() {
         
         
         for (int k = 1; k <= NUM_JOINT; k++)
-        {/*
-            localA.setIdentity(); localB.setIdentity(); localC.setIdentity();
-            //localA.getBasis().setEulerZYX(0,fAngle,0);
-            localA.setOrigin(JointPoint);
-            jP = m_bodies[0]->getWorldTransform() * localA;
-            objP = m_bodies[k+(NUM_JOINT+1)*i]->getWorldTransform();
-            localB.setOrigin(btVector3(jP.getOrigin()[0]-objP.getOrigin()[0],jP.getOrigin()[1]-objP.getOrigin()[1],jP.getOrigin()[2]-objP.getOrigin()[2]));
-            objP = m_bodies[k+1+(NUM_JOINT+1)*i]->getWorldTransform();
-            localC.setOrigin(btVector3(jP.getOrigin()[0]-objP.getOrigin()[0],jP.getOrigin()[1]-objP.getOrigin()[1],jP.getOrigin()[2]-objP.getOrigin()[2]));
-            //localB = m_bodies[k+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
-            //localC = m_bodies[k+1+(NUM_JOINT+1)*i]->getWorldTransform().inverse() * m_bodies[0]->getWorldTransform() * localA;
-            btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], localB, localC);
-            
-            /*/
+        {
             btVector3 axisA(0, 0, 1);
             btVector3 axisB(0, 0, 1);
             btVector3 pivotA(0, -fLegLength/2, 0);
             if(k==1){pivotA = btVector3(0, 0, 0);}
             btVector3 pivotB(0, fLegWidth*2 + fLegLength/2, 0);
             btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
-             /**/
-             
+            
             joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i]);
@@ -192,7 +178,6 @@ btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startT
     
     btVector3 localInertia(0,0,0);
     if (isDynamic)
-        //Master::groundShape->calculateLocalInertia(mass,localInertia);
         shape->calculateLocalInertia(mass,localInertia);
 
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
