@@ -291,7 +291,7 @@ void Master::checkStarfish() {
 
 void Master::idle() {
     Master::time_step++;
-    Master::dynamicsWorld->stepSimulation(1.f / FPS, 10);
+    Master::dynamicsWorld->stepSimulation(1.f / FPS);
     
     starfish->idle();
     checkStarfish();
@@ -309,5 +309,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(100,200,0, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(150,100,150, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }

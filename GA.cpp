@@ -30,26 +30,8 @@ GAparameter GAmanager::Adam() {
     param.turn_pattern[b_mas] = 1;
     //    param.turn_pattern[c_mas] = 1;
     
-    
-    /*
-     int t = 0;
-     int h = 0;
-     while (h==0){
-     for (int i = 0; i<NUM_LEGS; i++){
-     if (rand()%2 == 0){
-     param.turn_pattern[i] = 0;
-     }else{
-     param.turn_pattern[i] = 1;
-     t++;
-     }
-     }
-     if(t==NUM_TURN){h=1;}
-     }
-     */
     for (int i = 0; i<ARRAY_LENGTH; i++)
     {
-        //        param.upperlimit[i] = ((rand()%1000)/1000.0)* MAX_ANGLE;
-        //        param.lowerlimit[i] = ((rand()%1000)/1000.0)* MIN_ANGLE;
         param.upperlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
         param.lowerlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
         param.targetpercent[i] = (rand()%1000)/1000.0;
