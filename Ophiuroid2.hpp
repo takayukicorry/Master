@@ -40,7 +40,7 @@ public:
     void create();
     btRigidBody* initAmp(btScalar, const btVector3);
     btRigidBody* initBody(const btVector3, const btVector3);
-    btRigidBody* initArm(const btVector3, const btVector3, const btQuaternion);
+    btRigidBody* initArm(const btVector3, const btTransform&);
     btRigidBody* initTubefeet(btScalar*, const btVector3);
     void ContactAction();
     void ControllTubeFeet();

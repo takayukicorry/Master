@@ -55,6 +55,7 @@ enum CollisionGroup{
 #define RADIUS 4
 #define INIT_POS_Y 24
 #define NUM_GROUND 2
+#define NUM_TF 10
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo

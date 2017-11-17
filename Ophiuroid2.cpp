@@ -38,15 +38,22 @@ void Ophiuroid2::create() {
     std::vector<btTypedConstraint* > constraints;
     
     /*** create body ***/
-    btRigidBody* body_body = initBody(btVector3(RADIUS*2, LENGTH, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
+    btRigidBody* body_body = initBody(btVector3(RADIUS*2, RADIUS/2, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
     BODY_object[0] = body_body;
     body_body->setUserIndex(1000);
     bodies_body.push_back(body_body);
-    /*for (int i = 0; i < 5; i++) {
-     btRigidBody* body_arm = initArm(btVector3(RADIUS*6, LENGTH, RADIUS*2), RotateY(btVector3(RADIUS*10, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/5), btQuaternion(btVector3(0, 1, 0), M_PI*2*i/5));
-     BODY_object[i+1] = body_arm;
-     bodies_body.push_back(body_arm);
-     }*/
+    
+    btTransform tr;
+    for (int i = 0; i < NUM_LEGS; i++) {
+        tr.setIdentity();
+        tr.setOrigin(RotateY(btVector3(RADIUS*10, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/NUM_LEGS));
+        tr.setRotation(btQuaternion(btVector3(0, 1, 0), -M_PI*2*i/NUM_LEGS));
+        
+        btRigidBody* body_arm = initArm(btVector3(RADIUS*6, RADIUS/2, RADIUS*2), tr);
+        BODY_object[i+1] = body_arm;
+        body_arm->setUserIndex(1000 + i + 1);
+        bodies_body.push_back(body_arm);
+    }
     
     /*** create tubefeet & amp ***/
     std::random_device rnd;
@@ -56,17 +63,17 @@ void Ophiuroid2::create() {
     btScalar scale[] = {btScalar(RADIUS), btScalar(LENGTH)};
     btVector3 pos_tf, pos_amp;
     int col, row;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < NUM_TF; i++) {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y-(RADIUS*2+LENGTH/2), pow(-1, col) * RADIUS * 2);
         //pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4 - (RADIUS*2+LENGTH/2)*sin(ANGLE_DETACH), INIT_POS_Y-(RADIUS*2+LENGTH/2)*cos(ANGLE_DETACH), pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
-        for (int j = 1; j <= 5; j++) {
+        for (int j = 1; j <= NUM_LEGS; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
-            int index = 100 + 10 * i + j;
+            int index = 100 + NUM_TF * i + j;
             body_tf->setUserIndex(index);
             body_amp->setUserIndex(index);
             TF_object[index] = body_tf;
@@ -171,7 +178,7 @@ btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 positio
 }
 
 //create an arm
-btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position, const btQuaternion rot)
+btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btTransform &startTransform)
 {
     btCollisionShape* sBodyShape = new btBoxShape(scale);
     
@@ -182,17 +189,12 @@ btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btVector3 position
     if (isDynamic)
         sBodyShape->calculateLocalInertia(mass1, localInertia1);
     
-    
-    btTransform sBodyTransform;
-    sBodyTransform.setIdentity();
-    sBodyTransform.setOrigin(position);
-    sBodyTransform.setRotation(rot);
-    btDefaultMotionState* myMotionState1 = new btDefaultMotionState(sBodyTransform);
+    btDefaultMotionState* myMotionState1 = new btDefaultMotionState(startTransform);
     
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
     btRigidBody* body = new btRigidBody(rbInfo);
     
-    body->setActivationState(DISABLE_DEACTIVATION);
+    //body->setActivationState(DISABLE_DEACTIVATION);
     
     return body;
     
@@ -390,6 +392,7 @@ void Ophiuroid2::ContactAction()
                 const btVector3& ptB = pt.getPositionWorldOnB();
                 
                 int index = obB->getUserIndex();
+                if (index >= 1000) continue;
                 
                 btScalar angle;
                 if (TF_contact[index]) {
