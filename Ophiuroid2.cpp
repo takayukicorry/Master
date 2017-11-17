@@ -22,7 +22,13 @@ void Ophiuroid2::idle() {
 }
 
 bool Ophiuroid2::checkState() {
-    return false;
+    btTransform tr = BODY_object[0]->getWorldTransform();
+    btVector3 vY = tr*btVector3(0, 1, 0);
+    btVector3 vOrigin = tr.getOrigin();
+    
+    btVector3 vY_O = vY - vOrigin;
+    
+    return vY_O[1] > -sin(2*M_PI/5);
 }
 
 void Ophiuroid2::create() {
