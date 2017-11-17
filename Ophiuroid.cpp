@@ -190,6 +190,7 @@ btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startT
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,shape,localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
+    body->setUserIndex(100);
     
     Master::dynamicsWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND | RX_COL_BODY);
     
