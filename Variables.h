@@ -47,13 +47,13 @@ enum CollisionGroup{
 #define RADIAN 180/M_PI
 #define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
-#define M_BODY 0
-#define M_ARM 0
+#define M_BODY 1
+#define M_ARM 1
 #define M_TF 1
 
-#define LENGTH 12
-#define RADIUS 4
-#define INIT_POS_Y 24
+#define LENGTH 9
+#define RADIUS 3
+#define INIT_POS_Y 18
 #define NUM_GROUND 2
 #define NUM_TF 10
 

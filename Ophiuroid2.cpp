@@ -251,7 +251,7 @@ void Ophiuroid2::ControllTubeFeet()
     }
     
     
-    //interacting of tf with body (X direction)/*********************X、Z軸両方向に関して影響与えねばならん************************/
+    //interacting of tf with body (X, Z direction)
     for (auto itr = BODY_object.begin(); itr != BODY_object.end(); ++itr) {
         btRigidBody* body = itr->second;
         
@@ -262,10 +262,14 @@ void Ophiuroid2::ControllTubeFeet()
             tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
             
             body->setCenterOfMassTransform(tran);
+            
+            btVector3 vel = body->getLinearVelocity();
+            vel[1] = 0;
+            body->setLinearVelocity(vel);
         }
     }
     
-    //interacting of tf with amp (X direction)/*********************X、Z軸両方向に関して影響与えねばならん************************/
+    //interacting of tf with amp (X, Z direction)
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
         int index = itr->first;
