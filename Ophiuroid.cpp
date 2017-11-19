@@ -42,14 +42,11 @@ bool Ophiuroid::checkState() {
     return vY_O[1] > -sin(2*M_PI/5);
 }
 
-void Ophiuroid::create() {
-    //
-    // Setup geometry
-    //
+void Ophiuroid::initSF() {
     
     float alpha = 37*M_PI/36;
     float theta = M_PI - alpha;
-    GAmanager manager;;
+    GAmanager manager;
     
     m_shapes[0] = new btCylinderShape(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE));
     int i;
@@ -83,13 +80,13 @@ void Ophiuroid::create() {
         btVector3 vBoneOrigin = btVector3(btScalar(fCos*(FBODY_SIZE + FLEG_WIDTH + (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*cos(theta))), btScalar(FHEIGHT - (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*sin(theta)), btScalar(fSin*(FBODY_SIZE + FLEG_WIDTH + (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*cos(theta))));
         btVector3 Point = vBoneOrigin;
         btVector3 spherePoint = btVector3(btScalar(fCos*(FBODY_SIZE + FLEG_WIDTH)), btScalar(FHEIGHT), btScalar(fSin*(FBODY_SIZE + FLEG_WIDTH)));
-
+        
         transformS.setIdentity();
         transformS.setOrigin(spherePoint);
         transformS.setRotation(btQuaternion(btVector3(0, 1, 0), -fAngle));//右ねじの方向に正
         transformSY.setIdentity();
         transformSY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2));
-
+        
         m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transformS*transformSY, m_shapes[1+(NUM_JOINT+1)*i]);
         
         for (int k = 1; k <= NUM_JOINT; k++)
@@ -99,7 +96,7 @@ void Ophiuroid::create() {
             transform.setRotation(btQuaternion(btVector3(0, 1, 0), -fAngle));
             transformY.setIdentity();
             transformY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2 - theta * k));
-
+            
             m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transform*transformY, m_shapes[k+1+(NUM_JOINT+1)*i]);
             Point += btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin((k+1)*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)));
         }
@@ -175,6 +172,10 @@ void Ophiuroid::create() {
             
         }
     }
+}
+
+void Ophiuroid::create() {
+    
 }
 
 btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape) {

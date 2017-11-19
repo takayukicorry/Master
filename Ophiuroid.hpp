@@ -27,6 +27,7 @@ public:
     void idle();
     bool checkState();
     void create();
+    void initSF();
     float evalue();
     float evalue2();
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*);

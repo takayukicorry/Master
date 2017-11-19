@@ -38,10 +38,12 @@ public:
     void idle();
     bool checkState();
     void create();
+    void initSF();
     btRigidBody* initAmp(btScalar, const btVector3);
     btRigidBody* initBody(const btVector3, const btVector3);
     btRigidBody* initArm(const btVector3, const btTransform&);
     btRigidBody* initTubefeet(btScalar*, const btVector3);
+    btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*);
     void ContactAction();
     void ControllTubeFeet();
 };
