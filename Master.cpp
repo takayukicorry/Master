@@ -216,6 +216,7 @@ void Master::CleanupStarfish() {
     
     for(int i = Master::dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
         btTypedConstraint* constraint = Master::dynamicsWorld->getConstraint(i);
+        if (constraint->getUid() == 10) continue;
         Master::dynamicsWorld->removeConstraint(constraint);
         delete constraint;
     }

@@ -38,21 +38,25 @@ void Ophiuroid2::create() {
     std::vector<btTypedConstraint* > constraints;
     
     /*** create body ***/
-    btRigidBody* body_body = initBody(btVector3(RADIUS*2, RADIUS/2, RADIUS*2), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
+    btRigidBody* body_body = initBody(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
     BODY_object[0] = body_body;
-    body_body->setUserIndex(1000);
+    body_body->setUserIndex(10);
     bodies_body.push_back(body_body);
     
     btTransform tr;
     for (int i = 0; i < NUM_LEGS; i++) {
         tr.setIdentity();
-        tr.setOrigin(RotateY(btVector3(RADIUS*10, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/NUM_LEGS));
+        tr.setOrigin(RotateY(btVector3(FBODY_SIZE + FLEG_WIDTH, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/NUM_LEGS));
         tr.setRotation(btQuaternion(btVector3(0, 1, 0), -M_PI*2*i/NUM_LEGS));
         
         btRigidBody* body_arm = initArm(btVector3(RADIUS*6, RADIUS/2, RADIUS*2), tr);
         BODY_object[i+1] = body_arm;
-        body_arm->setUserIndex(1000 + i + 1);
+        body_arm->setUserIndex(10 + i + 1);
         bodies_body.push_back(body_arm);
+        
+        for (int k = 1; k <= NUM_JOINT; k++) {
+            
+        }
     }
     
     /*** create tubefeet & amp ***/

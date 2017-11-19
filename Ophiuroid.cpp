@@ -46,25 +46,21 @@ void Ophiuroid::create() {
     //
     // Setup geometry
     //
-    float fBodySize = 5;
-    float fLegLength = 15/NUM_JOINT;
-    float fLegWidth = 3;
     
-    float fHeight = 5;
-    float alpha = 37*M_PI/36;//thighとshinが何度開いてるか初期値
+    float alpha = 37*M_PI/36;
     float theta = M_PI - alpha;
     GAmanager manager;;
     
-    m_shapes[0] = new btCylinderShape(btVector3(fBodySize,fLegWidth,fBodySize));
+    m_shapes[0] = new btCylinderShape(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE));
     
     int i;
     
     for ( i=0; i<NUM_LEGS; i++)
     {
-        m_shapes[1 + (NUM_JOINT+1)*i] = new btSphereShape(fLegWidth);
+        m_shapes[1 + (NUM_JOINT+1)*i] = new btSphereShape(FLEG_WIDTH);
         for (int k = 1; k <= NUM_JOINT; k++)
         {
-            m_shapes[k + 1 + (NUM_JOINT+1)*i] = new btCapsuleShape(btScalar(fLegWidth), btScalar(fLegLength));
+            m_shapes[k + 1 + (NUM_JOINT+1)*i] = new btCapsuleShape(btScalar(FLEG_WIDTH), btScalar(FLEG_LENGTH));
         }
     }
     
@@ -72,7 +68,7 @@ void Ophiuroid::create() {
     // Setup rigid bodies
     //
     // root
-    btVector3 vRoot = btVector3(btScalar(0.), btScalar(fHeight), btScalar(0.));
+    btVector3 vRoot = btVector3(btScalar(0.), btScalar(FHEIGHT), btScalar(0.));
     btTransform transform, transformY, transformS, transformSY;
     transform.setIdentity();
     transform.setOrigin(vRoot);
@@ -85,9 +81,9 @@ void Ophiuroid::create() {
         float fSin = sin(fAngle);//左ねじの方向に正
         float fCos = cos(fAngle);
         
-        btVector3 vBoneOrigin = btVector3(btScalar(fCos*(fBodySize + fLegWidth + (0.5*fLegLength+2*fLegWidth)*cos(theta))), btScalar(fHeight - (0.5*fLegLength+2*fLegWidth)*sin(theta)), btScalar(fSin*(fBodySize + fLegWidth + (0.5*fLegLength+2*fLegWidth)*cos(theta))));
+        btVector3 vBoneOrigin = btVector3(btScalar(fCos*(FBODY_SIZE + FLEG_WIDTH + (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*cos(theta))), btScalar(FHEIGHT - (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*sin(theta)), btScalar(fSin*(FBODY_SIZE + FLEG_WIDTH + (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*cos(theta))));
         btVector3 Point = vBoneOrigin;
-        btVector3 spherePoint = btVector3(btScalar(fCos*(fBodySize + fLegWidth)), btScalar(fHeight), btScalar(fSin*(fBodySize + fLegWidth)));
+        btVector3 spherePoint = btVector3(btScalar(fCos*(FBODY_SIZE + FLEG_WIDTH)), btScalar(FHEIGHT), btScalar(fSin*(FBODY_SIZE + FLEG_WIDTH)));
 
         transformS.setIdentity();
         transformS.setOrigin(spherePoint);
@@ -106,7 +102,7 @@ void Ophiuroid::create() {
             transformY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2 - theta * k));
 
             m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transform*transformY, m_shapes[k+1+(NUM_JOINT+1)*i]);
-            Point += btVector3(btScalar(fCos*(0.5*fLegLength+fLegWidth)*cos(k*theta)),btScalar(-(0.5*fLegLength+fLegWidth)*sin(k*theta)),btScalar(fSin*(0.5*fLegLength+fLegWidth)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*fLegLength+fLegWidth)*cos((k+1)*theta)),btScalar(-(0.5*fLegLength+fLegWidth)*sin((k+1)*theta)),btScalar(fSin*(0.5*fLegLength+fLegWidth)*cos((k+1)*theta)));
+            Point += btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin((k+1)*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)));
         }
         m_bodies[(NUM_JOINT+1)*(i+1)]->setFriction(5.0);//摩擦
     }
@@ -138,13 +134,14 @@ void Ophiuroid::create() {
         // hip joints
         btVector3 parentAxis( fCos, 0, fSin);//第一ジョイント回転軸１（ワールド座標）-->ローカルz軸(handle)
         btVector3 childAxis( fSin, 0, -fCos);//第一ジョイント回転軸２（ワールド座標）-->ローカルy軸(wheel)
-        btVector3 anchor( fCos*(fBodySize+fLegWidth), fHeight, fSin*(fBodySize+fLegWidth));//上の２軸の交点（ワールド座標）
+        btVector3 anchor( fCos*(FBODY_SIZE+FLEG_WIDTH), FHEIGHT, fSin*(FBODY_SIZE+FLEG_WIDTH));//上の２軸の交点（ワールド座標）
         
         btUniversalConstraint* hinge2C = new btUniversalConstraint(*m_bodies[0], *m_bodies[1+(NUM_JOINT+1)*i], anchor, parentAxis, childAxis);
         hinge2C->setLinearLowerLimit(btVector3(0,0,0));
         hinge2C->setLinearUpperLimit(btVector3(0,0,0));
         hinge2C->setLowerLimit(-M_PI_2, -M_PI_2);//(wheel, handle)右ねじ
         hinge2C->setUpperLimit(M_PI_2, M_PI_2);
+        hinge2C->setUserConstraintId(10);
         m_joints_hip[i] = hinge2C;
         Master::dynamicsWorld->addConstraint(m_joints_hip[i], true);
         
@@ -159,22 +156,23 @@ void Ophiuroid::create() {
         m_motor1[i]->m_enableMotor = true;
         m_motor2[i]->m_enableMotor = true;
         
-        btVector3 JointPoint = btVector3(btScalar(fCos*(fBodySize+fLegWidth)), btScalar(0.), btScalar(fSin*(fBodySize+fLegWidth)));
+        btVector3 JointPoint = btVector3(btScalar(fCos*(FBODY_SIZE+FLEG_WIDTH)), btScalar(0.), btScalar(fSin*(FBODY_SIZE+FLEG_WIDTH)));
         
         
         for (int k = 1; k <= NUM_JOINT; k++)
         {
             btVector3 axisA(0, 0, 1);
             btVector3 axisB(0, 0, 1);
-            btVector3 pivotA(0, -(fLegWidth + fLegLength/2), 0);
-            btVector3 pivotB(0, fLegWidth + fLegLength/2, 0);
-            if(k==1){pivotA = btVector3(0, 0, 0); pivotB = btVector3(0, fLegWidth*2 + fLegLength/2, 0);}
+            btVector3 pivotA(0, -(FLEG_WIDTH + FLEG_LENGTH/2), 0);
+            btVector3 pivotB(0, FLEG_WIDTH + FLEG_LENGTH/2, 0);
+            if(k==1){pivotA = btVector3(0, 0, 0); pivotB = btVector3(0, FLEG_WIDTH*2 + FLEG_LENGTH/2, 0);}
             btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
             
             joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
-            JointPoint += btVector3(btScalar(fCos*(fLegLength+2*fLegWidth)*cos(k*theta)),btScalar(-(fLegLength+2*fLegWidth)*sin(k*theta)),btScalar(fSin*(fLegLength+2*fLegWidth)*cos(k*theta)));
+            JointPoint += btVector3(btScalar(fCos*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)),btScalar(-(FLEG_LENGTH+2*FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)));
             
         }
     }
@@ -190,7 +188,7 @@ btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startT
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,shape,localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
-    body->setUserIndex(100);
+    body->setUserIndex(10);
     
     Master::dynamicsWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND | RX_COL_BODY);
     
