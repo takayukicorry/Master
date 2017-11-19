@@ -52,7 +52,6 @@ void Ophiuroid::create() {
     GAmanager manager;;
     
     m_shapes[0] = new btCylinderShape(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE));
-    
     int i;
     
     for ( i=0; i<NUM_LEGS; i++)
