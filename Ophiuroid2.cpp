@@ -157,7 +157,6 @@ void Ophiuroid2::initSF() {
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
             JointPoint += btVector3(btScalar(fCos*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)),btScalar(-(FLEG_LENGTH+2*FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)));
-            
         }
     }
 }
