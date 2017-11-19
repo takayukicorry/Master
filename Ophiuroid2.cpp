@@ -258,9 +258,7 @@ void Ophiuroid2::ControllTubeFeet()
         if (body && body->getMotionState())
         {
             btVector3 pos = body->getCenterOfMassPosition();
-            
-            btTransform tran;
-            tran.setIdentity();
+            btTransform tran = body->getWorldTransform();
             tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
             
             body->setCenterOfMassTransform(tran);
@@ -276,9 +274,8 @@ void Ophiuroid2::ControllTubeFeet()
         if (body && body->getMotionState() && !TF_contact[index])
         {
             btVector3 pos = body->getCenterOfMassPosition();
-            
-            btTransform tran;
-            tran.setIdentity();
+            btTransform tran = body->getWorldTransform();
+
             tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, INIT_POS_Y - (LENGTH/2 + 4) + (LENGTH/2 + 4)*sin(2*M_PI*(Master::time_step%(SECOND*2))/(SECOND*2) + M_PI_2), pos[2]+velocity_all_z/FPS));
             
             body->setCenterOfMassTransform(tran);
