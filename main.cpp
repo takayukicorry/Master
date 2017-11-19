@@ -12,10 +12,11 @@
 
 int main (int argc, char** argv) {
     GAmanager manager = *new GAmanager();
-    Starfish* oph = new Ophiuroid(manager.pool[0]);
+    //Starfish* oph = new Ophiuroid(manager.pool[0]);
+    Starfish* oph2 = new Ophiuroid2();
     Master master = *new Master();
     
-    master.setStarfish(oph);
+    master.setStarfish(oph2);
     master.setManager(manager);
     mastermain(argc, argv, &master);
     return 0;

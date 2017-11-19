@@ -20,7 +20,6 @@ private:
     std::map<int, int> TF_contact_times;//tubefeet - ground (attach times)
     std::map<int, btTypedConstraint*> TF_constraint_amp;//tubefeet - amp (constraint)
     std::map<int, btTypedConstraint*> TF_constraint_ground;//tubefeet - ground (constraint)
-    std::map<int, btRigidBody*> BODY_object;//arm & body(object)
     std::map<int, btRigidBody*> TF_object;//tubefeet (object)
     std::map<int, btRigidBody*> TF_object_amp;//amp (object)
     std::map<int, btRotationalLimitMotor* > motor_tY;//tubefeet - amp (handle motor)
@@ -40,8 +39,6 @@ public:
     void create();
     void initSF();
     btRigidBody* initAmp(btScalar, const btVector3);
-    btRigidBody* initBody(const btVector3, const btVector3);
-    btRigidBody* initArm(const btVector3, const btTransform&);
     btRigidBody* initTubefeet(btScalar*, const btVector3);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*);
     void ContactAction();

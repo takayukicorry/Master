@@ -25,6 +25,20 @@ public:
     virtual void create() = 0;
     virtual void initSF() = 0;
     virtual ~Starfish() {}
+    
+    void activateMotor(bool t) {
+        for (auto itr = m_motor1.begin(); itr != m_motor1.end(); ++itr) {
+            itr->second->m_enableMotor = t;
+        }
+        
+        for (auto itr = m_motor2.begin(); itr != m_motor2.end(); ++itr) {
+            itr->second->m_enableMotor = t;
+        }
+        
+        for (auto itr = m_joints_ankle.begin(); itr != m_joints_ankle.end(); ++itr) {
+            itr->second->enableMotor(t);
+        }
+    }
 };
 
 #endif /* Starfish_h */

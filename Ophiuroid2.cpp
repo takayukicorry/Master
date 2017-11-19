@@ -22,7 +22,7 @@ void Ophiuroid2::idle() {
 }
 
 bool Ophiuroid2::checkState() {
-    btTransform tr = BODY_object[0]->getWorldTransform();
+    btTransform tr = m_bodies[0]->getWorldTransform();
     btVector3 vY = tr*btVector3(0, 1, 0);
     btVector3 vOrigin = tr.getOrigin();
     
@@ -94,7 +94,7 @@ void Ophiuroid2::initSF() {
     
     //停止が続いてもsleeping状態にならないようにする//
     // Setup some damping on the m_bodies
-    
+    /*
     for (i = 0; i < m_bodies.size(); ++i)
     {
         m_bodies[i]->setDamping(0.05, 0.85);
@@ -104,7 +104,7 @@ void Ophiuroid2::initSF() {
         m_bodies[i]->forceActivationState(DISABLE_DEACTIVATION);
         
     }
-    
+    */
     //
     // Setup the constraints
     //
@@ -143,7 +143,6 @@ void Ophiuroid2::initSF() {
         
         btVector3 JointPoint = btVector3(btScalar(fCos*(FBODY_SIZE+FLEG_WIDTH)), btScalar(0.), btScalar(fSin*(FBODY_SIZE+FLEG_WIDTH)));
         
-        
         for (int k = 1; k <= NUM_JOINT; k++)
         {
             btVector3 axisA(0, 0, 1);
@@ -164,32 +163,11 @@ void Ophiuroid2::initSF() {
 }
 
 void Ophiuroid2::create() {
-    std::vector<btRigidBody* > bodies_body;
+    activateMotor(false);
+    
     std::vector<btRigidBody* > bodies_tf;
     std::vector<btRigidBody* > bodies_amp;
     std::vector<btTypedConstraint* > constraints;
-    
-    /*** create body ***/
-    btRigidBody* body_body = initBody(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE), btVector3(0, INIT_POS_Y-RADIUS*2, 0));
-    BODY_object[0] = body_body;
-    body_body->setUserIndex(10);
-    bodies_body.push_back(body_body);
-    
-    btTransform tr;
-    for (int i = 0; i < NUM_LEGS; i++) {
-        tr.setIdentity();
-        tr.setOrigin(RotateY(btVector3(FBODY_SIZE + FLEG_WIDTH, INIT_POS_Y-RADIUS*2, 0), M_PI*2*i/NUM_LEGS));
-        tr.setRotation(btQuaternion(btVector3(0, 1, 0), -M_PI*2*i/NUM_LEGS));
-        
-        btRigidBody* body_arm = initArm(btVector3(RADIUS*6, RADIUS/2, RADIUS*2), tr);
-        BODY_object[i+1] = body_arm;
-        body_arm->setUserIndex(10 + i + 1);
-        bodies_body.push_back(body_arm);
-        
-        for (int k = 1; k <= NUM_JOINT; k++) {
-            
-        }
-    }
     
     /*** create tubefeet & amp ***/
     std::random_device rnd;
@@ -203,7 +181,6 @@ void Ophiuroid2::create() {
         col = i % 2;
         row = i / 2;
         pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y-(RADIUS*2+LENGTH/2), pow(-1, col) * RADIUS * 2);
-        //pos_tf = btVector3(RADIUS*2 + row * RADIUS * 4 - (RADIUS*2+LENGTH/2)*sin(ANGLE_DETACH), INIT_POS_Y-(RADIUS*2+LENGTH/2)*cos(ANGLE_DETACH), pow(-1, col) * RADIUS * 2);
         pos_amp = btVector3(RADIUS*2 + row * RADIUS * 4, INIT_POS_Y, pow(-1, col) * RADIUS * 2);
         for (int j = 1; j <= NUM_LEGS; j++) {
             //tf - amp (object)
@@ -242,10 +219,6 @@ void Ophiuroid2::create() {
         }
     }
     
-    for (int i = 0; i < bodies_body.size(); i++) {
-        Master::dynamicsWorld->addRigidBody(bodies_body[i], RX_COL_BODY, RX_COL_GROUND);
-    }
-    
     for (int i = 0; i < bodies_tf.size(); i++) {
         Master::dynamicsWorld->addRigidBody(bodies_tf[i], RX_COL_TF, RX_COL_GROUND);
     }
@@ -257,7 +230,6 @@ void Ophiuroid2::create() {
     for (int i = 0; i < constraints.size(); i++) {
         Master::dynamicsWorld->addConstraint(constraints[i]);
     }
-
 }
 
 btRigidBody* Ophiuroid2::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape) {
@@ -304,55 +276,6 @@ btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
     return  body;
 }
 
-//create body
-btRigidBody* Ophiuroid2::initBody(const btVector3 scale, const btVector3 position)
-{
-    btCollisionShape* sBodyShape = new btBoxShape(scale);
-    
-    btTransform sBodyTransform;
-    sBodyTransform.setIdentity();
-    sBodyTransform.setOrigin(position);
-    
-    btScalar mass(M_BODY);
-    
-    bool isDynamic = (mass != 0.f);
-    
-    btVector3 localInertia(0, 0, 0);
-    if (isDynamic)
-        sBodyShape->calculateLocalInertia(mass, localInertia);
-    
-    btDefaultMotionState* myMotionState = new btDefaultMotionState(sBodyTransform);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sBodyShape, localInertia);
-    btRigidBody* body = new btRigidBody(rbInfo);
-    
-    body->setActivationState(DISABLE_DEACTIVATION);
-    
-    return body;
-}
-
-//create an arm
-btRigidBody* Ophiuroid2::initArm(const btVector3 scale, const btTransform &startTransform)
-{
-    btCollisionShape* sBodyShape = new btBoxShape(scale);
-    
-    btScalar mass1(M_ARM);
-    bool isDynamic = (mass1 != 0.f);
-    
-    btVector3 localInertia1(0, 0, 0);
-    if (isDynamic)
-        sBodyShape->calculateLocalInertia(mass1, localInertia1);
-    
-    btDefaultMotionState* myMotionState1 = new btDefaultMotionState(startTransform);
-    
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
-    btRigidBody* body = new btRigidBody(rbInfo);
-    
-    //body->setActivationState(DISABLE_DEACTIVATION);
-    
-    return body;
-    
-}
-
 btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 {
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
@@ -380,7 +303,6 @@ btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 
 void Ophiuroid2::ControllTubeFeet()
 {
-    
     btScalar velocity_all_x = 0;
     btScalar velocity_all_z = 0;
     //calculate interaction of tf
@@ -403,9 +325,8 @@ void Ophiuroid2::ControllTubeFeet()
         }
     }
     
-    
     //interacting of tf with body (X, Z direction)
-    for (auto itr = BODY_object.begin(); itr != BODY_object.end(); ++itr) {
+    for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
         btRigidBody* body = itr->second;
         
         if (body && body->getMotionState())
@@ -413,7 +334,6 @@ void Ophiuroid2::ControllTubeFeet()
             btVector3 pos = body->getCenterOfMassPosition();
             btTransform tran = body->getWorldTransform();
             tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
-            
             body->setCenterOfMassTransform(tran);
             
             btVector3 vel = body->getLinearVelocity();
@@ -448,7 +368,7 @@ void Ophiuroid2::ControllTubeFeet()
         motor->m_maxMotorForce = 1000000000000000;
         motor_tY[index]->m_maxMotorForce = 1000000000000000;
         
-        //handle motor/**********************どのくらいずつ振るか要調整**************************/
+        //handle motor
         btScalar angle_now = motor_tY[index]->m_currentPosition + TF_axis_angle[index];//relative angle with the start position
         btScalar angle_target;
         if (TF_axis_direction[index][0] == 0) {
@@ -602,7 +522,7 @@ void Ophiuroid2::ContactAction()
                         TF_object.erase(index);
                         
                         //create new one
-                        btRigidBody* body_centor = BODY_object[0];
+                        btRigidBody* body_centor = m_bodies[0];
                         if (body_centor && body_centor->getMotionState())
                         {
                             btVector3 pos = body_centor->getCenterOfMassPosition();

@@ -129,6 +129,8 @@ void Master::Render() {
         
         if (body && body->getMotionState())
         {
+            if (body->getUserIndex()>100) continue;
+            
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
             btScalar rot = body->getOrientation().getAngle() * RADIAN;
@@ -273,6 +275,7 @@ void Master::createGround() {
 }
 
 void Master::createStarfish() {
+    starfish->initSF();
     starfish->create();
 }
 
@@ -286,7 +289,7 @@ void Master::checkStarfish() {
             oph= new Ophiuroid2();
         }
         setStarfish(oph);
-        createStarfish();
+        starfish->create();
     }
 }
 
@@ -311,5 +314,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(150,100,150, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(100,20,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
