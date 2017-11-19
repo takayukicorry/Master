@@ -17,12 +17,6 @@
 class Ophiuroid : public Starfish {
     
 private:
-    std::map<int, btHingeConstraint*> m_joints_ankle;
-    std::map<int, btUniversalConstraint*> m_joints_hip;
-    std::map<int, btRigidBody*> m_bodies;
-    std::map<int, btRotationalLimitMotor*> m_motor1;//handle
-    std::map<int, btRotationalLimitMotor*> m_motor2;//wheel
-    std::map<int, btCollisionShape*> m_shapes;
     int leg_state[NUM_LEGS];
     int turn_direction[NUM_LEGS];
     GAparameter m_param;
