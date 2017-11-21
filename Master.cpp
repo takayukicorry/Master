@@ -129,7 +129,7 @@ void Master::Render() {
         
         if (body && body->getMotionState())
         {
-            if (body->getUserIndex()>100) continue;
+            //if (body->getUserIndex()>100) continue;
             
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
@@ -314,5 +314,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(100,20,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(100,50,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
