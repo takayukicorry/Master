@@ -502,7 +502,6 @@ void Ophiuroid2::ContactAction()
                     motor_to_groundY[index] = motor2;
                     DeleteTime_tf[index] = Master::time_step + int(double(ANGLE_ATTACH - ANGLE_DETACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 2.0);
                     
-                    
                 }
                 else if (TF_contact[index])
                 {
