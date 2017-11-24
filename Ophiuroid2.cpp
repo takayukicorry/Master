@@ -142,8 +142,6 @@ void Ophiuroid2::initSF() {
         m_motor1[i]->m_enableMotor = true;
         m_motor2[i]->m_enableMotor = true;
         
-        btVector3 JointPoint = btVector3(btScalar(fCos*(FBODY_SIZE+FLEG_WIDTH)), btScalar(0.), btScalar(fSin*(FBODY_SIZE+FLEG_WIDTH)));
-        
         for (int k = 1; k <= NUM_JOINT; k++)
         {
             btVector3 axisA(0, 0, 1);
@@ -154,10 +152,8 @@ void Ophiuroid2::initSF() {
             btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
             
             joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
-            joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
-            JointPoint += btVector3(btScalar(fCos*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)),btScalar(-(FLEG_LENGTH+2*FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)));
         }
     }
 }
@@ -327,6 +323,7 @@ void Ophiuroid2::ControllTubeFeet()
     }
     
     //interacting of tf with body (X, Z direction)
+    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= FLEG_WIDTH + 1;
     for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
         btRigidBody* body = itr->second;
         
@@ -338,9 +335,9 @@ void Ophiuroid2::ControllTubeFeet()
             body->setCenterOfMassTransform(tran);
             
             if (stay) {
-                btVector3 vel = body->getLinearVelocity();
-                vel[1] = 0;
-                body->setLinearVelocity(vel);
+                /*btVector3 vel = body->getLinearVelocity();
+                if (vel[1] <= 0) vel[1] = 0;*/
+                body->setLinearVelocity(btVector3(0, 0, 0));
             }
         }
     }
