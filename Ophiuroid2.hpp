@@ -31,6 +31,7 @@ private:
     std::map<int, int> DeleteTime_tf;//time to delete tf - ground
     std::map<int, int> InitTime_tf;//first phase of tf
     std::map<int, int> ResumeTime_tf;//time to start swinging
+    bool stay;
 
 public:
     Ophiuroid2();

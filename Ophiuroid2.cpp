@@ -13,6 +13,7 @@ Ophiuroid2::Ophiuroid2() {
     ///////////////////////////////////
     ///  create() で変数は初期化される  ///
     ///////////////////////////////////
+    stay = true;
 }
 
 void Ophiuroid2::idle() {
@@ -336,9 +337,11 @@ void Ophiuroid2::ControllTubeFeet()
             tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
             body->setCenterOfMassTransform(tran);
             
-            btVector3 vel = body->getLinearVelocity();
-            vel[1] = 0;
-            body->setLinearVelocity(vel);
+            if (stay) {
+                btVector3 vel = body->getLinearVelocity();
+                vel[1] = 0;
+                body->setLinearVelocity(vel);
+            }
         }
     }
     
