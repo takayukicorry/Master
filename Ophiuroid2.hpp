@@ -29,8 +29,9 @@ private:
     std::map<int, btVector3> TF_axis_direction;//tubefeet - amp & tubefeet - ground (motor direction)
     std::map<int, btScalar> TF_axis_angle;//tubefeet - amp & tubefeet - ground (current motor angle to XZ)
     std::map<int, int> DeleteTime_tf;//time to delete tf - ground
+    std::map<int, int> InitTime_tf;//first phase of tf
     std::map<int, int> ResumeTime_tf;//time to start swinging
-    
+
 public:
     Ophiuroid2();
     

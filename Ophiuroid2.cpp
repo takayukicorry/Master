@@ -212,6 +212,7 @@ void Ophiuroid2::create() {
             motor_tZ[index] = motor1;
             motor_tY[index] = motor2;
             ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
+            InitTime_tf[index] = ResumeTime_tf[index];
             //for next
             pos_tf = RotateY(pos_tf, M_PI*2/5);
             pos_amp = RotateY(pos_amp, M_PI*2/5);
@@ -352,7 +353,11 @@ void Ophiuroid2::ControllTubeFeet()
             btVector3 pos = body->getCenterOfMassPosition();
             btTransform tran = body->getWorldTransform();
 
-            tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, INIT_POS_Y - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*(Master::time_step%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+            if (Master::time_step > InitTime_tf[index]) {
+            tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, INIT_POS_Y - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+            } else {
+            tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS));
+            }
             
             body->setCenterOfMassTransform(tran);
         }
