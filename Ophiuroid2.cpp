@@ -622,6 +622,3 @@ void Ophiuroid2::ContactAction()
         }
     }
 }
-
-
-
