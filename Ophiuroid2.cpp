@@ -9,16 +9,19 @@
 #include "Ophiuroid2.hpp"
 #include "Utils.hpp"
 
-Ophiuroid2::Ophiuroid2() {
+Ophiuroid2::Ophiuroid2(GAparameter p) {
     ///////////////////////////////////
     ///  create() で変数は初期化される  ///
     ///////////////////////////////////
     stay = true;
+    m_param = p;
 }
 
 void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
+    setDirection();
+    setDirection2();
     ControllTubeFeet();
 }
 
@@ -621,4 +624,44 @@ void Ophiuroid2::ContactAction()
             }
         }
     }
+}
+
+void Ophiuroid2::setDirection() {
+    //***************light_patternの更新
+    
+}
+
+void Ophiuroid2::setDirection2() {
+    int mid[NUM_LEGS];
+    int out[NUM_LEGS];
+    
+    //中間層
+    for (int i = 0; i<NUM_LEGS; i++){
+        mid[i] = 0;
+        for (int k = 0; k<NUM_LEGS; k++){
+            mid[i] += m_param.light_pattern[k]*m_param.conect[NUM_LEGS*i + k];
+        }
+        
+        if(mid[i] >= 0){
+            mid[i] = 1;
+        }else{
+            mid[i] = 0;
+        }
+    }
+    //出力層
+    for (int i = 0; i<NUM_LEGS; i++){
+        out[i] = 0;
+        for (int k = 0; k<NUM_LEGS; k++){
+            out[i] += mid[k]*m_param.conect[NUM_LEGS*(NUM_LEGS+i) + k];
+        }
+    }
+    //出力値
+    for (int i = 0; i<NUM_LEGS; i++){
+        float a = m_param.a[i];//シグモイド関数のパラメータ
+        float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
+        
+        //***************このfを何かに使う
+
+    }
+    
 }

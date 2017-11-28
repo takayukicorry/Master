@@ -202,8 +202,6 @@ void Ophiuroid::setMotorTarget(double delta) {
     
     for (int i = 0; i < NUM_LEGS; i++) {
         
-        int state = leg_state[(i+NUM_LEGS-1)%NUM_LEGS] + leg_state[(i+1)%NUM_LEGS];
-        
         if (m_param.turn < NUM_TURN) {
             if (leg_state[i] == 0) {
                 
@@ -236,6 +234,7 @@ void Ophiuroid::setMotorTarget(double delta) {
             }
         }
         //turn済//
+        int state = leg_state[(i+NUM_LEGS-1)%NUM_LEGS] + leg_state[(i+1)%NUM_LEGS];
         
         if (m_param.turn >= NUM_TURN){
             //支脚以外の動き//

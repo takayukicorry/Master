@@ -32,9 +32,11 @@ private:
     std::map<int, int> InitTime_tf;//first phase of tf
     std::map<int, int> ResumeTime_tf;//time to start swinging
     bool stay;
-
+    GAparameter m_param;
+    int leg_state[NUM_LEGS];
+    
 public:
-    Ophiuroid2();
+    Ophiuroid2(GAparameter);
     
     void idle();
     bool checkState();
@@ -45,6 +47,8 @@ public:
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*);
     void ContactAction();
     void ControllTubeFeet();
+    void setDirection();
+    void setDirection2();
 };
 
 #endif /* Ophiuroid2_hpp */

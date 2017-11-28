@@ -286,7 +286,7 @@ void Master::checkStarfish() {
         if (strcmp("Ophiuroid2",typeid(starfish).name())) {
             oph = new Ophiuroid(manager.pool[0]);
         } else {
-            oph= new Ophiuroid2();
+            oph= new Ophiuroid2(manager.pool[0]);
         }
         setStarfish(oph);
         starfish->create();
