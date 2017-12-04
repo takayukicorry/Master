@@ -16,6 +16,21 @@ Ophiuroid::Ophiuroid(GAparameter p) {
     m_param = p;
 }
 
+Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
+    /************  create() で変数は初期化される  **************/
+    for (int i = 0; i < NUM_LEGS; i++) {
+        leg_state[i] = 0;
+    }
+    m_param = p;
+    
+    m_bodies = sf->m_bodies;
+    m_shapes = sf->m_shapes;
+    m_joints_hip = sf->m_joints_hip;
+    m_joints_ankle = sf->m_joints_ankle;
+    m_motor1 = sf->m_motor1;
+    m_motor2 = sf->m_motor2;
+}
+
 float Ophiuroid::evalue() {
     
     return 0;
@@ -39,7 +54,7 @@ bool Ophiuroid::checkState() {
     
     btVector3 vY_O = vY - vOrigin;
 
-    return vY_O[1] > -sin(2*M_PI/5);
+    return vY_O[1] > sin(-2*M_PI/5);
 }
 
 void Ophiuroid::initSF() {

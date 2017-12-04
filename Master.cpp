@@ -283,10 +283,10 @@ void Master::checkStarfish() {
     if (!starfish->checkState()) {
         CleanupStarfish();
         Starfish* oph;
-        if (strcmp("Ophiuroid2",typeid(starfish).name())) {
-            oph = new Ophiuroid(manager.pool[0]);
+        if (!strcmp("Ophiuroid2",typeid(starfish).name())) {
+            oph = new Ophiuroid(manager.pool[0], starfish);
         } else {
-            oph= new Ophiuroid2(manager.pool[0]);
+            oph= new Ophiuroid2(manager.pool[0], starfish);
         }
         setStarfish(oph);
         starfish->create();
@@ -295,7 +295,6 @@ void Master::checkStarfish() {
 
 void Master::idle() {
     Master::time_step++;
-    std::cout << Master::time_step << std::endl;
     Master::dynamicsWorld->stepSimulation(1.f / FPS);
     
     starfish->idle();

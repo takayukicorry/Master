@@ -23,7 +23,8 @@ private:
     
 public:
     Ophiuroid(GAparameter);
-    
+    Ophiuroid(GAparameter, Starfish*);
+
     void idle();
     bool checkState();
     void create();

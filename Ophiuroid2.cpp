@@ -17,6 +17,20 @@ Ophiuroid2::Ophiuroid2(GAparameter p) {
     m_param = p;
 }
 
+Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
+    ///////////////////////////////////
+    ///  create() で変数は初期化される  ///
+    ///////////////////////////////////
+    stay = true;
+    m_param = p;
+    m_bodies = sf->m_bodies;
+    m_shapes = sf->m_shapes;
+    m_joints_hip = sf->m_joints_hip;
+    m_joints_ankle = sf->m_joints_ankle;
+    m_motor1 = sf->m_motor1;
+    m_motor2 = sf->m_motor2;
+}
+
 void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
@@ -155,6 +169,7 @@ void Ophiuroid2::initSF() {
             btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
             
             joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
         }
