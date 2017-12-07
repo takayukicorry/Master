@@ -129,9 +129,9 @@ void Master::Render() {
         
         if (body && body->getMotionState())
         {
-            //if (body->getUserIndex()>100) continue;
-            if (!starfish->drawTF && body->getUserIndex()>100) continue;
-            
+            if (!starfish->drawTF && body->getUserIndex()>=100) continue;
+            if (body->getUserIndex()==0) continue;
+
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
             btScalar rot = body->getOrientation().getAngle() * RADIAN;
@@ -139,7 +139,11 @@ void Master::Render() {
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
             
             glPushMatrix();
-            glTranslatef(pos[0], pos[1], pos[2]);
+            if (body->getUserIndex() >= 100) {
+                glTranslatef(pos[0], FLEG_WIDTH, pos[2]);
+            } else {
+                glTranslatef(pos[0], pos[1], pos[2]);
+            }
             glRotated(rot, axis[0], axis[1], axis[2]);
             //ground
             if (j == 0 || j == 1 || j == 2 || j == 3)
@@ -164,6 +168,7 @@ void Master::Render() {
             //sphere
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
             {
+                if ( body->getUserIndex() >= 100) continue;
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);

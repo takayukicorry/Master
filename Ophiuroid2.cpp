@@ -37,7 +37,6 @@ void Ophiuroid2::idle() {
     setDirection();
     setDirection2();
     ControllTubeFeet();
-    if (Master::time_step == 10) turn();
 }
 
 bool Ophiuroid2::checkState() {
@@ -342,7 +341,7 @@ void Ophiuroid2::ControllTubeFeet()
     }
     
     //interacting of tf with body (X, Z direction)
-    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= FLEG_WIDTH + 1;
+    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= FLEG_WIDTH*2;
     drawTF = stay;
     for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
         btRigidBody* body = itr->second;
