@@ -19,6 +19,7 @@ public:
     std::map<int, btRotationalLimitMotor*> m_motor1;//handle
     std::map<int, btRotationalLimitMotor*> m_motor2;//wheel
     std::map<int, btCollisionShape*> m_shapes;
+    bool drawTF = true;
 
     virtual void idle() = 0;
     virtual bool checkState() = 0;

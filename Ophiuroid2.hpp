@@ -51,6 +51,7 @@ public:
     void ControllTubeFeet();
     void setDirection();
     void setDirection2();
+    void turn();
 };
 
 #endif /* Ophiuroid2_hpp */

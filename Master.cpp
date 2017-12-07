@@ -130,6 +130,7 @@ void Master::Render() {
         if (body && body->getMotionState())
         {
             //if (body->getUserIndex()>100) continue;
+            if (!starfish->drawTF && body->getUserIndex()>100) continue;
             
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();

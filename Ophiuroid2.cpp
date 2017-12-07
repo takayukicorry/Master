@@ -37,6 +37,7 @@ void Ophiuroid2::idle() {
     setDirection();
     setDirection2();
     ControllTubeFeet();
+    if (Master::time_step == 10) turn();
 }
 
 bool Ophiuroid2::checkState() {
@@ -342,6 +343,7 @@ void Ophiuroid2::ControllTubeFeet()
     
     //interacting of tf with body (X, Z direction)
     stay = m_bodies[0]->getCenterOfMassPosition()[1] <= FLEG_WIDTH + 1;
+    drawTF = stay;
     for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
         btRigidBody* body = itr->second;
         
@@ -676,7 +678,13 @@ void Ophiuroid2::setDirection2() {
         float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
         
         //***************このfを何かに使う
-
     }
-    
+}
+
+void Ophiuroid2::turn() {
+    stay = false;
+    //m_bodies[0]->setLinearVelocity(btVector3(1, 10, 1));
+    for (int i = 0; i < NUM_LEGS*(NUM_JOINT+1)+1; i++) {
+        m_bodies[i]->applyImpulse(btVector3(0, 10, 0), btVector3(0, 0, 0));
+    }
 }
