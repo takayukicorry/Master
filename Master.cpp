@@ -101,7 +101,8 @@ btCollisionDispatcher* Master::dispatcher = new btCollisionDispatcher(Master::co
 btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
 btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseConstraintSolver;
 btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
-btCollisionShape* Master::groundShape = new btBoxShape(btVector3(btScalar(100.), btScalar(10.), btScalar(100.)));
+btVector3 gShape(btScalar(100.), btScalar(50.), btScalar(100.));
+btCollisionShape* Master::groundShape = new btBoxShape(gShape);
 int Master::time_step = 0;
 
 Master::Master() {
@@ -257,7 +258,6 @@ void Master::CleanupBullet() {
 
 void Master::createGround() {
     btTransform groundTransform;
-    btVector3 scale = btVector3(btScalar(100.), btScalar(10.), btScalar(100.));
     btScalar mass(0.);
     bool isDynamic = (mass != 0.f);
     btVector3 localInertia(0, 0, 0);
@@ -267,7 +267,7 @@ void Master::createGround() {
     for (int i = 0; i < NUM_GROUND; i++) {
         for (int j = 0; j < NUM_GROUND; j++) {
             groundTransform.setIdentity();
-            groundTransform.setOrigin(btVector3((NUM_GROUND-1-i*2)*scale[0], -16, (NUM_GROUND-1-j*2)*scale[2]));
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-i*2)*gShape[0], -gShape[1]-6, (NUM_GROUND-1-j*2)*gShape[2]));
             
             btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
             btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
@@ -279,7 +279,7 @@ void Master::createGround() {
         }
     }
     groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*scale[0], 0, (NUM_GROUND-1-(NUM_GROUND-2)*2)*scale[2]));
+    groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0], 0, (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
     
     btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
@@ -328,6 +328,6 @@ void Master::init() {
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(300,150,300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluPerspective(50.0, (double)640 / (double)480, 0.1, 10000);
+    gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
