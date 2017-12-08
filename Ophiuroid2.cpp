@@ -168,7 +168,7 @@ void Ophiuroid2::initSF() {
             if(k==1){pivotA = btVector3(0, 0, 0); pivotB = btVector3(0, FLEG_WIDTH*2 + FLEG_LENGTH/2, 0);}
             btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
             
-            joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            //*****************************************joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
             joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
@@ -206,7 +206,7 @@ void Ophiuroid2::create() {
             TF_object[index] = body_tf;
             TF_object_amp[index] = body_amp;
             TF_contact[index] = false;
-            TF_axis_direction[index] = btVector3(1, 0, 0);
+            TF_axis_direction[index] = btVector3(0, 0, 1);//********************************
             TF_axis_angle[index] = M_PI/2;
             TF_contact_times[index] = 0;
             bodies_tf.push_back(body_tf);
@@ -466,7 +466,7 @@ void Ophiuroid2::ContactAction()
         int obID = obA->getUserIndex();
         
         //when a tubefeet attach ground
-        if (obID==1 || obID==2 || obID==3 || obID==4) {
+        if (0 < obID && obID <= NUM_GROUND*NUM_GROUND) {
             
             int numContacts = contactManifold->getNumContacts();
             

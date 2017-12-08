@@ -146,7 +146,7 @@ void Master::Render() {
             }
             glRotated(rot, axis[0], axis[1], axis[2]);
             //ground
-            if (j == 0 || j == 1 || j == 2 || j == 3)
+            if (0 <= j && j < NUM_GROUND*NUM_GROUND)
             {
                 glScaled(2 * halfExtent[0], 2 * halfExtent[1], 2 * halfExtent[2]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
@@ -278,6 +278,16 @@ void Master::createGround() {
             Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
         }
     }
+    groundTransform.setIdentity();
+    groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*scale[0], 0, (NUM_GROUND-1-(NUM_GROUND-2)*2)*scale[2]));
+    
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
+    btRigidBody* body = new btRigidBody(rbInfo);
+    body->setActivationState(DISABLE_DEACTIVATION);
+    body->setUserIndex(1+NUM_GROUND*(NUM_GROUND-1)+(NUM_GROUND-1));
+    
+    Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
 }
 
 void Master::createStarfish() {
@@ -319,5 +329,5 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(100,50,100, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(300,150,300, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
