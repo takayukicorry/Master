@@ -27,7 +27,7 @@ enum CollisionGroup{
 
 /*卒論で使用*/
 #define ARRAY_LENGTH 100
-#define NUM_LEGS 5
+#define NUM_LEGS 1
 #define CONECT_LENGTH 5
 #define POOL_SIZE 100
 #define MAX_CYCLE 1000
@@ -60,7 +60,7 @@ enum CollisionGroup{
 #define RADIUS_TF 1
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 1
 #define NUM_GROUND 3
-#define NUM_TF 20
+#define NUM_TF 1
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo

@@ -132,6 +132,7 @@ void Master::Render() {
         {
             if (!starfish->drawTF && body->getUserIndex()>=100) continue;
             if (body->getUserIndex()==0) continue;
+            if (body->getUserIndex() == 10) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
@@ -279,7 +280,7 @@ void Master::createGround() {
         }
     }
     groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0], 0, (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
+    groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, 0, (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
     
     btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
@@ -329,5 +330,6 @@ void Master::init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(50.0, (double)640 / (double)480, 0.1, 10000);
-    gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
+    //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(0,10,50, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
