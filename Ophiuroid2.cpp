@@ -469,8 +469,9 @@ void Ophiuroid2::ContactAction()
         if (0 < obID && obID <= NUM_GROUND*NUM_GROUND) {
             
             int numContacts = contactManifold->getNumContacts();
-            btTransform t = bodyA->getWorldTransform();
-            
+            btTransform tA = bodyA->getWorldTransform();
+            btTransform tB = bodyB->getWorldTransform();
+
             
             if (numContacts >= 1) {
                 int k = -1;
@@ -599,6 +600,9 @@ void Ophiuroid2::ContactAction()
                     //when a tubefeet attempt to dettach
                     if (angle < ANGLE_DETACH - ANGLE_ATTACH)
                     {
+                        //***********************************作る瓶嚢の姿勢と拘束の向き
+                        
+                        
                         TF_axis_angle[index] += motor_to_groundY[index]->m_currentPosition;
                         
                         //remove tubefeet - ground (constraint & motor)

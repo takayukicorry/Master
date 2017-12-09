@@ -329,7 +329,7 @@ void Master::init() {
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(50.0, (double)640 / (double)480, 0.1, 10000);
+    gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(0,10,50, 0.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-50,10,50, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
 }
