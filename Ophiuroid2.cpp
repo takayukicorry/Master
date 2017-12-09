@@ -470,6 +470,8 @@ void Ophiuroid2::ContactAction()
             
             int numContacts = contactManifold->getNumContacts();
             btTransform t = bodyA->getWorldTransform();
+            
+            
             if (numContacts >= 1) {
                 int k = -1;
                 for (int j = 0; j < numContacts; j++) {
