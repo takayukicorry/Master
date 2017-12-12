@@ -131,7 +131,7 @@ void Master::Render() {
         if (body && body->getMotionState())
         {
             if (!starfish->drawTF && body->getUserIndex()>=100) continue;
-            if (body->getUserIndex()==0) continue;
+            //if (body->getUserIndex()==0) continue;
             if (body->getUserIndex() == 10) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
@@ -141,11 +141,11 @@ void Master::Render() {
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
             
             glPushMatrix();
-            if (body->getUserIndex() >= 100) {
-                glTranslatef(pos[0], FLEG_WIDTH, pos[2]);
-            } else {
+    //        if (body->getUserIndex() >= 100) {
+    //            glTranslatef(pos[0], FLEG_WIDTH, pos[2]);
+    //        } else {
                 glTranslatef(pos[0], pos[1], pos[2]);
-            }
+    //        }
             glRotated(rot, axis[0], axis[1], axis[2]);
             //ground
             if (0 <= j && j < NUM_GROUND*NUM_GROUND)
@@ -170,7 +170,7 @@ void Master::Render() {
             //sphere
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
             {
-                if ( body->getUserIndex() >= 100) continue;
+                //if ( body->getUserIndex() >= 100) continue;
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
@@ -274,7 +274,7 @@ void Master::createGround() {
             btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
             btRigidBody* body = new btRigidBody(rbInfo);
             body->setActivationState(DISABLE_DEACTIVATION);
-            body->setUserIndex(1+NUM_GROUND*i+j);
+            body->setUserIndex(1);
             
             Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
         }
@@ -286,7 +286,7 @@ void Master::createGround() {
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
     body->setActivationState(DISABLE_DEACTIVATION);
-    body->setUserIndex(1+NUM_GROUND*(NUM_GROUND-1)+(NUM_GROUND-1));
+    body->setUserIndex(2);
     
     Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
 }

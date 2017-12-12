@@ -209,6 +209,8 @@ void Ophiuroid2::create() {
             TF_axis_direction[index] = btVector3(0, 0, 1);//********************************
             TF_axis_angle[index] = M_PI/2;
             TF_contact_times[index] = 0;
+            TF_attach_state[index] = 1;
+            TF_origin_pos[index] = btVector3(0, INIT_POS_Y, 0);
             bodies_tf.push_back(body_tf);
             bodies_amp.push_back(body_amp);
             //tf - amp (constraint)
@@ -281,7 +283,6 @@ btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
     
     startTransform.setOrigin(position);
     
-    
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
@@ -301,7 +302,6 @@ btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
     btVector3 localInertia1(0, 0, 0);
     if (isDynamic)
         Master::groundShape->calculateLocalInertia(mass1, localInertia1);
-    
     
     btTransform sBodyTransform;
     sBodyTransform.setIdentity();
@@ -361,7 +361,7 @@ void Ophiuroid2::ControllTubeFeet()
         }
     }
     
-    //interacting of tf with amp (X, Z direction)
+    //interacting of tf with amp (X, Z direction) & motion of amp
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
         int index = itr->first;
@@ -373,7 +373,20 @@ void Ophiuroid2::ControllTubeFeet()
             btTransform tran = body->getWorldTransform();
 
             if (Master::time_step > InitTime_tf[index]) {
-            tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, INIT_POS_Y - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+                switch (TF_attach_state[index]) {
+                    case 2:
+                        
+                        break;
+                    case 3:
+                        
+                        break;
+                    case 4:
+                        
+                        break;
+                    default:
+                        tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+                        break;
+                }
             } else {
             tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS));
             }
@@ -469,9 +482,6 @@ void Ophiuroid2::ContactAction()
         if (0 < obID && obID <= NUM_GROUND*NUM_GROUND) {
             
             int numContacts = contactManifold->getNumContacts();
-            btTransform tA = bodyA->getWorldTransform();
-            btTransform tB = bodyB->getWorldTransform();
-
             
             if (numContacts >= 1) {
                 int k = -1;
@@ -600,8 +610,8 @@ void Ophiuroid2::ContactAction()
                     //when a tubefeet attempt to dettach
                     if (angle < ANGLE_DETACH - ANGLE_ATTACH)
                     {
-                        //***********************************作る瓶嚢の姿勢と拘束の向き
-                        
+                        //***********************************作る瓶嚢の姿勢と拘束の向き                        
+                        TF_attach_state[index] = bodyA->getUserIndex();
                         
                         TF_axis_angle[index] += motor_to_groundY[index]->m_currentPosition;
                         
@@ -625,7 +635,7 @@ void Ophiuroid2::ContactAction()
                         Master::dynamicsWorld->addRigidBody(body_amp);
                         
                         //create tubefeet - amp (constraint)
-                        btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, pos_amp-pos_tf, btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));//global
+                        btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, pos_amp-pos_tf, btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));
                         univ->setLowerLimit(-0.5*ANGLE, 0);
                         univ->setUpperLimit(1.5*ANGLE, 0);
                         TF_constraint_amp[index] = univ;

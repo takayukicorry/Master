@@ -31,6 +31,8 @@ private:
     std::map<int, int> DeleteTime_tf;//time to delete tf - ground
     std::map<int, int> InitTime_tf;//first phase of tf
     std::map<int, int> ResumeTime_tf;//time to start swinging
+    std::map<int, int> TF_attach_state;//1-ground 2-leftwall 3-thief 4-rightwall
+    std::map<int, btVector3> TF_origin_pos;
     bool stay;
     GAparameter m_param;
     int leg_state[NUM_LEGS];
