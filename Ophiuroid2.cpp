@@ -373,9 +373,13 @@ void Ophiuroid2::ControllTubeFeet()
             btTransform tran = body->getWorldTransform();
 
             if (Master::time_step > InitTime_tf[index]) {
+                //**********************************************************
+                //**********************************************************
+                //**********************************************************
+                //**********************************************************
                 switch (TF_attach_state[index]) {
                     case 2:
-                        
+                        tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
                         break;
                     case 3:
                         
@@ -610,8 +614,27 @@ void Ophiuroid2::ContactAction()
                     //when a tubefeet attempt to dettach
                     if (angle < ANGLE_DETACH - ANGLE_ATTACH)
                     {
-                        //***********************************作る瓶嚢の姿勢と拘束の向き                        
+                        //**********************************************************
+                        //**********************************************************
+                        //**********************************************************
+                        //**********************************************************
+                        //TF_origin_pos[index]を更新せな
+                        
                         TF_attach_state[index] = bodyA->getUserIndex();
+                        switch (TF_attach_state[index]) {
+                            case 2:
+                                
+                                break;
+                            case 3:
+                                
+                                break;
+                            case 4:
+                                
+                                break;
+                            default:
+                                
+                                break;
+                        }
                         
                         TF_axis_angle[index] += motor_to_groundY[index]->m_currentPosition;
                         
