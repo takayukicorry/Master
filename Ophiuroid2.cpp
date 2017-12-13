@@ -194,8 +194,8 @@ void Ophiuroid2::create() {
     for (int i = 0; i < NUM_TF; i++) {
         col = i % 2;
         row = i / 2;
-        pos_tf = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
-        pos_amp = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+        pos_tf = btVector3(-40+RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
+        pos_amp = btVector3(-40+RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
         for (int j = 1; j <= NUM_LEGS; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS_TF), pos_amp);
@@ -319,21 +319,39 @@ btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
 void Ophiuroid2::ControllTubeFeet()
 {
     btScalar velocity_all_x = 0;
+    btScalar velocity_all_y = 0;
     btScalar velocity_all_z = 0;
     //calculate interaction of tf
     for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
         
         int index = itr->first;
         btRigidBody* body = TF_object[index];
+        int state = TF_attach_state[index];
         
         if (body && body->getMotionState() && TF_contact[index])
         {
             btScalar velocity_x = body->getLinearVelocity()[0];
+            btScalar velocity_y = body->getLinearVelocity()[1];
             btScalar velocity_z = body->getLinearVelocity()[2];
             
-            if (velocity_x < velocity_all_x) {
-                velocity_all_x = velocity_x;
+            if (state==1) {
+                if (velocity_x < velocity_all_x) {
+                    velocity_all_x = velocity_x;
+                }
+            } else if (state==2) {
+                if (velocity_y > velocity_all_y) {
+                    velocity_all_y = velocity_y;
+                }
+            } else if (state==3) {
+                if (velocity_x > velocity_all_x) {
+                    velocity_all_x = velocity_x;
+                }
+            } else if (state==4) {
+                if (velocity_y < velocity_all_y) {
+                    velocity_all_y = velocity_y;
+                }
             }
+            
             if (velocity_z > velocity_all_z) {
                 velocity_all_z = velocity_z;
             }
@@ -377,18 +395,23 @@ void Ophiuroid2::ControllTubeFeet()
                 //**********************************************************
                 //**********************************************************
                 //**********************************************************
+                btScalar vel;
                 switch (TF_attach_state[index]) {
                     case 2:
-                        tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
+                        tran.setOrigin(btVector3(TF_origin_pos[index][0] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]+vel/FPS, pos[2]+velocity_all_z/FPS));
                         break;
                     case 3:
-                        
+                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
+                        tran.setOrigin(btVector3(pos[0]+vel/FPS, TF_origin_pos[index][1] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
                         break;
                     case 4:
-                        
+                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
+                        tran.setOrigin(btVector3(TF_origin_pos[index][0] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]-vel/FPS, pos[2]+velocity_all_z/FPS));
                         break;
                     default:
-                        tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
+                        tran.setOrigin(btVector3(pos[0]-vel/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
                         break;
                 }
             } else {
@@ -518,6 +541,7 @@ void Ophiuroid2::ContactAction()
                 //when a tubefeet attempt to attach
                 if ((TF_contact_times[index]==0 && angle>ANGLE_ATTACH) || (!TF_contact[index] && angle>ANGLE_ATTACH-ANGLE_DETACH)){
                     TF_axis_angle[index] += motor_tY[index]->m_currentPosition;
+                    TF_attach_state[index] = bodyA->getUserIndex();
                     
                     //remove tubefeet - amp (object & constraint & motor)
                     Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
@@ -620,19 +644,18 @@ void Ophiuroid2::ContactAction()
                         //**********************************************************
                         //TF_origin_pos[index]を更新せな
                         
-                        TF_attach_state[index] = bodyA->getUserIndex();
                         switch (TF_attach_state[index]) {
                             case 2:
-                                
+                                TF_origin_pos[index] = btVector3(ptB[0]+INIT_POS_Y, 0, 0);
                                 break;
                             case 3:
-                                
+                                TF_origin_pos[index] = btVector3(0, ptB[1]-INIT_POS_Y, 0);
                                 break;
                             case 4:
-                                
+                                TF_origin_pos[index] = btVector3(ptB[0]-INIT_POS_Y, 0, 0);
                                 break;
                             default:
-                                
+                                TF_origin_pos[index] = btVector3(0, ptB[1]+INIT_POS_Y, 0);
                                 break;
                         }
                         
