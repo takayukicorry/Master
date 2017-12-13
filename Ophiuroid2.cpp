@@ -456,15 +456,22 @@ void Ophiuroid2::ControllTubeFeet()
             }
             
             btScalar angle = motor->m_currentPosition;
-            if (TF_contact_times[index]==0 && -(ANGLE - 0.1) >= angle && target_velocity <= 0) {
+            btScalar rotPos = 0;
+            switch (TF_attach_state[index]) {
+                case 2: rotPos = M_PI_2; break;
+                case 3: rotPos = M_PI; break;
+                case 4: rotPos = M_PI_2*3; break;
+                default: break;
+            }
+            if (TF_contact_times[index]==0 && rotPos-(ANGLE - 0.1) >= angle && target_velocity <= 0) {
                 motor->m_targetVelocity *= -1.0;
-            } else if (-(0.5*ANGLE - 0.1) >= angle && target_velocity <= 0) {
+            } else if (rotPos-(0.5*ANGLE - 0.1) >= angle && target_velocity <= 0) {
                 motor->m_targetVelocity *= -1.0;
             }
             
-            if (TF_contact_times[index]==0 && angle >= ANGLE-0.1  && target_velocity >= 0) {
+            if (TF_contact_times[index]==0 && angle >= rotPos+ANGLE-0.1  && target_velocity >= 0) {
                 motor->m_targetVelocity *= -1.0;
-            } else if (1.5*ANGLE - 0.1 <= angle && target_velocity >= 0) {
+            } else if (rotPos+1.5*ANGLE - 0.1 <= angle && target_velocity >= 0) {
                 motor->m_targetVelocity *= -1.0;
             }
         }
@@ -538,8 +545,16 @@ void Ophiuroid2::ContactAction()
                     angle = motor_tZ[index]->m_currentPosition;
                 }
                 
+                btScalar rotPos = 0;
+                switch (TF_attach_state[index]) {
+                    case 2: rotPos = M_PI_2; break;
+                    case 3: rotPos = M_PI; break;
+                    case 4: rotPos = M_PI_2*3; break;
+                    default: break;
+                }
+                
                 //when a tubefeet attempt to attach
-                if ((TF_contact_times[index]==0 && angle>ANGLE_ATTACH) || (!TF_contact[index] && angle>ANGLE_ATTACH-ANGLE_DETACH)){
+                if ((TF_contact_times[index]==0 && angle>rotPos+ANGLE_ATTACH) || (!TF_contact[index] && angle>rotPos+ANGLE_ATTACH-ANGLE_DETACH)){
                     TF_axis_angle[index] += motor_tY[index]->m_currentPosition;
                     TF_attach_state[index] = bodyA->getUserIndex();
                     
@@ -619,8 +634,8 @@ void Ophiuroid2::ContactAction()
                             Master::dynamicsWorld->addRigidBody(body_amp, RX_COL_AMP, RX_COL_GROUND);
                             //tf - amp (constraint)
                             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-                            univ->setLowerLimit(-ANGLE, -M_PI);
-                            univ->setUpperLimit(ANGLE, M_PI);
+                            //univ->setLowerLimit(-ANGLE, -M_PI);
+                            //univ->setUpperLimit(ANGLE, M_PI);
                             TF_constraint_amp[index] = univ;
                             Master::dynamicsWorld->addConstraint(univ);
                             //tf - amp (motor)
@@ -682,8 +697,8 @@ void Ophiuroid2::ContactAction()
                         
                         //create tubefeet - amp (constraint)
                         btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, pos_amp-pos_tf, btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));
-                        univ->setLowerLimit(-0.5*ANGLE, 0);
-                        univ->setUpperLimit(1.5*ANGLE, 0);
+                        univ->setLowerLimit(-100*ANGLE, 0);
+                        univ->setUpperLimit(100*ANGLE, 0);
                         TF_constraint_amp[index] = univ;
                         Master::dynamicsWorld->addConstraint(univ);
                         
