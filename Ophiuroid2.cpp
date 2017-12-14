@@ -34,8 +34,8 @@ Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
 void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
-    setDirection();
-    setDirection2();
+    //setDirection();
+    //setDirection2();
     ControllTubeFeet();
     deleteTF();
 }
@@ -583,7 +583,7 @@ void Ophiuroid2::ContactAction()
                 {
                     //delete the tubefeet attaching too long time & after that, create new one
                     if (Master::time_step > DeleteTime_tf[index]) {
-                        //remove tubefeet - amp (constraint & motor)
+                        //remove tubefeet - ground (constraint & motor)
                         Master::dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
                         TF_constraint_ground.erase(index);
                         motor_to_groundY.erase(index);
@@ -591,11 +591,9 @@ void Ophiuroid2::ContactAction()
                         TF_contact[index] = false;
                         TF_contact_times[index] = 0;
                         
-                        //remove tubefeet & amp
+                        //remove tubefeet
                         Master::dynamicsWorld->removeRigidBody(TF_object[index]);
                         TF_object.erase(index);
-                        Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
-                        TF_object_amp.erase(index);
                         
                         //create new one
                         btRigidBody* body_centor = m_bodies[0];
@@ -646,6 +644,9 @@ void Ophiuroid2::ContactAction()
                             motor_tZ[index] = motor1;
                             motor_tY[index] = motor2;
                             ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
+                            
+                            DeleteTime_tf[index] = Master::time_step + 720;
+
                         }
                     }
                     //when a tubefeet attempt to dettach
@@ -753,6 +754,7 @@ void Ophiuroid2::setDirection2() {
         float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
         
         //***************このfを何かに使う
+        
     }
 }
 
@@ -777,9 +779,11 @@ void Ophiuroid2::deleteTF() {
             motor_tZ.erase(index);
             TF_contact_times[index] = 0;
             
-            //remove tubefeet
+            //remove tubefeet & amp
             Master::dynamicsWorld->removeRigidBody(TF_object[index]);
             TF_object.erase(index);
+            Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
+            TF_object_amp.erase(index);
             
             //create new one
             btRigidBody* body_centor = m_bodies[0];
@@ -830,6 +834,9 @@ void Ophiuroid2::deleteTF() {
                 motor_tZ[index] = motor1;
                 motor_tY[index] = motor2;
                 ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
+                
+                DeleteTime_tf[index] = Master::time_step + 480;
+
             }
         }
     }
