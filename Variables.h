@@ -49,7 +49,7 @@ enum CollisionGroup{
 
 #define M_BODY 5
 #define M_ARM 1
-#define M_TF 0.01f
+#define M_TF 1
 
 #define FBODY_SIZE 5.f
 #define FLEG_LENGTH 15.f/NUM_JOINT
@@ -60,7 +60,7 @@ enum CollisionGroup{
 #define RADIUS_TF 1
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 1
 #define NUM_GROUND 3
-#define NUM_TF 1
+#define NUM_TF 10
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo

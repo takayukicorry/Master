@@ -37,6 +37,7 @@ void Ophiuroid2::idle() {
     setDirection();
     setDirection2();
     ControllTubeFeet();
+    deleteTF();
 }
 
 bool Ophiuroid2::checkState() {
@@ -194,8 +195,8 @@ void Ophiuroid2::create() {
     for (int i = 0; i < NUM_TF; i++) {
         col = i % 2;
         row = i / 2;
-        pos_tf = btVector3(-55+RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
-        pos_amp = btVector3(-55+RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+        pos_tf = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
+        pos_amp = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
         for (int j = 1; j <= NUM_LEGS; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS_TF), pos_amp);
@@ -392,26 +393,19 @@ void Ophiuroid2::ControllTubeFeet()
             btTransform tran = body->getWorldTransform();
 
             if (Master::time_step > InitTime_tf[index]) {
-                //**********************************************************
-                //**********************************************************
-                //**********************************************************
-                //**********************************************************
-                btScalar vel;
+                btScalar vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
+                
                 switch (TF_attach_state[index]) {
                     case 2:
-                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
                         tran.setOrigin(btVector3(TF_origin_pos[index][0] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]+vel/FPS, pos[2]+velocity_all_z/FPS));
                         break;
                     case 3:
-                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
                         tran.setOrigin(btVector3(pos[0]+vel/FPS, TF_origin_pos[index][1] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
                         break;
                     case 4:
-                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
                         tran.setOrigin(btVector3(TF_origin_pos[index][0] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]-vel/FPS, pos[2]+velocity_all_z/FPS));
                         break;
                     default:
-                        vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
                         tran.setOrigin(btVector3(pos[0]-vel/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
                         break;
                 }
@@ -584,13 +578,12 @@ void Ophiuroid2::ContactAction()
                     motor_to_groundZ[index] = motor1;
                     motor_to_groundY[index] = motor2;
                     DeleteTime_tf[index] = Master::time_step + int(double(ANGLE_ATTACH - ANGLE_DETACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 2.0);
-                    
                 }
                 else if (TF_contact[index])
                 {
                     //delete the tubefeet attaching too long time & after that, create new one
                     if (Master::time_step > DeleteTime_tf[index]) {
-                        //remove tubefeet - ground (constraint & motor)
+                        //remove tubefeet - amp (constraint & motor)
                         Master::dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
                         TF_constraint_ground.erase(index);
                         motor_to_groundY.erase(index);
@@ -598,9 +591,11 @@ void Ophiuroid2::ContactAction()
                         TF_contact[index] = false;
                         TF_contact_times[index] = 0;
                         
-                        //remove tubefeet
+                        //remove tubefeet & amp
                         Master::dynamicsWorld->removeRigidBody(TF_object[index]);
                         TF_object.erase(index);
+                        Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
+                        TF_object_amp.erase(index);
                         
                         //create new one
                         btRigidBody* body_centor = m_bodies[0];
@@ -637,8 +632,8 @@ void Ophiuroid2::ContactAction()
                             Master::dynamicsWorld->addRigidBody(body_amp, RX_COL_AMP, RX_COL_GROUND);
                             //tf - amp (constraint)
                             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-                            //univ->setLowerLimit(-ANGLE, -M_PI);
-                            //univ->setUpperLimit(ANGLE, M_PI);
+                            univ->setLowerLimit(-ANGLE, -M_PI);
+                            univ->setUpperLimit(ANGLE, M_PI);
                             TF_constraint_amp[index] = univ;
                             Master::dynamicsWorld->addConstraint(univ);
                             //tf - amp (motor)
@@ -700,10 +695,8 @@ void Ophiuroid2::ContactAction()
                         
                         //create tubefeet - amp (constraint)
                         btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, pos_amp-pos_tf, btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));
-                        //univ->setLowerLimit(-0.5*ANGLE, 0);
-                        //univ->setUpperLimit(1.5*ANGLE, 0);
-                        univ->setLowerLimit(-M_PI, 0);
-                        univ->setUpperLimit(M_PI, 0);
+                        univ->setLowerLimit(-0.5*ANGLE, 0);
+                        univ->setUpperLimit(1.5*ANGLE, 0);
                         TF_constraint_amp[index] = univ;
                         Master::dynamicsWorld->addConstraint(univ);
                         
@@ -717,6 +710,7 @@ void Ophiuroid2::ContactAction()
                         motor_tY[index] = motor2;
                         ResumeTime_tf[index] = Master::time_step;
                         
+                        DeleteTime_tf[index] = Master::time_step + 720;
                     }
                 }
             }
@@ -767,5 +761,76 @@ void Ophiuroid2::turn() {
     //m_bodies[0]->setLinearVelocity(btVector3(1, 10, 1));
     for (int i = 0; i < NUM_LEGS*(NUM_JOINT+1)+1; i++) {
         m_bodies[i]->applyImpulse(btVector3(0, 10, 0), btVector3(0, 0, 0));
+    }
+}
+
+void Ophiuroid2::deleteTF() {
+    //delete the tubefeet attaching too long time & after that, create new one
+    for (auto itr = DeleteTime_tf.begin(); itr != DeleteTime_tf.end(); ++itr) {
+        int index = itr->first;
+
+        if (Master::time_step > DeleteTime_tf[index]) {
+            //remove tubefeet - amp (constraint & motor)
+            Master::dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
+            TF_constraint_amp.erase(index);
+            motor_tY.erase(index);
+            motor_tZ.erase(index);
+            TF_contact_times[index] = 0;
+            
+            //remove tubefeet
+            Master::dynamicsWorld->removeRigidBody(TF_object[index]);
+            TF_object.erase(index);
+            
+            //create new one
+            btRigidBody* body_centor = m_bodies[0];
+            if (body_centor && body_centor->getMotionState())
+            {
+                btVector3 pos = body_centor->getCenterOfMassPosition();
+                std::random_device rnd;
+                std::mt19937 mt(rnd());
+                std::uniform_int_distribution<> rand100(0, 99);
+                btScalar scale[] = {btScalar(RADIUS_TF), btScalar(LENGTH)};
+                int n = index % 10;//j
+                int m = (index-100)/10;//i
+                int col = m % 2;
+                int row = m / 2;
+                int h = INIT_POS_Y-RADIUS_TF*2-LENGTH/2;
+                int from_x = RADIUS_TF*2;
+                btVector3 pos_tf = btVector3(from_x + row * RADIUS_TF * 4, h, pow(-1, col) * RADIUS_TF * 2);
+                btVector3 pos_amp = btVector3(from_x + row * RADIUS_TF * 4 , INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+                pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
+                pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
+                pos_tf[0] += pos[0];
+                pos_tf[2] += pos[2];
+                pos_amp[0] += pos[0];
+                pos_amp[2] += pos[2];
+                //tf - amp (object)
+                btRigidBody* body_amp = initAmp(btScalar(RADIUS_TF), pos_amp);
+                btRigidBody* body_tf = initTubefeet(scale, pos_tf);
+                body_tf->setUserIndex(index);
+                body_amp->setUserIndex(index);
+                TF_object[index] = body_tf;
+                TF_object_amp[index] = body_amp;
+                TF_contact[index] = false;
+                Master::dynamicsWorld->addRigidBody(body_tf, RX_COL_TF, RX_COL_GROUND);
+                Master::dynamicsWorld->addRigidBody(body_amp, RX_COL_AMP, RX_COL_GROUND);
+                //tf - amp (constraint)
+                btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
+                //univ->setLowerLimit(-ANGLE, -M_PI);
+                //univ->setUpperLimit(ANGLE, M_PI);
+                TF_constraint_amp[index] = univ;
+                Master::dynamicsWorld->addConstraint(univ);
+                //tf - amp (motor)
+                btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
+                btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
+                motor1->m_enableMotor = true;
+                motor1->m_targetVelocity = 0;
+                motor2->m_enableMotor = true;
+                motor2->m_targetVelocity = 0;
+                motor_tZ[index] = motor1;
+                motor_tY[index] = motor2;
+                ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
+            }
+        }
     }
 }
