@@ -33,6 +33,8 @@ private:
     std::map<int, int> ResumeTime_tf;//time to start swinging
     std::map<int, int> TF_attach_state;//1-ground 2-leftwall 3-thief 4-rightwall
     std::map<int, btVector3> TF_origin_pos;
+    std::map<int, int> TF_dettach_state;
+    std::map<int, btScalar> TF_start_angle;//angle between ground and TF when starting attach
     bool stay;
     GAparameter m_param;
     int leg_state[NUM_LEGS];
