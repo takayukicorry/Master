@@ -27,7 +27,7 @@ enum CollisionGroup{
 
 /*卒論で使用*/
 #define ARRAY_LENGTH 100
-#define NUM_LEGS 1
+#define NUM_LEGS 5
 #define CONECT_LENGTH 5
 #define POOL_SIZE 100
 #define MAX_CYCLE 1000
