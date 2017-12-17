@@ -131,8 +131,8 @@ void Master::Render() {
         if (body && body->getMotionState())
         {
             if (!starfish->drawTF && body->getUserIndex()>=100) continue;
-            //if (body->getUserIndex()==0) continue;
-            if (body->getUserIndex() == 10) continue;
+            if (body->getUserIndex()==0) continue;
+            //if (body->getUserIndex() == 10) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
@@ -141,11 +141,11 @@ void Master::Render() {
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
             
             glPushMatrix();
-    //        if (body->getUserIndex() >= 100) {
-    //            glTranslatef(pos[0], FLEG_WIDTH, pos[2]);
-    //        } else {
+            if (body->getUserIndex() >= 100) {
+                glTranslatef(pos[0], FLEG_WIDTH, pos[2]);
+            } else {
                 glTranslatef(pos[0], pos[1], pos[2]);
-    //        }
+            }
             glRotated(rot, axis[0], axis[1], axis[2]);
             //ground
             if (0 <= j && j < NUM_GROUND*NUM_GROUND)
