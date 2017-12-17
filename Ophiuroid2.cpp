@@ -337,24 +337,24 @@ void Ophiuroid2::ControllTubeFeet()
             btScalar velocity_z = body->getLinearVelocity()[2];
             
             if (state==1) {
-                if (velocity_x < velocity_all_x) {
+                if (velocity_x < velocity_all_x && velocity_x > -THRESH_VEL) {
                     velocity_all_x = velocity_x;
                 }
             } else if (state==2) {
-                if (velocity_y > velocity_all_y) {
+                if (velocity_y > velocity_all_y && velocity_y < THRESH_VEL) {
                     velocity_all_y = velocity_y;
                 }
             } else if (state==3) {
-                if (velocity_x > velocity_all_x) {
+                if (velocity_x > velocity_all_x && velocity_x < THRESH_VEL) {
                     velocity_all_x = velocity_x;
                 }
             } else if (state==4) {
-                if (velocity_y < velocity_all_y) {
+                if (velocity_y < velocity_all_y && velocity_y > -THRESH_VEL) {
                     velocity_all_y = velocity_y;
                 }
             }
             
-            if (velocity_z > velocity_all_z) {
+            if (velocity_z > velocity_all_z && velocity_z < THRESH_VEL) {
                 velocity_all_z = velocity_z;
             }
         }
@@ -565,8 +565,8 @@ void Ophiuroid2::ContactAction()
                     
                     //create tubefeet - ground (constraint)
                     btUniversalConstraint* univ = new btUniversalConstraint(*bodyA, *bodyB, btVector3(ptB[0],ptB[1]+RADIUS_TF ,ptB[2] ), btVector3(0, 1, 0),btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));//global
-                    univ->setLowerLimit(-M_PI, -M_PI);
-                    univ->setUpperLimit(M_PI, M_PI);
+                    univ->setLowerLimit(-M_PI, 0);
+                    univ->setUpperLimit(M_PI, 0);
                     TF_constraint_ground[index] = univ;
                     Master::dynamicsWorld->addConstraint(univ);
                     
@@ -645,7 +645,7 @@ void Ophiuroid2::ContactAction()
                             motor_tY[index] = motor2;
                             ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
                             
-                            DeleteTime_tf[index] = Master::time_step + 720;
+                            DeleteTime_tf[index] = Master::time_step + 360;
 
                         }
                     }
@@ -711,7 +711,7 @@ void Ophiuroid2::ContactAction()
                         motor_tY[index] = motor2;
                         ResumeTime_tf[index] = Master::time_step;
                         
-                        DeleteTime_tf[index] = Master::time_step + 720;
+                        DeleteTime_tf[index] = Master::time_step + 360;
                     }
                 }
             }
@@ -835,7 +835,7 @@ void Ophiuroid2::deleteTF() {
                 motor_tY[index] = motor2;
                 ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
                 
-                DeleteTime_tf[index] = Master::time_step + 480;
+                DeleteTime_tf[index] = Master::time_step + 360;
 
             }
         }

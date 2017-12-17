@@ -58,7 +58,7 @@ enum CollisionGroup{
 #define RADIUS 3
 #define LENGTH 4
 #define RADIUS_TF 1
-#define INIT_POS_Y LENGTH + RADIUS_TF*3 + 1
+#define INIT_POS_Y LENGTH + RADIUS_TF*3 + 5
 #define NUM_GROUND 3
 #define NUM_TF 10
 
@@ -68,6 +68,7 @@ enum CollisionGroup{
 #define ANGLE_DETACH -ANGLE/2//管足、地面からの離脱判定角度下限//kannsoku,jimenntonoridatuhannteikakudojougenn
 #define ANGLE_VELOCITY_TF ANGLE*60/SECOND//管足振る角速度//kannsokufurukakusokudo
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
+#define THRESH_VEL 5
 
 #endif
 
