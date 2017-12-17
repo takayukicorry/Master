@@ -80,4 +80,4 @@
 
 //////////////////////////////////////////////////////////////////////////////
 ＊getEulerZYX[2]は反時計回りが正、m_targetVelocityは反時計回りが負
-＊地面のuserindexは1~NUM_GROUND^2、bodyは全部10、tfampは100~
+＊UserIndex：地面は1~4、bodyは全部10~、tfampは100~

@@ -83,7 +83,7 @@ void Ophiuroid::initSF() {
     btTransform transform, transformY, transformS, transformSY;
     transform.setIdentity();
     transform.setOrigin(vRoot);
-    m_bodies[0] = createRigidBody(btScalar(M_OBJ), transform, m_shapes[0]);
+    m_bodies[0] = createRigidBody(btScalar(M_OBJ), transform, m_shapes[0], 10);
     
     // legs
     for ( i=0; i<NUM_LEGS; i++)
@@ -102,7 +102,7 @@ void Ophiuroid::initSF() {
         transformSY.setIdentity();
         transformSY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2));
         
-        m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transformS*transformSY, m_shapes[1+(NUM_JOINT+1)*i]);
+        m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transformS*transformSY, m_shapes[1+(NUM_JOINT+1)*i], 10+1+(NUM_JOINT+1)*i);
         
         for (int k = 1; k <= NUM_JOINT; k++)
         {
@@ -112,10 +112,10 @@ void Ophiuroid::initSF() {
             transformY.setIdentity();
             transformY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2 - theta * k));
             
-            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transform*transformY, m_shapes[k+1+(NUM_JOINT+1)*i]);
+            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transform*transformY, m_shapes[k+1+(NUM_JOINT+1)*i], 10+k+1+(NUM_JOINT+1)*i);
             Point += btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin((k+1)*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)));
         }
-        m_bodies[(NUM_JOINT+1)*(i+1)]->setFriction(5.0);//摩擦
+        m_bodies[(NUM_JOINT+1)*(i+1)]->setFriction(5.0);
     }
     
     //停止が続いてもsleeping状態にならないようにする//
@@ -193,7 +193,7 @@ void Ophiuroid::create() {
     activateMotor(true);
 }
 
-btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape) {
+btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape, int index) {
     bool isDynamic = (mass != 0.f);
     
     btVector3 localInertia(0,0,0);
@@ -203,7 +203,7 @@ btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startT
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,shape,localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
-    body->setUserIndex(10);
+    body->setUserIndex(index);
     
     Master::dynamicsWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND | RX_COL_BODY);
     

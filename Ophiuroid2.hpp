@@ -50,7 +50,7 @@ public:
     void initSF();
     btRigidBody* initAmp(btScalar, const btVector3);
     btRigidBody* initTubefeet(btScalar*, const btVector3);
-    btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*);
+    btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
     void ContactAction();
     void ControllTubeFeet();
     void setDirection();

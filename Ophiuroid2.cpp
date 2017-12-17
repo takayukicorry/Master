@@ -76,7 +76,7 @@ void Ophiuroid2::initSF() {
     btTransform transform, transformY, transformS, transformSY;
     transform.setIdentity();
     transform.setOrigin(vRoot);
-    m_bodies[0] = createRigidBody(btScalar(M_OBJ), transform, m_shapes[0]);
+    m_bodies[0] = createRigidBody(btScalar(M_OBJ), transform, m_shapes[0], 10);
     
     // legs
     for ( i=0; i<NUM_LEGS; i++)
@@ -95,7 +95,7 @@ void Ophiuroid2::initSF() {
         transformSY.setIdentity();
         transformSY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2));
         
-        m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transformS*transformSY, m_shapes[1+(NUM_JOINT+1)*i]);
+        m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transformS*transformSY, m_shapes[1+(NUM_JOINT+1)*i], 10+1+(NUM_JOINT+1)*i);
         
         for (int k = 1; k <= NUM_JOINT; k++)
         {
@@ -105,7 +105,7 @@ void Ophiuroid2::initSF() {
             transformY.setIdentity();
             transformY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2 - theta * k));
             
-            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transform*transformY, m_shapes[k+1+(NUM_JOINT+1)*i]);
+            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transform*transformY, m_shapes[k+1+(NUM_JOINT+1)*i], 10+k+1+(NUM_JOINT+1)*i);
             Point += btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin((k+1)*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)));
         }
         m_bodies[(NUM_JOINT+1)*(i+1)]->setFriction(5.0);//摩擦
@@ -251,7 +251,7 @@ void Ophiuroid2::create() {
     }
 }
 
-btRigidBody* Ophiuroid2::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape) {
+btRigidBody* Ophiuroid2::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape, int index) {
     bool isDynamic = (mass != 0.f);
     
     btVector3 localInertia(0,0,0);
@@ -261,7 +261,7 @@ btRigidBody* Ophiuroid2::createRigidBody(btScalar mass, const btTransform &start
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,shape,localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
-    body->setUserIndex(10);
+    body->setUserIndex(index);
     
     Master::dynamicsWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND | RX_COL_BODY);
     
@@ -323,6 +323,14 @@ void Ophiuroid2::ControllTubeFeet()
     btScalar velocity_all_x = 0;
     btScalar velocity_all_y = 0;
     btScalar velocity_all_z = 0;
+    btVector3 pos_body_part[NUM_LEGS][NUM_JOINT];
+    int num_body_part[NUM_LEGS][NUM_JOINT];
+    for (int i = 0; i < NUM_LEGS; i++) {
+        for (int j = 0; j < NUM_JOINT; j++) {
+            pos_body_part[i][j] = btVector3(0, 0, 0);
+            num_body_part[i][j] = 0;
+        }
+    }
     //calculate interaction of tf
     for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
         
@@ -360,60 +368,76 @@ void Ophiuroid2::ControllTubeFeet()
         }
     }
     
-    //interacting of tf with body (X, Z direction)
-    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= FLEG_WIDTH*2;
-    drawTF = stay;
-    for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
-        btRigidBody* body = itr->second;
-        
-        if (body && body->getMotionState())
-        {
-            btVector3 pos = body->getCenterOfMassPosition();
-            btTransform tran = body->getWorldTransform();
-            tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
-            body->setCenterOfMassTransform(tran);
-            
-            if (stay) {
-                /*btVector3 vel = body->getLinearVelocity();
-                if (vel[1] <= 0) vel[1] = 0;*/
-                body->setLinearVelocity(btVector3(0, 0, 0));
-            }
-        }
-    }
-    
     //interacting of tf with amp (X, Z direction) & motion of amp
     for (auto itr = TF_object_amp.begin(); itr != TF_object_amp.end(); ++itr) {
         
         int index = itr->first;
         btRigidBody* body = itr->second;
+        btVector3 pos = body->getCenterOfMassPosition();
+        btTransform tran = body->getWorldTransform();
+        btVector3 newPos = pos;
         
         if (body && body->getMotionState() && !TF_contact[index])
         {
-            btVector3 pos = body->getCenterOfMassPosition();
-            btTransform tran = body->getWorldTransform();
-
             if (Master::time_step > InitTime_tf[index]) {
                 btScalar vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
                 
                 switch (TF_attach_state[index]) {
                     case 2:
-                        tran.setOrigin(btVector3(TF_origin_pos[index][0] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]+vel/FPS, pos[2]+velocity_all_z/FPS));
+                        newPos = btVector3(TF_origin_pos[index][0] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]+vel/FPS, pos[2]+velocity_all_z/FPS);
                         break;
                     case 3:
-                        tran.setOrigin(btVector3(pos[0]+vel/FPS, TF_origin_pos[index][1] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+                        newPos = btVector3(pos[0]+vel/FPS, TF_origin_pos[index][1] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS);
                         break;
                     case 4:
-                        tran.setOrigin(btVector3(TF_origin_pos[index][0] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]-vel/FPS, pos[2]+velocity_all_z/FPS));
+                        newPos = btVector3(TF_origin_pos[index][0] + (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]-vel/FPS, pos[2]+velocity_all_z/FPS);
                         break;
                     default:
-                        tran.setOrigin(btVector3(pos[0]-vel/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS));
+                        newPos = btVector3(pos[0]-vel/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*3)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS);
                         break;
                 }
             } else {
-            tran.setOrigin(btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS));
+            newPos = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
             }
             
+            tran.setOrigin(newPos);
             body->setCenterOfMassTransform(tran);
+            
+            int legNum = (index-1)%NUM_LEGS;
+            int partNum = (index-101)/20;
+            num_body_part[legNum][partNum]++;
+            switch (TF_attach_state[index]) {
+                case 2: case 4:
+                    pos_body_part[legNum][partNum] += btVector3(TF_origin_pos[index][0], newPos[1], newPos[2]);
+                    break;
+                default:
+                    pos_body_part[legNum][partNum] += btVector3(newPos[0], TF_origin_pos[index][1], newPos[2]);
+                    break;
+            }
+        }
+    }
+    
+    //interacting of tf with body (X, Z direction)
+    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= FLEG_WIDTH*2;
+    drawTF = stay;
+    for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
+        btRigidBody* body = itr->second;
+        int legNum;
+        int partNum;
+        
+        if (body && body->getMotionState())
+        {
+            btVector3 pos = body->getCenterOfMassPosition();
+            btTransform tran = body->getWorldTransform();
+            /////tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
+            tran.setOrigin(pos_body_part[legNum][partNum]/num_body_part[legNum][partNum]);
+            body->setCenterOfMassTransform(tran);
+            
+            if (stay) {
+                /*btVector3 vel = body->getLinearVelocity();
+                 if (vel[1] <= 0) vel[1] = 0;*/
+                body->setLinearVelocity(btVector3(0, 0, 0));
+            }
         }
     }
     

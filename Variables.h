@@ -60,7 +60,8 @@ enum CollisionGroup{
 #define RADIUS_TF 1
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 5
 #define NUM_GROUND 3
-#define NUM_TF 10
+#define NUM_TF_UNIT 4
+#define NUM_TF NUM_TF_UNIT*NUM_JOINT
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
