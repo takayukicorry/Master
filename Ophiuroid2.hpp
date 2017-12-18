@@ -38,6 +38,8 @@ private:
     bool stay;
     GAparameter m_param;
     int leg_state[NUM_LEGS];
+    btVector3 pos_body_part[NUM_LEGS][NUM_JOINT];
+    int num_body_part[NUM_LEGS][NUM_JOINT];
     
 public:
     Ophiuroid2(GAparameter);

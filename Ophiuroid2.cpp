@@ -172,7 +172,7 @@ void Ophiuroid2::initSF() {
             //*****************************************joint2->setLimit(manager.pool[0].lowerlimit[(NUM_JOINT+2)*i + 1 + k], manager.pool[0].upperlimit[(NUM_JOINT+2)*i + 1 + k]);
             joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
-            Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
+            /////Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
         }
     }
 }
@@ -201,7 +201,7 @@ void Ophiuroid2::create() {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS_TF), pos_amp);
             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
-            int index = 100 + NUM_TF * i + j;
+            int index = 100 + NUM_LEGS * i + j;
             body_tf->setUserIndex(index);
             body_amp->setUserIndex(index);
             TF_object[index] = body_tf;
@@ -249,6 +249,7 @@ void Ophiuroid2::create() {
     for (int i = 0; i < constraints.size(); i++) {
         Master::dynamicsWorld->addConstraint(constraints[i]);
     }
+    
 }
 
 btRigidBody* Ophiuroid2::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape, int index) {
@@ -323,14 +324,14 @@ void Ophiuroid2::ControllTubeFeet()
     btScalar velocity_all_x = 0;
     btScalar velocity_all_y = 0;
     btScalar velocity_all_z = 0;
-    btVector3 pos_body_part[NUM_LEGS][NUM_JOINT];
-    int num_body_part[NUM_LEGS][NUM_JOINT];
+    
     for (int i = 0; i < NUM_LEGS; i++) {
         for (int j = 0; j < NUM_JOINT; j++) {
             pos_body_part[i][j] = btVector3(0, 0, 0);
             num_body_part[i][j] = 0;
         }
     }
+    
     //calculate interaction of tf
     for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
         
@@ -397,7 +398,7 @@ void Ophiuroid2::ControllTubeFeet()
                         break;
                 }
             } else {
-            newPos = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
+                newPos = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
             }
             
             tran.setOrigin(newPos);
@@ -418,19 +419,27 @@ void Ophiuroid2::ControllTubeFeet()
     }
     
     //interacting of tf with body (X, Z direction)
-    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= FLEG_WIDTH*2;
+    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= INIT_POS_Y+5;//FLEG_WIDTH*2;
     drawTF = stay;
     for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
         btRigidBody* body = itr->second;
-        int legNum;
-        int partNum;
+        int index = itr->first;
+        int legNum = (index-1)/(NUM_JOINT+1);
+        int partNum = (index-2)%(NUM_JOINT+1);
         
         if (body && body->getMotionState())
         {
             btVector3 pos = body->getCenterOfMassPosition();
             btTransform tran = body->getWorldTransform();
-            /////tran.setOrigin(btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS));
-            tran.setOrigin(pos_body_part[legNum][partNum]/num_body_part[legNum][partNum]);
+            btVector3 w;
+            if (index==0 || index%(NUM_JOINT+1)==1) {
+                w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
+            } else if (num_body_part[legNum][partNum]!=0) {
+                w = pos_body_part[legNum][partNum]/num_body_part[legNum][partNum];
+            } else {
+                w = btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS);
+            }
+            tran.setOrigin(w);
             body->setCenterOfMassTransform(tran);
             
             if (stay) {
@@ -511,8 +520,6 @@ void Ophiuroid2::ControllTubeFeet()
         
         motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
     }
-    
-    
 }
 
 //action when tubefeet attach ground
