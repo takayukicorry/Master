@@ -141,11 +141,11 @@ void Master::Render() {
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
             
             glPushMatrix();
-            if (body->getUserIndex() >= 100) {
-                glTranslatef(pos[0], FLEG_WIDTH, pos[2]);
-            } else {
+      //      if (body->getUserIndex() >= 100) {
+      //          glTranslatef(pos[0], FLEG_WIDTH, pos[2]);
+      //      } else {
                 glTranslatef(pos[0], pos[1], pos[2]);
-            }
+      //      }
             glRotated(rot, axis[0], axis[1], axis[2]);
             //ground
             if (0 <= j && j < NUM_GROUND*NUM_GROUND)
@@ -331,5 +331,5 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(-20,50,50, -30.0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-20,50,50, -30, 0, 0.0, 0.0, 1.0, 0.0);
 }
