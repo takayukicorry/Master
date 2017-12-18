@@ -195,8 +195,10 @@ void Ophiuroid2::create() {
     for (int i = 0; i < NUM_TF; i++) {
         col = i % 2;
         row = i / 2;
-        pos_tf = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
-        pos_amp = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+        ////pos_tf = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
+        ////pos_amp = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+        pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*3+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
+        pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*3+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
         for (int j = 1; j <= NUM_LEGS; j++) {
             //tf - amp (object)
             btRigidBody* body_amp = initAmp(btScalar(RADIUS_TF), pos_amp);
@@ -249,7 +251,6 @@ void Ophiuroid2::create() {
     for (int i = 0; i < constraints.size(); i++) {
         Master::dynamicsWorld->addConstraint(constraints[i]);
     }
-    
 }
 
 btRigidBody* Ophiuroid2::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape, int index) {
@@ -641,8 +642,8 @@ void Ophiuroid2::ContactAction()
                             int row = m / 2;
                             int h = INIT_POS_Y-RADIUS_TF*2-LENGTH/2;
                             int from_x = RADIUS_TF*2;
-                            btVector3 pos_tf = btVector3(from_x + row * RADIUS_TF * 4, h, pow(-1, col) * RADIUS_TF * 2);
-                            btVector3 pos_amp = btVector3(from_x + row * RADIUS_TF * 4 , INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+                            btVector3 pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*3+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), h, pow(-1, col) * RADIUS_TF * 2);
+                            btVector3 pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*3+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
                             pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
                             pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
                             pos_tf[0] += pos[0];
@@ -831,8 +832,8 @@ void Ophiuroid2::deleteTF() {
                 int row = m / 2;
                 int h = INIT_POS_Y-RADIUS_TF*2-LENGTH/2;
                 int from_x = RADIUS_TF*2;
-                btVector3 pos_tf = btVector3(from_x + row * RADIUS_TF * 4, h, pow(-1, col) * RADIUS_TF * 2);
-                btVector3 pos_amp = btVector3(from_x + row * RADIUS_TF * 4 , INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+                btVector3 pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*3+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), h, pow(-1, col) * RADIUS_TF * 2);
+                btVector3 pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*3+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
                 pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
                 pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
                 pos_tf[0] += pos[0];
