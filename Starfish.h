@@ -41,6 +41,13 @@ public:
         }
     }
     
+    void activateTwist(bool t) {
+        for (auto itr = m_joints_hip.begin(); itr != m_joints_hip.end(); ++itr) {
+            itr->second->setLowerLimit(-M_PI_2, 0);
+            itr->second->setUpperLimit(M_PI_2, 0);
+        }
+    }
+    
 };
 
 #endif /* Starfish_h */

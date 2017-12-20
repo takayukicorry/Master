@@ -41,6 +41,7 @@ private:
     btVector3 pos_body_part[NUM_LEGS][NUM_JOINT];
     int state_body_part[NUM_LEGS][NUM_JOINT];
     int num_body_part[NUM_LEGS][NUM_JOINT];
+    btScalar vel_body_part[NUM_LEGS][NUM_JOINT];
     
 public:
     Ophiuroid2(GAparameter);
