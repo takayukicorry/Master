@@ -335,7 +335,12 @@ void Ophiuroid2::ControllTubeFeet()
             state_body_part[i][j] = 0;
             vel_body_part[i][j] = btVector3(0, 0, 0);
         }
+        ang_body_part[i] = 0;
     }
+    btTransform abp = m_bodies[0]->getWorldTransform();
+    btVector3 abp_pos = m_bodies[0]->getCenterOfMassPosition();
+    btVector3 abp_Y = abp*btVector3(0, 1, 0);
+    ang_body_part[NUM_LEGS] = acos(abp_Y[1]-abp_pos[1]);
     
     //calculate interaction of tf
     for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
@@ -343,8 +348,6 @@ void Ophiuroid2::ControllTubeFeet()
         int index = itr->first;
         btRigidBody* body = TF_object[index];
         int state = TF_attach_state[index];
-        int legNum = (index-1)%NUM_LEGS;
-        int partNum = (index-101)/20;
         
         if (body && body->getMotionState() && TF_contact[index])
         {
@@ -426,6 +429,28 @@ void Ophiuroid2::ControllTubeFeet()
         }
     }
     
+    //motion of arms
+    for (auto itr = m_joints_ankle.begin(); itr != m_joints_ankle.end(); ++itr) {
+        int index = itr->first;
+        int legNum = index/3;
+        int partNum = index%3;
+        
+        btHingeConstraint* hingeC2 = itr->second;
+        btScalar fCurAngle_ankle = hingeC2->getHingeAngle();
+        btScalar fTargetAngle_ankle = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
+        btScalar fTargetLimitAngle_ankle = -(fTargetAngle_ankle-1)*M_PI_2;
+        if (!partNum) ang_body_part[legNum] = fTargetLimitAngle_ankle;
+        
+        while (partNum) {
+            partNum--;
+            fCurAngle_ankle += m_joints_ankle[legNum*3+partNum]->getHingeAngle();
+        }
+        fCurAngle_ankle += ang_body_part[NUM_LEGS];
+        btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;
+        btScalar fDesiredAngularVel_ankle = fAngleError_ankle;
+        hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 100000000000);
+    }
+    
     //interacting of tf with body (X, Z direction)
     stay = true;////m_bodies[0]->getCenterOfMassPosition()[1] <= INIT_POS_Y+5;//FLEG_WIDTH*2;
     drawTF = stay;
@@ -472,27 +497,6 @@ void Ophiuroid2::ControllTubeFeet()
                 body->setLinearVelocity(btVector3(0, 0, 0));
             }
         }
-    }
-    
-    //motion of arms
-    for (auto itr = m_joints_ankle.begin(); itr != m_joints_ankle.end(); ++itr) {
-        int index = itr->first;
-        int legNum = index/3;
-        int partNum = index%3;
-        
-        btHingeConstraint* hingeC2 = itr->second;
-        btScalar fCurAngle_ankle = hingeC2->getHingeAngle();
-        btScalar fTargetAngle_ankle = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
-        btScalar fTargetLimitAngle_ankle = -(fTargetAngle_ankle-1)*M_PI;
-        
-        while (partNum) {
-            partNum--;
-            fCurAngle_ankle += m_joints_ankle[legNum*3+partNum]->getHingeAngle();
-        }
-        
-        btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;
-        btScalar fDesiredAngularVel_ankle = fAngleError_ankle;
-        hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 100000000000);
     }
     
     //motion of tubefeet - amp (motor)
