@@ -113,7 +113,7 @@ void Ophiuroid2::initSF() {
     
     //停止が続いてもsleeping状態にならないようにする//
     // Setup some damping on the m_bodies
-    /*
+    
     for (i = 0; i < m_bodies.size(); ++i)
     {
         m_bodies[i]->setDamping(0.05, 0.85);
@@ -123,7 +123,7 @@ void Ophiuroid2::initSF() {
         m_bodies[i]->forceActivationState(DISABLE_DEACTIVATION);
         
     }
-    */
+    
     //
     // Setup the constraints
     //
@@ -179,7 +179,7 @@ void Ophiuroid2::initSF() {
 }
 
 void Ophiuroid2::create() {
-    activateMotor(false);
+    //activateMotor(false);
     activateTwist(false);
     
     std::vector<btRigidBody* > bodies_tf;
@@ -333,7 +333,7 @@ void Ophiuroid2::ControllTubeFeet()
             pos_body_part[i][j] = btVector3(0, 0, 0);
             num_body_part[i][j] = 0;
             state_body_part[i][j] = 0;
-            vel_body_part[i][j] = 0.0;
+            vel_body_part[i][j] = btVector3(0, 0, 0);
         }
     }
     
@@ -343,6 +343,8 @@ void Ophiuroid2::ControllTubeFeet()
         int index = itr->first;
         btRigidBody* body = TF_object[index];
         int state = TF_attach_state[index];
+        int legNum = (index-1)%NUM_LEGS;
+        int partNum = (index-101)/20;
         
         if (body && body->getMotionState() && TF_contact[index])
         {
@@ -425,7 +427,7 @@ void Ophiuroid2::ControllTubeFeet()
     }
     
     //interacting of tf with body (X, Z direction)
-    stay = m_bodies[0]->getCenterOfMassPosition()[1] <= INIT_POS_Y+5;//FLEG_WIDTH*2;
+    stay = true;////m_bodies[0]->getCenterOfMassPosition()[1] <= INIT_POS_Y+5;//FLEG_WIDTH*2;
     drawTF = stay;
     for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
         btRigidBody* body = itr->second;
@@ -441,7 +443,8 @@ void Ophiuroid2::ControllTubeFeet()
             if (index==0 || index%(NUM_JOINT+1)==1) {
                 w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
             } else if (num_body_part[legNum][partNum]!=0) {
-                w = pos_body_part[legNum][partNum]/num_body_part[legNum][partNum];
+                w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
+                //w = pos_body_part[legNum][partNum]/num_body_part[legNum][partNum];
             } else {
                 w = btVector3(pos[0]+velocity_all_x*1.5/FPS, pos[1], pos[2]+velocity_all_z*1.5/FPS);
             }
@@ -465,7 +468,7 @@ void Ophiuroid2::ControllTubeFeet()
         btHingeConstraint* hingeC2 = itr->second;
         btScalar fCurAngle_ankle = hingeC2->getHingeAngle();
         btScalar fTargetAngle_ankle = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
-        btScalar fTargetLimitAngle_ankle = -M_PI_2;//********-(fTargetAngle_ankle-1)*M_PI_2;
+        btScalar fTargetLimitAngle_ankle = -(fTargetAngle_ankle-1)*M_PI;
         
         while (partNum) {
             partNum--;
@@ -615,7 +618,7 @@ void Ophiuroid2::ContactAction()
                     TF_attach_state[index] = bodyA->getUserIndex();
                     
                     //remove tubefeet - amp (object & constraint & motor)
-                    Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
+                    //Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
                     Master::dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
                     motor_tY.erase(index);
                     motor_tZ.erase(index);
@@ -653,7 +656,9 @@ void Ophiuroid2::ContactAction()
                         //remove tubefeet
                         Master::dynamicsWorld->removeRigidBody(TF_object[index]);
                         TF_object.erase(index);
-                        
+                        Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
+                        TF_object_amp.erase(index);
+
                         //create new one
                         btRigidBody* body_centor = m_bodies[0];
                         if (body_centor && body_centor->getMotionState())
@@ -741,6 +746,9 @@ void Ophiuroid2::ContactAction()
                         TF_contact[index] = false;
                         
                         //create amp (object)
+                        Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
+                        TF_object_amp.erase(index);
+
                         btTransform tr_tf = bodyB->getWorldTransform();
                         btTransform tr_amp, tr_amp_after;
                         tr_amp.setIdentity();
