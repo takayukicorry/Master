@@ -451,6 +451,36 @@ void Ophiuroid2::ControllTubeFeet()
         hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 100000000000);
     }
     
+    //state of body
+    for (int i = 0; i < NUM_LEGS; i++) {
+        if (ang_body_part[i] != 0) {
+            int aState = 1 + state_body_part[i][0]/num_body_part[i][0];
+            btVector3 bPos = m_bodies[0]->getCenterOfMassPosition();
+            if (aState==2){
+                btScalar dis = FBODY_SIZE;
+                if (bPos[0]<FBODY_SIZE+TF_origin_pos[101+i][0]){
+                    dis = bPos[0] - TF_origin_pos[101+i][0];
+                } else if(bPos[0]<FBODY_SIZE+TF_origin_pos[106+i][0]){
+                    dis = bPos[0] - TF_origin_pos[106+i][0];
+                } else if(bPos[0]<FBODY_SIZE+TF_origin_pos[111+i][0]){
+                    dis = bPos[0] - TF_origin_pos[111+i][0];
+                } else if(bPos[0]<FBODY_SIZE+TF_origin_pos[116+i][0]){
+                    dis = bPos[0] - TF_origin_pos[116+i][0];
+                }
+                
+                btScalar bAng = M_PI_2*(FBODY_SIZE-dis)/(FBODY_SIZE);
+                btTransform bTran;
+                bTran.setIdentity();
+                bTran.setRotation();
+                
+            } else if (aState==3 && (FBODY_SIZE+bPos[1]>TF_origin_pos[101+i][1] || FBODY_SIZE+bPos[1]>TF_origin_pos[106+i][1] || FBODY_SIZE+bPos[1]>TF_origin_pos[111+i][1] || FBODY_SIZE+bPos[1]>TF_origin_pos[116+i][1])) {
+                
+            } else if (aState==4 && (FBODY_SIZE+bPos[0]>TF_origin_pos[101+i][0] || FBODY_SIZE+bPos[0]>TF_origin_pos[106+i][0] || FBODY_SIZE+bPos[0]>TF_origin_pos[111+i][0] || FBODY_SIZE+bPos[0]>TF_origin_pos[116+i][0])) {
+                
+            }
+        }
+    }
+    
     //interacting of tf with body (X, Z direction)
     stay = true;////m_bodies[0]->getCenterOfMassPosition()[1] <= INIT_POS_Y+5;//FLEG_WIDTH*2;
     drawTF = stay;
@@ -466,7 +496,7 @@ void Ophiuroid2::ControllTubeFeet()
             btTransform tran = body->getWorldTransform();
             btVector3 w;
             if (index==0 || index%(NUM_JOINT+1)==1) {
-                w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
+                w = btVector3(pos[0]+velocity_all_x/FPS, pos[1]+velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
             } else {//} if (num_body_part[legNum][partNum]!=0) {
                 double s = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
                 if ( s == 1 ) {
