@@ -453,9 +453,10 @@ void Ophiuroid2::ControllTubeFeet()
     
     //state of body
     for (int i = 0; i < NUM_LEGS; i++) {
-        if (ang_body_part[i] != 0) {
+        if (ang_body_part[i] < -0.1 || 0.1 < ang_body_part[i]) {
             int aState = 1 + state_body_part[i][0]/num_body_part[i][0];
             btVector3 bPos = m_bodies[0]->getCenterOfMassPosition();
+            btScalar bAng = 0;
             if (aState==2){
                 btScalar dis = FBODY_SIZE;
                 if (bPos[0]<FBODY_SIZE+TF_origin_pos[101+i][0]){
@@ -468,16 +469,46 @@ void Ophiuroid2::ControllTubeFeet()
                     dis = bPos[0] - TF_origin_pos[116+i][0];
                 }
                 
-                btScalar bAng = M_PI_2*(FBODY_SIZE-dis)/(FBODY_SIZE);
-                btTransform bTran;
-                bTran.setIdentity();
-                bTran.setRotation();
+                bAng = M_PI_2*(FBODY_SIZE-dis)/(FBODY_SIZE);
                 
-            } else if (aState==3 && (FBODY_SIZE+bPos[1]>TF_origin_pos[101+i][1] || FBODY_SIZE+bPos[1]>TF_origin_pos[106+i][1] || FBODY_SIZE+bPos[1]>TF_origin_pos[111+i][1] || FBODY_SIZE+bPos[1]>TF_origin_pos[116+i][1])) {
+            } else if (aState==3) {
+                btScalar dis = FBODY_SIZE;
+                if (FBODY_SIZE+bPos[1]>TF_origin_pos[101+i][1]){
+                    dis = TF_origin_pos[101+i][1] - bPos[1];
+                } else if(FBODY_SIZE+bPos[1]>TF_origin_pos[106+i][1]){
+                    dis = TF_origin_pos[106+i][1] - bPos[1];
+                } else if(FBODY_SIZE+bPos[1]>TF_origin_pos[111+i][1]){
+                    dis = TF_origin_pos[111+i][1] - bPos[1];
+                } else if(FBODY_SIZE+bPos[1]>TF_origin_pos[116+i][1]){
+                    dis = TF_origin_pos[116+i][1] - bPos[1];
+                }
                 
-            } else if (aState==4 && (FBODY_SIZE+bPos[0]>TF_origin_pos[101+i][0] || FBODY_SIZE+bPos[0]>TF_origin_pos[106+i][0] || FBODY_SIZE+bPos[0]>TF_origin_pos[111+i][0] || FBODY_SIZE+bPos[0]>TF_origin_pos[116+i][0])) {
+                bAng = M_PI_2*(1+(FBODY_SIZE-dis)/(FBODY_SIZE));
                 
+            } else if (aState==4) {
+                btScalar dis = FBODY_SIZE;
+                if (FBODY_SIZE+bPos[0]>TF_origin_pos[101+i][0]){
+                    dis = TF_origin_pos[101+i][1] - bPos[1];
+                } else if(FBODY_SIZE+bPos[0]>TF_origin_pos[106+i][0]){
+                    dis = TF_origin_pos[106+i][1] - bPos[1];
+                } else if(FBODY_SIZE+bPos[0]>TF_origin_pos[111+i][0]){
+                    dis = TF_origin_pos[111+i][1] - bPos[1];
+                } else if(FBODY_SIZE+bPos[0]>TF_origin_pos[116+i][0]){
+                    dis = TF_origin_pos[116+i][1] - bPos[1];
+                }
+                
+                bAng = M_PI_2*(2+(FBODY_SIZE-dis)/(FBODY_SIZE));
             }
+            btTransform bTran, bTra;
+            bTra = m_bodies[0]->getWorldTransform();
+            btVector3 pY = bTra*btVector3(0, 1, 0);
+            btVector3 pOrigin = bTra.getOrigin();
+            btVector3 pY_O = pY - pOrigin;
+            bAng -= acos(pY_O[1]);
+            
+            bTran.setIdentity();
+            bTran.setRotation(btQuaternion(btVector3(0, 0, 1), bAng));
+            m_bodies[0]->setCenterOfMassTransform(bTran);
         }
     }
     
@@ -496,7 +527,7 @@ void Ophiuroid2::ControllTubeFeet()
             btTransform tran = body->getWorldTransform();
             btVector3 w;
             if (index==0 || index%(NUM_JOINT+1)==1) {
-                w = btVector3(pos[0]+velocity_all_x/FPS, pos[1]+velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
+                w = btVector3(pos[0]+velocity_all_x/FPS, pos[1]/*+velocity_all_y/FPS*/, pos[2]+velocity_all_z/FPS);
             } else {//} if (num_body_part[legNum][partNum]!=0) {
                 double s = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
                 if ( s == 1 ) {
