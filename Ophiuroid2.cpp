@@ -37,7 +37,7 @@ void Ophiuroid2::idle() {
     //setDirection();
     //setDirection2();
     ControllTubeFeet();
-    deleteTF();
+    ////////deleteTF();
 }
 
 bool Ophiuroid2::checkState() {
@@ -799,7 +799,7 @@ void Ophiuroid2::ContactAction()
                             motor_tY[index] = motor2;
                             ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
                             
-                            DeleteTime_tf[index] = Master::time_step + 360;
+                            DeleteTime_tf[index] = Master::time_step + DL_TIME;
 
                         }
                     }
@@ -848,6 +848,7 @@ void Ophiuroid2::ContactAction()
                         btVector3 pos_tf = bodyB->getCenterOfMassPosition();
                         btVector3 pos_amp = tr_amp_after.getOrigin();
                         btRigidBody* body_amp = initAmp(RADIUS_TF, pos_amp);
+                        body_amp->setUserIndex(index);
                         TF_object_amp[index] = body_amp;
                         Master::dynamicsWorld->addRigidBody(body_amp);
                         
@@ -868,7 +869,7 @@ void Ophiuroid2::ContactAction()
                         motor_tY[index] = motor2;
                         ResumeTime_tf[index] = Master::time_step;
                         
-                        DeleteTime_tf[index] = Master::time_step + 360;
+                        DeleteTime_tf[index] = Master::time_step + DL_TIME;
                     }
                 }
             }
@@ -992,7 +993,7 @@ void Ophiuroid2::deleteTF() {
                 motor_tY[index] = motor2;
                 ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
                 
-                DeleteTime_tf[index] = Master::time_step + 360;
+                DeleteTime_tf[index] = Master::time_step + DL_TIME;
 
             }
         }
