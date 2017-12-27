@@ -62,7 +62,7 @@ enum CollisionGroup{
 #define NUM_GROUND 3
 #define NUM_TF_UNIT 4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
-#define DL_TIME 3600
+#define DL_TIME 360
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo

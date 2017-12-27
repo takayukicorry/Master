@@ -762,6 +762,22 @@ void Ophiuroid2::ContactAction()
                         TF_contact_times[index] = 0;
                         
                         //remove tubefeet
+                        btVector3 pos_amp = TF_object_amp[index]->getCenterOfMassPosition();
+                        switch (TF_attach_state[index]) {
+                            case 2:
+                                pos_amp[0] = TF_origin_pos[index][0];
+                                break;
+                            case 3:
+                                pos_amp[1] = TF_origin_pos[index][1];
+                                break;
+                            case 4:
+                                pos_amp[0] = TF_origin_pos[index][0];
+                                break;
+                            default:
+                                pos_amp[1] = TF_origin_pos[index][1];
+                                break;
+                        }
+                        btVector3 pos_tf = pos_amp - btVector3(0, LENGTH/2+RADIUS_TF*2, 0);
                         Master::dynamicsWorld->removeRigidBody(TF_object[index]);
                         TF_object.erase(index);
                         Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
@@ -782,14 +798,16 @@ void Ophiuroid2::ContactAction()
                             int row = m / 2;
                             int h = INIT_POS_Y-RADIUS_TF*2-LENGTH/2;
                             //int from_x = RADIUS_TF*2;
-                            btVector3 pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), h, pow(-1, col) * RADIUS_TF * 2);
-                            btVector3 pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
-                            pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
-                            pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
-                            pos_tf[0] += pos[0];
-                            pos_tf[2] += pos[2];
-                            pos_amp[0] += pos[0];
-                            pos_amp[2] += pos[2];
+                            if (TF_attach_state[index]==1) {
+                                pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), h, pow(-1, col) * RADIUS_TF * 2);
+                                pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+                                pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
+                                pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
+                                pos_tf[0] += pos[0];
+                                pos_tf[2] += pos[2];
+                                pos_amp[0] += pos[0];
+                                pos_amp[2] += pos[2];
+                            }
                             //tf - amp (object)
                             btRigidBody* body_amp = initAmp(btScalar(RADIUS_TF), pos_amp);
                             btRigidBody* body_tf = initTubefeet(scale, pos_tf);
@@ -873,7 +891,7 @@ void Ophiuroid2::ContactAction()
                         //create tubefeet - amp (constraint)
                         btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, pos_amp-pos_tf, btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));
                         univ->setLowerLimit(-0.5*ANGLE, 0);
-                        univ->setUpperLimit(10.5*ANGLE, 0);
+                        univ->setUpperLimit(1.5*ANGLE, 0);
                         TF_constraint_amp[index] = univ;
                         Master::dynamicsWorld->addConstraint(univ);
                         
@@ -955,6 +973,22 @@ void Ophiuroid2::deleteTF() {
             TF_contact_times[index] = 0;
             
             //remove tubefeet & amp
+            btVector3 pos_amp = TF_object_amp[index]->getCenterOfMassPosition();
+            switch (TF_attach_state[index]) {
+                case 2:
+                    pos_amp[0] = TF_origin_pos[index][0];
+                    break;
+                case 3:
+                    pos_amp[1] = TF_origin_pos[index][1];
+                    break;
+                case 4:
+                    pos_amp[0] = TF_origin_pos[index][0];
+                    break;
+                default:
+                    pos_amp[1] = TF_origin_pos[index][1];
+                    break;
+            }
+            btVector3 pos_tf = pos_amp - btVector3(0, LENGTH/2+RADIUS_TF*2, 0);
             Master::dynamicsWorld->removeRigidBody(TF_object[index]);
             TF_object.erase(index);
             Master::dynamicsWorld->removeRigidBody(TF_object_amp[index]);
@@ -975,14 +1009,16 @@ void Ophiuroid2::deleteTF() {
                 int row = m / 2;
                 int h = INIT_POS_Y-RADIUS_TF*2-LENGTH/2;
                 //int from_x = RADIUS_TF*2;
-                btVector3 pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), h, pow(-1, col) * RADIUS_TF * 2);
-                btVector3 pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
-                pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
-                pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
-                pos_tf[0] += pos[0];
-                pos_tf[2] += pos[2];
-                pos_amp[0] += pos[0];
-                pos_amp[2] += pos[2];
+                if (TF_attach_state[index]==1) {
+                    pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), h, pow(-1, col) * RADIUS_TF * 2);
+                    pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
+                    pos_tf = RotateY(pos_tf, M_PI*(n-1)*2/5);
+                    pos_amp = RotateY(pos_amp, M_PI*(n-1)*2/5);
+                    pos_tf[0] += pos[0];
+                    pos_tf[2] += pos[2];
+                    pos_amp[0] += pos[0];
+                    pos_amp[2] += pos[2];
+                }
                 //tf - amp (object)
                 btRigidBody* body_amp = initAmp(btScalar(RADIUS_TF), pos_amp);
                 btRigidBody* body_tf = initTubefeet(scale, pos_tf);

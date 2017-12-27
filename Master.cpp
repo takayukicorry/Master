@@ -132,7 +132,7 @@ void Master::Render() {
         {
             int index = body->getUserIndex();
             if (!starfish->drawTF && index>=100) continue;
-            //if (index==0) continue;
+            if (index==0) continue;
             //if (index == 10) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
@@ -143,7 +143,7 @@ void Master::Render() {
             
             glPushMatrix();
             if ( index >= 10 && index < 100) {
-                glTranslatef(pos[0]+3, pos[1]+2, pos[2]);
+                glTranslatef(pos[0], pos[1], pos[2]);
             } else {
                 glTranslatef(pos[0], pos[1], pos[2]);
             }
