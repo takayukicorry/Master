@@ -47,7 +47,7 @@ bool Ophiuroid2::checkState() {
     
     btVector3 vY_O = vY - vOrigin;
     
-    return vY_O[1] > -sin(2*M_PI/5);
+    return true;//vY_O[1] > -sin(2*M_PI/5);
 }
 
 void Ophiuroid2::initSF() {
@@ -545,6 +545,7 @@ void Ophiuroid2::ControllTubeFeet()
         int index = itr->first;
         int legNum = (index-1)/(NUM_JOINT+1);
         int partNum = (index-2)%(NUM_JOINT+1);
+        double k = 1.3;
         
         if (body && body->getMotionState())
         {
@@ -552,23 +553,23 @@ void Ophiuroid2::ControllTubeFeet()
             btTransform tran = body->getWorldTransform();
             btVector3 w;
             if (index==0 || index%(NUM_JOINT+1)==1) {
-                w = btVector3(pos[0]+cos(bAng)*velocity_all_x/FPS, pos[1]+sin(-bAng)*velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
+                w = btVector3(pos[0]+cos(bAng)*k*velocity_all_x/FPS, pos[1]+sin(-bAng)*k*velocity_all_y/FPS, pos[2]+k*velocity_all_z/FPS);
             } else {//} if (num_body_part[legNum][partNum]!=0) {
                 double s = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
                 if ( s == 1 ) {
-                    w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+k*velocity_all_x/FPS, pos[1], pos[2]+k*velocity_all_z/FPS);
                 } else if ( 1 < s && s < 2 ){
-                    w = btVector3(pos[0]+velocity_all_x*(2-s)/FPS, pos[1]+velocity_all_y*(s-1)/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+k*velocity_all_x*(2-s)/FPS, pos[1]+k*velocity_all_y*(s-1)/FPS, pos[2]+k*velocity_all_z/FPS);
                 } else if ( s == 2 ) {
-                    w = btVector3(pos[0], pos[1]+velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0], pos[1]+k*velocity_all_y/FPS, pos[2]+k*velocity_all_z/FPS);
                 } else if ( 2 < s && s < 3 ) {
-                    w = btVector3(pos[0]+velocity_all_x*(3-s)/FPS, pos[1]+velocity_all_y*(s-2)/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+k*velocity_all_x*(3-s)/FPS, pos[1]+k*velocity_all_y*(s-2)/FPS, pos[2]+k*velocity_all_z/FPS);
                 } else if ( s == 3 ) {
-                    w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+k*velocity_all_x/FPS, pos[1], pos[2]+k*velocity_all_z/FPS);
                 } else if ( 3 < s && s < 4 ) {
-                    w = btVector3(pos[0]+velocity_all_x*(4-s)/FPS, pos[1]+velocity_all_y*(s-3)/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+k*velocity_all_x*(4-s)/FPS, pos[1]+k*velocity_all_y*(s-3)/FPS, pos[2]+k*velocity_all_z/FPS);
                 } else if ( s == 4 ) {
-                    w = btVector3(pos[0], pos[1]+velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0], pos[1]+k*velocity_all_y/FPS, pos[2]+k*velocity_all_z/FPS);
                 } else {
                     w = pos;
                 }
@@ -580,7 +581,7 @@ void Ophiuroid2::ControllTubeFeet()
             if (stay) {
                 //btVector3 vel = body->getLinearVelocity();
                 // if (vel[1] <= 0) vel[1] = 0;
-                //body->setLinearVelocity(btVector3(0, 0, 0));
+                body->setLinearVelocity(btVector3(0, 0, 0));
             }
         }
     }
