@@ -65,6 +65,7 @@ public:
     void turn();
     void deleteTF();
     void fixArmState();
+    void checkStay();
 };
 
 #endif /* Ophiuroid2_hpp */

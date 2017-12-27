@@ -38,6 +38,7 @@ void Ophiuroid2::idle() {
     setDirection2();
     ControllTubeFeet();
     deleteTF();
+    checkStay();
 }
 
 bool Ophiuroid2::checkState() {
@@ -349,7 +350,7 @@ void Ophiuroid2::ControllTubeFeet()
             firstBody_mindex = 2+i*4;
         }
     }
-    ang_body_part[NUM_LEGS] = acos(abp_Y[1]-abp.getOrigin()[1]);
+    ang_body_part[NUM_LEGS] = -acos(abp_Y[1]-abp.getOrigin()[1]);
     
     //calculate interaction of tf
     for (auto itr = TF_contact.begin(); itr != TF_contact.end(); ++itr) {
@@ -450,16 +451,12 @@ void Ophiuroid2::ControllTubeFeet()
         btScalar fTargetLimitAngle_ankle = -(fTargetAngle_ankle-1)*M_PI_2;
         if (!partNum) ang_body_part[legNum] = fTargetLimitAngle_ankle;
         
-        while (partNum) {
+        while (partNum != 0) {
             partNum--;
             fCurAngle_ankle += m_joints_ankle[legNum*3+partNum]->getHingeAngle();
         }
         fCurAngle_ankle += ang_body_part[NUM_LEGS];
         btScalar fAngleError_ankle = fTargetLimitAngle_ankle - fCurAngle_ankle;
-        if (!partNum) {
-            fAngleError_ankle *= 0.5;
-            m_motor2[legNum]->m_targetVelocity = fAngleError_ankle;
-        }
         btScalar fDesiredAngularVel_ankle = fAngleError_ankle;
         hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 10000000000000000);
     }
@@ -478,7 +475,7 @@ void Ophiuroid2::ControllTubeFeet()
             for (int k = 0; k < 3; k++) {
                 if (pos_101_106_111_116[j][k]==0) {
                     pos_101_106_111_116[j][k] = TF_object_amp[101+5*j+ii]->getCenterOfMassPosition()[k];
-            }
+                }
             }
         }
         
@@ -526,7 +523,7 @@ void Ophiuroid2::ControllTubeFeet()
         }
         ang_body_part[NUM_LEGS] = bAng;
         
-        btTransform bTra = abp;////m_bodies[0]->getWorldTransform();
+        btTransform bTra = abp;
         btVector3 pY = bTra*btVector3(0, 1, 0);
         btVector3 pOrigin = bTra.getOrigin();
         btVector3 pY_O = pY - pOrigin;
@@ -536,9 +533,7 @@ void Ophiuroid2::ControllTubeFeet()
         m_bodies[0]->setCenterOfMassTransform(bTra);
     }
     
-    
     //interacting of tf with body (X, Z direction)
-    stay = true;////m_bodies[0]->getCenterOfMassPosition()[1] <= INIT_POS_Y+5;//FLEG_WIDTH*2;
     drawTF = stay;
     for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
         btRigidBody* body = itr->second;
@@ -654,7 +649,11 @@ void Ophiuroid2::ControllTubeFeet()
         motor->m_maxMotorForce = 100000000000000000;
         motor_to_groundY[index]->m_maxMotorForce = 10000000000000000;
         
-        motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
+        if (TF_attach_state[index]==1) {
+            motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
+        } else {
+            motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND/2;
+        }
     }
     
 }
@@ -871,7 +870,7 @@ void Ophiuroid2::ContactAction()
                         //create tubefeet - amp (constraint)
                         btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, pos_amp-pos_tf, btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));
                         univ->setLowerLimit(-0.5*ANGLE, 0);
-                        univ->setUpperLimit(1.5*ANGLE, 0);
+                        univ->setUpperLimit(10.5*ANGLE, 0);
                         TF_constraint_amp[index] = univ;
                         Master::dynamicsWorld->addConstraint(univ);
                         
@@ -1016,5 +1015,9 @@ void Ophiuroid2::deleteTF() {
 }
 
 void Ophiuroid2::fixArmState() {
+    
+}
+
+void Ophiuroid2::checkStay() {
     
 }

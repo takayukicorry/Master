@@ -51,10 +51,10 @@ enum CollisionGroup{
 #define M_ARM 1
 #define M_TF 1
 
-#define FBODY_SIZE 5.f
-#define FLEG_LENGTH 15.f/NUM_JOINT
-#define FLEG_WIDTH 3.f
-#define FHEIGHT 10.f
+#define FBODY_SIZE 7.5f
+#define FLEG_LENGTH 22.5f/NUM_JOINT
+#define FLEG_WIDTH 5.f
+#define FHEIGHT 3.f
 #define RADIUS 3
 #define LENGTH 4
 #define RADIUS_TF 1
