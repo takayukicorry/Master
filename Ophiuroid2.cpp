@@ -344,10 +344,10 @@ void Ophiuroid2::ControllTubeFeet()
         }
         ang_body_part[i] = 0;
         
-        btVector3 ppp = m_bodies[2+i*(NUM_LEGS-1)]->getCenterOfMassPosition();
+        btVector3 ppp = m_bodies[2+i*(NUM_JOINT+1)]->getCenterOfMassPosition();
         if (firstBody_pos[0] > ppp[0]) {
             firstBody_pos = ppp;
-            firstBody_mindex = 2+i*4;
+            firstBody_mindex = 2+i*(NUM_JOINT+1);
         }
     }
     ang_body_part[NUM_LEGS] = -acos(abp_Y[1]-abp.getOrigin()[1]);
@@ -462,7 +462,7 @@ void Ophiuroid2::ControllTubeFeet()
     }
     
     //state of body
-    int ii = (firstBody_mindex-2)/(NUM_LEGS-1);
+    int ii = (NUM_LEGS) ? (firstBody_mindex-2)/(NUM_JOINT+1) : 0;
     btScalar bAng = 0;
     if (ang_body_part[ii] < -0.2 || 0.2 < ang_body_part[ii]) {
         int aState = (num_body_part[ii][0] != 0) ? 1 + state_body_part[ii][0]/num_body_part[ii][0] : 1;
@@ -747,7 +747,7 @@ void Ophiuroid2::ContactAction()
                     motor2->m_enableMotor = true;
                     motor_to_groundZ[index] = motor1;
                     motor_to_groundY[index] = motor2;
-                    DeleteTime_tf[index] = Master::time_step + int(double(ANGLE_ATTACH - ANGLE_DETACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 2.0);
+                    DeleteTime_tf[index] = Master::time_step + int(double(ANGLE_ATTACH - ANGLE_DETACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 4.0);
                 }
                 else if (TF_contact[index])
                 {
