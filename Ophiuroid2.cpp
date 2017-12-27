@@ -34,10 +34,10 @@ Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
 void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
-    //setDirection();
-    //setDirection2();
+    setDirection();
+    setDirection2();
     ControllTubeFeet();
-    ////////deleteTF();
+    deleteTF();
 }
 
 bool Ophiuroid2::checkState() {
@@ -327,6 +327,12 @@ void Ophiuroid2::ControllTubeFeet()
     btScalar velocity_all_x = 0;
     btScalar velocity_all_y = 0;
     btScalar velocity_all_z = 0;
+    btTransform abp = m_bodies[0]->getWorldTransform();
+    btVector3 abp_pos = m_bodies[0]->getCenterOfMassPosition();
+    btVector3 abp_Y = abp*btVector3(0, 1, 0);
+    
+    firstBody_mindex = 0;
+    firstBody_pos = abp_pos;
     
     for (int i = 0; i < NUM_LEGS; i++) {
         for (int j = 0; j < NUM_JOINT; j++) {
@@ -336,10 +342,13 @@ void Ophiuroid2::ControllTubeFeet()
             vel_body_part[i][j] = btVector3(0, 0, 0);
         }
         ang_body_part[i] = 0;
+        
+        btVector3 ppp = m_bodies[2+i*(NUM_LEGS-1)]->getCenterOfMassPosition();
+        if (firstBody_pos[0] > ppp[0]) {
+            firstBody_pos = ppp;
+            firstBody_mindex = 2+i*4;
+        }
     }
-    btTransform abp = m_bodies[0]->getWorldTransform();
-    btVector3 abp_pos = m_bodies[0]->getCenterOfMassPosition();
-    btVector3 abp_Y = abp*btVector3(0, 1, 0);
     ang_body_part[NUM_LEGS] = acos(abp_Y[1]-abp_pos[1]);
     
     //calculate interaction of tf
@@ -452,75 +461,75 @@ void Ophiuroid2::ControllTubeFeet()
     }
     
     //state of body
-    for (int i = 0; i < NUM_LEGS; i++) {
-        if (ang_body_part[i] < -0.2 || 0.2 < ang_body_part[i]) {
-            int aState = 1 + state_body_part[i][0]/num_body_part[i][0];
-            btVector3 bPos = m_bodies[0]->getCenterOfMassPosition();
-            btScalar bAng = 0;
-            btVector3 pos_101_106_111_116[4];
-            btScalar disB = FBODY_SIZE/2;
-            
-            for (int j = 0; j < 4; j++) {
-                pos_101_106_111_116[j] = TF_origin_pos[101+5*j+i];
-                for (int k = 0; k < 3; k++) {
-                    if (pos_101_106_111_116[j][k]==0) {
-                        pos_101_106_111_116[j][k] = TF_object_amp[101+5*j+i]->getCenterOfMassPosition()[k];
-                    }
-                }
+    int ii = (firstBody_mindex-2)/(NUM_LEGS-1);
+    btScalar bAng = 0;
+    if (ang_body_part[ii] < -0.2 || 0.2 < ang_body_part[ii]) {
+        int aState = 1 + state_body_part[ii][0]/num_body_part[ii][0];
+        btVector3 bPos = abp_pos;////m_bodies[0]->getCenterOfMassPosition();
+        btVector3 pos_101_106_111_116[4];
+        btScalar disB = FBODY_SIZE/2;
+        
+        for (int j = 0; j < 4; j++) {
+            pos_101_106_111_116[j] = TF_origin_pos[101+5*j+ii];
+            for (int k = 0; k < 3; k++) {
+                if (pos_101_106_111_116[j][k]==0) {
+                    pos_101_106_111_116[j][k] = TF_object_amp[101+5*j+ii]->getCenterOfMassPosition()[k];
             }
-            
-            if (aState==2){
-                btScalar dis = FBODY_SIZE;
-                if (bPos[0]<disB+pos_101_106_111_116[0][0]){
-                    dis = bPos[0] - pos_101_106_111_116[0][0];
-                } else if(bPos[0]<disB+pos_101_106_111_116[1][0]){
-                    dis = bPos[0] - pos_101_106_111_116[1][0];
-                } else if(bPos[0]<disB+pos_101_106_111_116[2][0]){
-                    dis = bPos[0] - pos_101_106_111_116[2][0];
-                } else if(bPos[0]<disB+pos_101_106_111_116[3][0]){
-                    dis = bPos[0] - pos_101_106_111_116[3][0];
-                }
-                
-                bAng = -M_PI_2*(FBODY_SIZE-dis)/(FBODY_SIZE);
-                
-            } else if (aState==3) {
-                btScalar dis = FBODY_SIZE;
-                if (disB+bPos[1]>pos_101_106_111_116[0][1]){
-                    dis = pos_101_106_111_116[0][1] - bPos[1];
-                } else if(disB+bPos[1]>pos_101_106_111_116[1][1]){
-                    dis = pos_101_106_111_116[1][1] - bPos[1];
-                } else if(disB+bPos[1]>pos_101_106_111_116[2][1]){
-                    dis = pos_101_106_111_116[2][1] - bPos[1];
-                } else if(disB+bPos[1]>pos_101_106_111_116[3][1]){
-                    dis = pos_101_106_111_116[3][1] - bPos[1];
-                }
-                
-                bAng = -M_PI_2*(1+(FBODY_SIZE-dis)/(FBODY_SIZE));
-                
-            } else if (aState==4) {
-                btScalar dis = FBODY_SIZE;
-                if (disB+bPos[0]>pos_101_106_111_116[0][0]){
-                    dis = pos_101_106_111_116[0][0] - bPos[0];
-                } else if(disB+bPos[0]>pos_101_106_111_116[1][0]){
-                    dis = pos_101_106_111_116[1][0] - bPos[0];
-                } else if(disB+bPos[0]>pos_101_106_111_116[2][0]){
-                    dis = pos_101_106_111_116[2][0] - bPos[0];
-                } else if(disB+bPos[0]>pos_101_106_111_116[3][0]){
-                    dis = pos_101_106_111_116[3][0] - bPos[0];
-                }
-                
-                bAng = -M_PI_2*(2+(FBODY_SIZE-dis)/(FBODY_SIZE));
             }
-            btTransform bTra = m_bodies[0]->getWorldTransform();
-            btVector3 pY = bTra*btVector3(0, 1, 0);
-            btVector3 pOrigin = bTra.getOrigin();
-            btVector3 pY_O = pY - pOrigin;
-            bAng -= acos(pY_O[1]);
-            
-            bTra.setRotation(btQuaternion(btVector3(0, 0, 1), bAng));
-            m_bodies[0]->setCenterOfMassTransform(bTra);
         }
+        
+        if (aState==2){
+            btScalar dis = FBODY_SIZE;
+            if (bPos[0]<disB+pos_101_106_111_116[0][0]){
+                dis = bPos[0] - pos_101_106_111_116[0][0];
+            } else if(bPos[0]<disB+pos_101_106_111_116[1][0]){
+                dis = bPos[0] - pos_101_106_111_116[1][0];
+            } else if(bPos[0]<disB+pos_101_106_111_116[2][0]){
+                dis = bPos[0] - pos_101_106_111_116[2][0];
+            } else if(bPos[0]<disB+pos_101_106_111_116[3][0]){
+                dis = bPos[0] - pos_101_106_111_116[3][0];
+            }
+            
+            bAng = -M_PI_2*(FBODY_SIZE-dis)/(FBODY_SIZE);
+            
+        } else if (aState==3) {
+            btScalar dis = FBODY_SIZE;
+            if (disB+bPos[1]>pos_101_106_111_116[0][1]){
+                dis = pos_101_106_111_116[0][1] - bPos[1];
+            } else if(disB+bPos[1]>pos_101_106_111_116[1][1]){
+                dis = pos_101_106_111_116[1][1] - bPos[1];
+        } else if(disB+bPos[1]>pos_101_106_111_116[2][1]){
+                dis = pos_101_106_111_116[2][1] - bPos[1];
+            } else if(disB+bPos[1]>pos_101_106_111_116[3][1]){
+                dis = pos_101_106_111_116[3][1] - bPos[1];
+            }
+            
+        bAng = -M_PI_2*(1+(FBODY_SIZE-dis)/(FBODY_SIZE));
+            
+        } else if (aState==4) {
+            btScalar dis = FBODY_SIZE;
+            if (disB+bPos[0]>pos_101_106_111_116[0][0]){
+                dis = pos_101_106_111_116[0][0] - bPos[0];
+            } else if(disB+bPos[0]>pos_101_106_111_116[1][0]){
+                dis = pos_101_106_111_116[1][0] - bPos[0];
+            } else if(disB+bPos[0]>pos_101_106_111_116[2][0]){
+                dis = pos_101_106_111_116[2][0] - bPos[0];
+            } else if(disB+bPos[0]>pos_101_106_111_116[3][0]){
+                dis = pos_101_106_111_116[3][0] - bPos[0];
+            }
+                
+            bAng = -M_PI_2*(2+(FBODY_SIZE-dis)/(FBODY_SIZE));
+        }
+        btTransform bTra = abp;////m_bodies[0]->getWorldTransform();
+        btVector3 pY = bTra*btVector3(0, 1, 0);
+        btVector3 pOrigin = bTra.getOrigin();
+        btVector3 pY_O = pY - pOrigin;
+        bAng -= acos(pY_O[1]);
+        
+        bTra.setRotation(btQuaternion(btVector3(0, 0, 1), bAng));
+        m_bodies[0]->setCenterOfMassTransform(bTra);
     }
+    
     
     //interacting of tf with body (X, Z direction)
     stay = true;////m_bodies[0]->getCenterOfMassPosition()[1] <= INIT_POS_Y+5;//FLEG_WIDTH*2;
@@ -537,23 +546,23 @@ void Ophiuroid2::ControllTubeFeet()
             btTransform tran = body->getWorldTransform();
             btVector3 w;
             if (index==0 || index%(NUM_JOINT+1)==1) {
-                w = btVector3(pos[0]+velocity_all_x/FPS, pos[1]+velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
+                w = btVector3(pos[0]+cos(bAng)*velocity_all_x/FPS, pos[1]+sin(-bAng)*velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
             } else {//} if (num_body_part[legNum][partNum]!=0) {
                 double s = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
                 if ( s == 1 ) {
-                    w = btVector3(pos[0]+1.5*velocity_all_x/FPS, pos[1], pos[2]+1.5*velocity_all_z/FPS);
+                    w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
                 } else if ( 1 < s && s < 2 ){
-                    w = btVector3(pos[0]+1.5*velocity_all_x*(2-s)/FPS, pos[1]+1.5*velocity_all_y*(s-1)/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+velocity_all_x*(2-s)/FPS, pos[1]+velocity_all_y*(s-1)/FPS, pos[2]+velocity_all_z/FPS);
                 } else if ( s == 2 ) {
-                    w = btVector3(pos[0], pos[1]+1.5*velocity_all_y/FPS, pos[2]+1.5*velocity_all_z/FPS);
+                    w = btVector3(pos[0], pos[1]+velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
                 } else if ( 2 < s && s < 3 ) {
-                    w = btVector3(pos[0]+1.5*velocity_all_x*(3-s)/FPS, pos[1]+1.5*velocity_all_y*(s-2)/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+velocity_all_x*(3-s)/FPS, pos[1]+velocity_all_y*(s-2)/FPS, pos[2]+velocity_all_z/FPS);
                 } else if ( s == 3 ) {
-                    w = btVector3(pos[0]+1.5*velocity_all_x/FPS, pos[1], pos[2]+1.5*velocity_all_z/FPS);
+                    w = btVector3(pos[0]+velocity_all_x/FPS, pos[1], pos[2]+velocity_all_z/FPS);
                 } else if ( 3 < s && s < 4 ) {
-                    w = btVector3(pos[0]+1.5*velocity_all_x*(4-s)/FPS, pos[1]+1.5*velocity_all_y*(s-3)/FPS, pos[2]+velocity_all_z/FPS);
+                    w = btVector3(pos[0]+velocity_all_x*(4-s)/FPS, pos[1]+velocity_all_y*(s-3)/FPS, pos[2]+velocity_all_z/FPS);
                 } else if ( s == 4 ) {
-                    w = btVector3(pos[0], pos[1]+1.5*velocity_all_y/FPS, pos[2]+1.5*velocity_all_z/FPS);
+                    w = btVector3(pos[0], pos[1]+velocity_all_y/FPS, pos[2]+velocity_all_z/FPS);
                 } else {
                     w = pos;
                 }
@@ -910,7 +919,6 @@ void Ophiuroid2::setDirection2() {
     for (int i = 0; i<NUM_LEGS; i++){
         float a = m_param.a[i];//シグモイド関数のパラメータ
         float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
-        
         //***************このfを何かに使う
         
     }

@@ -43,6 +43,8 @@ private:
     int state_body_part[NUM_LEGS][NUM_JOINT];
     int num_body_part[NUM_LEGS][NUM_JOINT];
     btScalar ang_body_part[NUM_LEGS+1];
+    int firstBody_mindex;
+    btVector3 firstBody_pos;
     
 public:
     Ophiuroid2(GAparameter);

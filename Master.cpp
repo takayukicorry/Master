@@ -169,15 +169,15 @@ void Master::Render() {
             }
             //sphere
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
-            {
-                //if ( body->getUserIndex() >= 100) continue;
+            {/*
+                if ( body->getUserIndex() >= 100) continue;
                 glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
                 glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
                 glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
                 glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
                 glutSolidSphere(1, 100, 100);
-            }
+            */}
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
