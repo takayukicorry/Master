@@ -35,7 +35,7 @@ void Ophiuroid2::idle() {
     ContactAction();
     glutPostRedisplay();
     setDirection();
-    setDirection2();
+    //setDirection2();
     ControllTubeFeet();
     deleteTF();
     checkStay();
@@ -447,7 +447,7 @@ void Ophiuroid2::ControllTubeFeet()
         
         btHingeConstraint* hingeC2 = itr->second;
         btScalar fCurAngle_ankle = hingeC2->getHingeAngle();
-        btScalar fTargetAngle_ankle = (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum];
+        btScalar fTargetAngle_ankle = (num_body_part[legNum][partNum] != 0) ? (double)state_body_part[legNum][partNum]/num_body_part[legNum][partNum] : 0;
         btScalar fTargetLimitAngle_ankle = -(fTargetAngle_ankle-1)*M_PI_2;
         if (!partNum) ang_body_part[legNum] = fTargetLimitAngle_ankle;
         
@@ -465,7 +465,7 @@ void Ophiuroid2::ControllTubeFeet()
     int ii = (firstBody_mindex-2)/(NUM_LEGS-1);
     btScalar bAng = 0;
     if (ang_body_part[ii] < -0.2 || 0.2 < ang_body_part[ii]) {
-        int aState = 1 + state_body_part[ii][0]/num_body_part[ii][0];
+        int aState = (num_body_part[ii][0] != 0) ? 1 + state_body_part[ii][0]/num_body_part[ii][0] : 1;
         btVector3 bPos = abp_pos;////m_bodies[0]->getCenterOfMassPosition();
         btVector3 pos_101_106_111_116[4];
         btScalar disB = FBODY_SIZE/2;
@@ -527,9 +527,12 @@ void Ophiuroid2::ControllTubeFeet()
         btVector3 pY = bTra*btVector3(0, 1, 0);
         btVector3 pOrigin = bTra.getOrigin();
         btVector3 pY_O = pY - pOrigin;
-        bAng -= acos(pY_O[1]);
+        btScalar cAng = bAng - acos(pY_O[1]);
         
-        bTra.setRotation(btQuaternion(btVector3(0, 0, 1), bAng));
+        bTra.setRotation(btQuaternion(btVector3(0, 0, 1), cAng));
+        if (cAng > 0) {
+            cAng = 0;
+        }
         m_bodies[0]->setCenterOfMassTransform(bTra);
     }
     
@@ -842,7 +845,7 @@ void Ophiuroid2::ContactAction()
                                 break;
                         }
                         
-                        TF_axis_angle[index] += motor_to_groundY[index]->m_currentPosition;
+                        if (motor_to_groundY.count(index) > 0) TF_axis_angle[index] += motor_to_groundY[index]->m_currentPosition;
                         
                         //remove tubefeet - ground (constraint & motor)
                         Master::dynamicsWorld->removeConstraint(TF_constraint_ground[index]);
