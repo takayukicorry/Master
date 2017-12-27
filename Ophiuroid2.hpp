@@ -64,6 +64,7 @@ public:
     void setDirection2();
     void turn();
     void deleteTF();
+    void fixArmState();
 };
 
 #endif /* Ophiuroid2_hpp */

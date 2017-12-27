@@ -131,7 +131,7 @@ void Master::Render() {
         if (body && body->getMotionState())
         {
             if (!starfish->drawTF && body->getUserIndex()>=100) continue;
-            if (body->getUserIndex()==0) continue;
+            //if (body->getUserIndex()==0) continue;
             //if (body->getUserIndex() == 10) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
@@ -331,5 +331,5 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(-50,50,100, -50, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-20,50,100, -20, 0, 0.0, 0.0, 1.0, 0.0);
 }
