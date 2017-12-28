@@ -22,7 +22,7 @@ private:
     static btSequentialImpulseConstraintSolver* solver;
     
     Starfish* starfish;
-    GAmanager manager;
+    GAparameter m_param;
     
 public:
     static int time_step;
@@ -36,7 +36,7 @@ public:
     void CleanupBullet();
     void init();
     void setStarfish(Starfish* s) { starfish = s; }
-    void setManager(GAmanager m) { manager = m; }
+    void setParameter(GAparameter m) { m_param = m; }
     Starfish* getStarfishes() { return starfish; }
     void createGround();
     void createStarfish();

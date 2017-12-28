@@ -16,6 +16,7 @@ GAparameter GAmanager::Adam() {
     for (int i = 0; i < NUM_LEGS; i++)
     {
         param.turn_pattern[i] = 0;
+        param.light_pattern[i] = 0;
     }
     int a_mas=0;int b_mas=0;
     //    int c_mas=0;
@@ -55,6 +56,7 @@ GAparameter GAmanager::Adam() {
     
     param.turn = 0;
     param.ee = 0;
+    param.light = 0;
     
     for (int i = 0; i < NUM_LEGS; i++)
     {
@@ -67,22 +69,28 @@ GAparameter GAmanager::Adam() {
 
 float GAmanager::evalue(GAparameter p)
 {
-    Ophiuroid ophiuroid(p);
-    float value = ophiuroid.evalue();
+    float value;
+    if (spiecies_of_starfish == 1) {
+        Ophiuroid oph(p);
+        value = oph.evalue();
+    } else {
+        Ophiuroid2 oph2(p);
+        value = oph2.evalue();
+    }
     return value;
-    
-    
-    //return p.cycle;
 }
 
 float GAmanager::evalue2(GAparameter p)
 {
-    Ophiuroid ophiuroid(p);
-    float value = ophiuroid.evalue2();
+    float value;
+    if (spiecies_of_starfish == 1) {
+        Ophiuroid oph(p);
+        value = oph.evalue2();
+    } else {
+        Ophiuroid2 oph2(p);
+        value = oph2.evalue2();
+    }
     return value;
-    
-    
-    //return p.cycle;
 }
 
 GAparameter GAmanager::CrossOver(GAparameter p1,GAparameter p2)
@@ -112,10 +120,12 @@ GAparameter GAmanager::CrossOver(GAparameter p1,GAparameter p2)
     if (l==0){
         for (int i = 0; i<NUM_LEGS; i++){
             c.turn_pattern[i] = p1.turn_pattern[i];
+            c.light_pattern[i] = p1.light_pattern[i];
         }
     }else{
         for (int i = 0; i<NUM_LEGS; i++){
             c.turn_pattern[i] = p2.turn_pattern[i];
+            c.light_pattern[i] = p2.light_pattern[i];
         }
     }
     
@@ -139,6 +149,7 @@ GAparameter GAmanager::CrossOver(GAparameter p1,GAparameter p2)
     
     c.turn = 0;
     c.ee = 0;
+    c.light = 0;
     
     
     return c;
@@ -241,13 +252,13 @@ GAparameter GAmanager::Mutate(GAparameter p)
     return c;
 }
 
-GAmanager::GAmanager()
+GAmanager::GAmanager(int spiecies)
 {
     for (int i = 0; i<POOL_SIZE; i++)
     {
         pool[i] = Adam();
     }
-    
+    spiecies_of_starfish = spiecies;
 }
 
 void GAmanager::CreateNext()
@@ -262,7 +273,6 @@ void GAmanager::CreateNext()
         value[i] = evalue(stock[i]);
         
     }
-    
     
     for (int i = 0; i<POOL_SIZE; i++)
     {
@@ -280,6 +290,7 @@ void GAmanager::CreateNext()
             pool[0] = stock[i];
             pool[0].turn = 0;
             pool[0].ee = 0;
+            pool[0].light = 0;
         }
         
         select[i] = 1;

@@ -133,7 +133,7 @@ void Master::Render() {
             int index = body->getUserIndex();
             if (!starfish->drawTF && index>=100) continue;
             if (index==0) continue;
-            //if (index >= 10 && index < 100) continue;
+            //if (10 <= index && index < 100) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
@@ -142,7 +142,7 @@ void Master::Render() {
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
             
             glPushMatrix();
-            if ( index >= 10 && index < 100) {
+            if ( 10 <= index && index < 100) {
                 glTranslatef(pos[0]+2, pos[1]+2, pos[2]);
             } else {
                 glTranslatef(pos[0], pos[1], pos[2]);
@@ -171,12 +171,14 @@ void Master::Render() {
             //sphere
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
             {
-                //glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
-                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
-                glutSolidSphere(1, 100, 100);
+                if ( 10 <= index && index < 100) {
+                    glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
+                    glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
+                    glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
+                    glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
+                    glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+                    glutSolidSphere(1, 100, 100);
+                }
             }
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
@@ -301,9 +303,9 @@ void Master::checkStarfish() {
         CleanupStarfish();
         Starfish* oph;
         if (!strcmp("Ophiuroid2",typeid(starfish).name())) {
-            oph = new Ophiuroid(manager.pool[0], starfish);
+            oph = new Ophiuroid(m_param, starfish);
         } else {
-            oph= new Ophiuroid2(manager.pool[0], starfish);
+            oph= new Ophiuroid2(m_param, starfish);
         }
         setStarfish(oph);
         starfish->create();
@@ -331,5 +333,5 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(-20,50,100, -20, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-20,100,150, -20, 0, 0.0, 0.0, 1.0, 0.0);
 }

@@ -61,11 +61,14 @@ public:
     void ContactAction();
     void ControllTubeFeet();
     void setDirection();
-    void setDirection2();
+    void checkLightPattern();
     void turn();
     void deleteTF();
     void fixArmState();
     void checkStay();
+    float evalue();
+    float evalue2();
+    
 };
 
 #endif /* Ophiuroid2_hpp */

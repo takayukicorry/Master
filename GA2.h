@@ -16,8 +16,9 @@ class GAmanager {
 public:
     GAparameter f;
     GAparameter pool[POOL_SIZE];
+    int spiecies_of_starfish;
     
-    GAmanager();
+    GAmanager(int);
     GAparameter Adam();
     float evalue(GAparameter p);
     float evalue2(GAparameter p);

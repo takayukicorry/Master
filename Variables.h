@@ -35,6 +35,7 @@ enum CollisionGroup{
 #define MAX_ANGLE M_PI_2
 #define MIN_ANGLE -M_PI_2
 #define NUM_JOINT 3
+#define NUM_GENARATION 100
 #define BODYPART_COUNT (NUM_JOINT+1) * NUM_LEGS + 1 //+ NUM_LEGS //最後のプラスはturn判定センサ
 #define JOINT_COUNT BODYPART_COUNT - 1 //+ NUM_LEGS
 #define NUM_TURN 2
