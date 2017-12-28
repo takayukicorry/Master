@@ -212,7 +212,7 @@ void Ophiuroid2::create() {
             TF_object[index] = body_tf;
             TF_object_amp[index] = body_amp;
             TF_contact[index] = false;
-            TF_axis_direction[index] = btVector3(0, 0, 1);//********************************
+            TF_axis_direction[index] = (index%2) ? btVector3(1, 0, 0) : btVector3(0, 0, 1);//********************************
             TF_axis_angle[index] = M_PI/2;
             TF_contact_times[index] = 0;
             TF_attach_state[index] = 1;
