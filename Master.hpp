@@ -42,6 +42,7 @@ public:
     void createStarfish();
     void CleanupStarfish();
     void checkStarfish();
+    
 };
 
 #endif /* Master_hpp */

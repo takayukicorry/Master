@@ -32,7 +32,9 @@ Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
 }
 
 float Ophiuroid::evalue() {
-    
+    /***************************/
+    /**ここにworld作って、そこにophぶっ込んで、sim()回す**/
+    /***************************/
     return 0;
 }
 
