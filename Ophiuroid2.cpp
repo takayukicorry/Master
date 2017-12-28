@@ -479,7 +479,7 @@ void Ophiuroid2::ControllTubeFeet()
             }
         }
         
-        if (aState==2){
+        if (aState==2 || aState==3){
             btScalar dis = FBODY_SIZE;
             if (bPos[0]<disB+pos_101_106_111_116[0][0]){
                 dis = bPos[0] - pos_101_106_111_116[0][0];
@@ -527,7 +527,8 @@ void Ophiuroid2::ControllTubeFeet()
         btVector3 pY = bTra*btVector3(0, 1, 0);
         btVector3 pOrigin = bTra.getOrigin();
         btVector3 pY_O = pY - pOrigin;
-        btScalar cAng = bAng - acos(pY_O[1]);
+        int kk = (pY_O < 0) ? -1 : 1;
+        btScalar cAng = bAng - kk*acos(pY_O[1]);
         
         bTra.setRotation(btQuaternion(btVector3(0, 0, 1), cAng));
         if (cAng > 0) {
@@ -964,7 +965,7 @@ void Ophiuroid2::deleteTF() {
     for (auto itr = DeleteTime_tf.begin(); itr != DeleteTime_tf.end(); ++itr) {
         int index = itr->first;
 
-        if (Master::time_step > DeleteTime_tf[index]) {
+        if (Master::time_step > DeleteTime_tf[index] && !TF_contact[index]) {
             //remove tubefeet - amp (constraint & motor)
             Master::dynamicsWorld->removeConstraint(TF_constraint_amp[index]);
             TF_constraint_amp.erase(index);

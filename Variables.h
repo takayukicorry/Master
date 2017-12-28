@@ -34,7 +34,7 @@ enum CollisionGroup{
 #define MIN_CYCLE 300
 #define MAX_ANGLE M_PI_2
 #define MIN_ANGLE -M_PI_2
-#define NUM_JOINT 1
+#define NUM_JOINT 3
 #define BODYPART_COUNT (NUM_JOINT+1) * NUM_LEGS + 1 //+ NUM_LEGS //最後のプラスはturn判定センサ
 #define JOINT_COUNT BODYPART_COUNT - 1 //+ NUM_LEGS
 #define NUM_TURN 2
@@ -62,7 +62,7 @@ enum CollisionGroup{
 #define NUM_GROUND 3
 #define NUM_TF_UNIT 4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
-#define DL_TIME 360
+#define DL_TIME 720
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
