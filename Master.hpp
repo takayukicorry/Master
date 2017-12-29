@@ -25,7 +25,6 @@ private:
     GAparameter m_param;
     
 public:
-    static int time_step;
     static btDiscreteDynamicsWorld* dynamicsWorld;
     static btCollisionShape* groundShape;
     

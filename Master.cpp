@@ -103,7 +103,6 @@ btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseCon
 btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
 btVector3 gShape(btScalar(100.), btScalar(50.), btScalar(100.));
 btCollisionShape* Master::groundShape = new btBoxShape(gShape);
-int Master::time_step = 0;
 
 Master::Master() {
     Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
@@ -313,7 +312,6 @@ void Master::checkStarfish() {
 }
 
 void Master::idle() {
-    Master::time_step++;
     Master::dynamicsWorld->stepSimulation(1.f / FPS);
     
     starfish->idle();

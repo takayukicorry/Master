@@ -27,6 +27,7 @@ public:
     Ophiuroid(GAparameter, Starfish*);
 
     void idle();
+    void idleDemo();
     bool checkState();
     void create();
     void initSF();

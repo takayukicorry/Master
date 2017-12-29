@@ -21,6 +21,7 @@ public:
     std::map<int, btCollisionShape*> m_shapes;
     btDynamicsWorld* m_ownerWorld;
     bool drawTF = true;
+    int m_time_step;
 
     virtual void idle() = 0;
     virtual bool checkState() = 0;

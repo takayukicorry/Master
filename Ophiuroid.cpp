@@ -14,6 +14,7 @@ Ophiuroid::Ophiuroid(GAparameter p) {
         leg_state[i] = 0;
     }
     m_param = p;
+    m_time_step = 0;
 }
 
 Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
@@ -22,7 +23,8 @@ Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
         leg_state[i] = 0;
     }
     m_param = p;
-    
+    m_time_step = 0;
+
     m_bodies = sf->m_bodies;
     m_shapes = sf->m_shapes;
     m_joints_hip = sf->m_joints_hip;
@@ -31,9 +33,28 @@ Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
     m_motor2 = sf->m_motor2;
 }
 
+void Ophiuroid::idle() {
+    m_time_step++;
+    
+    setMotorTarget(1);
+    glutPostRedisplay();
+}
+
+void Ophiuroid::idleDemo() {
+    m_time_step++;
+    
+    setMotorTarget(1);
+}
+
+void motorPreTickCallback(btDynamicsWorld *world, btScalar timeStep) {
+    Ophiuroid* demo = (Ophiuroid*)world->getWorldUserInfo();
+    demo->idleDemo();
+}
+
 float Ophiuroid::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback, this, true);
     setWorld(dynamicsWorld);
 
     GAMaster::createGround(dynamicsWorld);
@@ -41,7 +62,6 @@ float Ophiuroid::evalue() {
     create();
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
-        
         /***********************************/
         /*******   なんかしらする  ************/
         /***********************************/
@@ -54,13 +74,6 @@ float Ophiuroid::evalue() {
     
     GAMaster::cleanupWorld(dynamicsWorld);
     return -vY_O[1];
-}
-
-void Ophiuroid::idle() {
-    /***********    turn_pattern獲得前後でここ違う   ***************/
-    setMotorTarget(1);
-    glutPostRedisplay();
-    
 }
 
 bool Ophiuroid::checkState() {
@@ -404,7 +417,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
     
     //handle
     btScalar fCurAngle1 = hinge2->getAngle1();
-    btScalar fTargetPercent_hip1 = m_param.targetpercent[(NUM_JOINT + 2)*i] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;
+    btScalar fTargetPercent_hip1 = m_param.targetpercent[(NUM_JOINT + 2)*i] + (int(m_time_step ) % int(m_param.cycle)) / m_param.cycle;
     btScalar fTargetAngle_hip1 = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip1));
     btScalar fTargetLimitAngle1;
     switch (sW) {
@@ -421,7 +434,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
     
     //wheel
     btScalar fCurAngle2 = hinge2->getAngle2();
-    btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step ) % int(m_param.cycle)) / m_param.cycle;
+    btScalar fTargetPercent_hip2 = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(m_time_step ) % int(m_param.cycle)) / m_param.cycle;
     btScalar fTargetAngle_hip2 = 0.5 * (1 + sin(2* M_PI * fTargetPercent_hip2));
     btScalar fTargetLimitAngle2;
     switch (sW) {
@@ -441,9 +454,9 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         btScalar fCurAngle_ankle = hingeC2->getHingeAngle();
         btScalar fTargetPercent_ankle;
         switch (sW) {
-            case 1: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle; break;
-            case 2: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(Master::time_step) % int(m_param.cycle*3)) / (m_param.cycle*3.0); break;
-            default: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1 + k] + (int(Master::time_step) % int(m_param.cycle)) / m_param.cycle; break;
+            case 1: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(m_time_step) % int(m_param.cycle)) / m_param.cycle; break;
+            case 2: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1] + (int(m_time_step) % int(m_param.cycle*3)) / (m_param.cycle*3.0); break;
+            default: fTargetPercent_ankle = m_param.targetpercent[(NUM_JOINT + 2)*i + 1 + k] + (int(m_time_step) % int(m_param.cycle)) / m_param.cycle; break;
         }
         btScalar fTargetAngle_ankle = 0.5 * (1 + sin(2 * M_PI * fTargetPercent_ankle));
         btScalar fTargetLimitAngle_ankle;

@@ -47,13 +47,13 @@ private:
     int firstBody_mindex;
     btVector3 firstBody_pos;
     
-    
 public:
     Ophiuroid2(GAparameter);
     Ophiuroid2(GAparameter, Starfish*);
 
     
     void idle();
+    void idleDemo();
     bool checkState();
     void create();
     void initSF();

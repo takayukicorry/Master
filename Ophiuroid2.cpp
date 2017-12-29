@@ -15,6 +15,7 @@ Ophiuroid2::Ophiuroid2(GAparameter p) {
     ///////////////////////////////////
     stay = true;
     m_param = p;
+    m_time_step = 0;
 }
 
 Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
@@ -23,6 +24,7 @@ Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
     ///////////////////////////////////
     stay = true;
     m_param = p;
+    m_time_step = 0;
     m_bodies = sf->m_bodies;
     m_shapes = sf->m_shapes;
     m_joints_hip = sf->m_joints_hip;
@@ -32,6 +34,8 @@ Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
 }
 
 void Ophiuroid2::idle() {
+    m_time_step++;
+    
     ContactAction();
     glutPostRedisplay();
     checkLightPattern();
@@ -41,9 +45,26 @@ void Ophiuroid2::idle() {
     checkStay();
 }
 
+void Ophiuroid2::idleDemo() {
+    m_time_step++;
+    
+    ContactAction();
+    checkLightPattern();
+    setDirection();
+    ControllTubeFeet();
+    deleteTF();
+    checkStay();
+}
+
+void motorPreTickCallback2(btDynamicsWorld *world, btScalar timeStep) {
+    Ophiuroid2* demo = (Ophiuroid2*)world->getWorldUserInfo();
+    demo->idleDemo();
+}
+
 float Ophiuroid2::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback2, this, true);
     setWorld(dynamicsWorld);
     
     GAMaster::createGround(dynamicsWorld);
@@ -419,21 +440,21 @@ void Ophiuroid2::ControllTubeFeet()
         
         if (body && body->getMotionState() && !TF_contact[index])
         {
-            if (Master::time_step > InitTime_tf[index]) {
+            if (m_time_step > InitTime_tf[index]) {
                 btScalar vel = std::abs(velocity_all_x) > std::abs(velocity_all_y) ? std::abs(velocity_all_x) : std::abs(velocity_all_y);
                 
                 switch (TF_attach_state[index]) {
                     case 2:
-                        newPos = btVector3(TF_origin_pos[index][0] - (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]+vel/FPS, pos[2]+velocity_all_z/FPS);
+                        newPos = btVector3(TF_origin_pos[index][0] - (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((m_time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]+vel/FPS, pos[2]+velocity_all_z/FPS);
                         break;
                     case 3:
-                        newPos = btVector3(pos[0]+vel/FPS, TF_origin_pos[index][1] + (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS);
+                        newPos = btVector3(pos[0]+vel/FPS, TF_origin_pos[index][1] + (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((m_time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS);
                         break;
                     case 4:
-                        newPos = btVector3(TF_origin_pos[index][0] + (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]-vel/FPS, pos[2]+velocity_all_z/FPS);
+                        newPos = btVector3(TF_origin_pos[index][0] + (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((m_time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[1]-vel/FPS, pos[2]+velocity_all_z/FPS);
                         break;
                     default:
-                        newPos = btVector3(pos[0]-vel/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((Master::time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS);
+                        newPos = btVector3(pos[0]-vel/FPS, TF_origin_pos[index][1] - (LENGTH/2 + RADIUS_TF*2)*(1 - sin(2*M_PI*((m_time_step-InitTime_tf[index])%(SECOND*2))/(SECOND*2) + M_PI_2)), pos[2]+velocity_all_z/FPS);
                         break;
                 }
             } else {
@@ -630,7 +651,7 @@ void Ophiuroid2::ControllTubeFeet()
         motor_tY[index]->m_targetVelocity = (angle_target - angle_now)/2;//target angular velocity (rad/sec)
         
         //wheel motor
-        if (!TF_contact[index] && ResumeTime_tf[index] < Master::time_step)
+        if (!TF_contact[index] && ResumeTime_tf[index] < m_time_step)
         {
             double target_velocity = motor->m_targetVelocity;
             if (target_velocity == 0) {
@@ -767,12 +788,12 @@ void Ophiuroid2::ContactAction()
                     motor2->m_enableMotor = true;
                     motor_to_groundZ[index] = motor1;
                     motor_to_groundY[index] = motor2;
-                    DeleteTime_tf[index] = Master::time_step + int(double(ANGLE_ATTACH - ANGLE_DETACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 4.0);
+                    DeleteTime_tf[index] = m_time_step + int(double(ANGLE_ATTACH - ANGLE_DETACH)/double(ANGLE_VELOCITY_GROUND) * double(FPS) * 4.0);
                 }
                 else if (TF_contact[index])
                 {
                     //delete the tubefeet attaching too long time & after that, create new one
-                    if (Master::time_step > DeleteTime_tf[index]) {
+                    if (m_time_step > DeleteTime_tf[index]) {
                         //remove tubefeet - ground (constraint & motor)
                         m_ownerWorld->removeConstraint(TF_constraint_ground[index]);
                         TF_constraint_ground.erase(index);
@@ -855,7 +876,7 @@ void Ophiuroid2::ContactAction()
                             motor_tY[index] = motor2;
                             ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
                             
-                            DeleteTime_tf[index] = Master::time_step + DL_TIME;
+                            DeleteTime_tf[index] = m_time_step + DL_TIME;
 
                         }
                     }
@@ -923,9 +944,9 @@ void Ophiuroid2::ContactAction()
                         motor2->m_enableMotor = true;
                         motor_tZ[index] = motor1;
                         motor_tY[index] = motor2;
-                        ResumeTime_tf[index] = Master::time_step;
+                        ResumeTime_tf[index] = m_time_step;
                         
-                        DeleteTime_tf[index] = Master::time_step + DL_TIME;
+                        DeleteTime_tf[index] = m_time_step + DL_TIME;
                     }
                 }
             }
@@ -987,7 +1008,7 @@ void Ophiuroid2::deleteTF() {
     for (auto itr = DeleteTime_tf.begin(); itr != DeleteTime_tf.end(); ++itr) {
         int index = itr->first;
 
-        if (Master::time_step > DeleteTime_tf[index] && !TF_contact[index]) {
+        if (m_time_step > DeleteTime_tf[index] && !TF_contact[index]) {
             //remove tubefeet - amp (constraint & motor)
             m_ownerWorld->removeConstraint(TF_constraint_amp[index]);
             TF_constraint_amp.erase(index);
@@ -1069,7 +1090,7 @@ void Ophiuroid2::deleteTF() {
                 motor_tY[index] = motor2;
                 ResumeTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
                 
-                DeleteTime_tf[index] = Master::time_step + DL_TIME;
+                DeleteTime_tf[index] = m_time_step + DL_TIME;
 
             }
         }
