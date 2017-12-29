@@ -23,7 +23,7 @@ int main (int argc, char** argv) {
 #else
     for (int i = 0; i < NUM_GENARATION; i++) {
         manager.CreateNext();
-        std::cout << "第" << i << "世代" << std::endl;
+        std::cout << "第" << i << "世代　最優秀個体サイクル:" << manager.pool[0].cycle <<std::endl;
     }
     
 #endif

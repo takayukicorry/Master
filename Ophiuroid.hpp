@@ -31,7 +31,6 @@ public:
     void create();
     void initSF();
     float evalue();
-    float evalue2();
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
     void setMotorTarget(double);
     void setMotorTarget2(double);

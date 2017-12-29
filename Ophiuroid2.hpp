@@ -69,7 +69,6 @@ public:
     void fixArmState();
     void checkStay();
     float evalue();
-    float evalue2();
 
 };
 

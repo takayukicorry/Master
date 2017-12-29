@@ -21,7 +21,6 @@ public:
     GAmanager(int);
     GAparameter Adam();
     float evalue(GAparameter p);
-    float evalue2(GAparameter p);
     GAparameter first();
     GAparameter CrossOver(GAparameter, GAparameter);
     GAparameter Mutate(GAparameter);

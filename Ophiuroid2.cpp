@@ -61,26 +61,6 @@ float Ophiuroid2::evalue() {
     return 0;
 }
 
-float Ophiuroid2::evalue2() {
-    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
-    dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    setWorld(dynamicsWorld);
-    
-    GAMaster::createGround(dynamicsWorld);
-    initSF();
-    create();
-    for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
-        dynamicsWorld->stepSimulation(1.f / FPS);
-        
-        /***********************************/
-        /*******   なんかしらする  ************/
-        /***********************************/
-    }
-    GAMaster::cleanupWorld(dynamicsWorld);
-
-    return 0;
-}
-
 bool Ophiuroid2::checkState() {
     btTransform tr = m_bodies[0]->getWorldTransform();
     btVector3 vY = tr*btVector3(0, 1, 0);

@@ -80,19 +80,6 @@ float GAmanager::evalue(GAparameter p)
     return value;
 }
 
-float GAmanager::evalue2(GAparameter p)
-{
-    float value;
-    if (spiecies_of_starfish == 1) {
-        Ophiuroid oph(p);
-        value = oph.evalue2();
-    } else {
-        Ophiuroid2 oph2(p);
-        value = oph2.evalue2();
-    }
-    return value;
-}
-
 GAparameter GAmanager::CrossOver(GAparameter p1,GAparameter p2)
 {
     int k = rand()%ARRAY_LENGTH;
