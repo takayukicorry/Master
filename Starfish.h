@@ -19,6 +19,7 @@ public:
     std::map<int, btRotationalLimitMotor*> m_motor1;//handle
     std::map<int, btRotationalLimitMotor*> m_motor2;//wheel
     std::map<int, btCollisionShape*> m_shapes;
+    btDynamicsWorld* m_ownerWorld;
     bool drawTF = true;
 
     virtual void idle() = 0;
@@ -47,7 +48,7 @@ public:
             itr->second->setUpperLimit(M_PI_2, 0);
         }
     }
-    
+    void setWorld(btDynamicsWorld* ownerWorld) {m_ownerWorld = ownerWorld;}
 };
 
 #endif /* Starfish_h */

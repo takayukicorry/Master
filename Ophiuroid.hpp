@@ -13,6 +13,7 @@
 #include "Starfish.h"
 #include "GA2.h"
 #include "Master.hpp"
+#include "GAMaster.hpp"
 
 class Ophiuroid : public Starfish {
     

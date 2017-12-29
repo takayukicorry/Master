@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "Starfish.h"
 #include "Master.hpp"
+#include "GAMaster.hpp"
 
 class Ophiuroid2 : public Starfish {
     
@@ -46,6 +47,7 @@ private:
     int firstBody_mindex;
     btVector3 firstBody_pos;
     
+    
 public:
     Ophiuroid2(GAparameter);
     Ophiuroid2(GAparameter, Starfish*);
@@ -68,7 +70,7 @@ public:
     void checkStay();
     float evalue();
     float evalue2();
-    
+
 };
 
 #endif /* Ophiuroid2_hpp */

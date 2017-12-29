@@ -16,9 +16,9 @@ int main (int argc, char** argv) {
     Starfish* oph2 = new Ophiuroid2(manager.pool[0]);
     Master master = *new Master();//世界観作成
     
-#if 0
-    master.setStarfish(oph2);
-    master.setParameter(manager[0]);
+#if 1
+    master.setStarfish(oph);
+    master.setParameter(manager.pool[0]);
     mastermain(argc, argv, &master);
 #else
     for (int i = 0; i < NUM_GENARATION; i++) {

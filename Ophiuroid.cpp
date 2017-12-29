@@ -32,13 +32,41 @@ Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
 }
 
 float Ophiuroid::evalue() {
-    /***************************/
-    /**ここにworld作って、そこにophぶっ込んで、sim()回す**/
-    /***************************/
+    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    setWorld(dynamicsWorld);
+
+    GAMaster::createGround(dynamicsWorld);
+    initSF();
+    create();
+    for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
+        dynamicsWorld->stepSimulation(1.f / FPS);
+        
+        /***********************************/
+        /*******   なんかしらする  ************/
+        /***********************************/
+    }
+    
     return 0;
 }
 
 float Ophiuroid::evalue2() {
+    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    setWorld(dynamicsWorld);
+    
+    GAMaster::createGround(dynamicsWorld);
+    initSF();
+    create();
+    for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
+        dynamicsWorld->stepSimulation(1.f / FPS);
+        
+        /***********************************/
+        /*******   なんかしらする  ************/
+        /***********************************/
+    }
+    
+    return 0;
     return 0;
 }
 
@@ -155,7 +183,7 @@ void Ophiuroid::initSF() {
         hinge2C->setUpperLimit(M_PI_2, M_PI_2);
         hinge2C->setUserConstraintId(10);
         m_joints_hip[i] = hinge2C;
-        Master::dynamicsWorld->addConstraint(m_joints_hip[i], true);
+        m_ownerWorld->addConstraint(m_joints_hip[i], true);
         
         const int AXIS1_ID = 2;
         const int AXIS2_ID = 1;
@@ -183,7 +211,7 @@ void Ophiuroid::initSF() {
             //****************joint2->setLimit(m_param.lowerlimit[(NUM_JOINT+2)*i + 1 + k], m_param.upperlimit[(NUM_JOINT+2)*i + 1 + k]);
             joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
-            Master::dynamicsWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
+            m_ownerWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
             JointPoint += btVector3(btScalar(fCos*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)),btScalar(-(FLEG_LENGTH+2*FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(FLEG_LENGTH+2*FLEG_WIDTH)*cos(k*theta)));
             
         }
@@ -207,7 +235,7 @@ btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startT
     btRigidBody* body = new btRigidBody(rbInfo);
     body->setUserIndex(index);
     
-    Master::dynamicsWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND | RX_COL_BODY);
+    m_ownerWorld->addRigidBody(body, RX_COL_BODY, RX_COL_GROUND | RX_COL_BODY);
     
     return body;
 }
