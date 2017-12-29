@@ -56,7 +56,8 @@ float Ophiuroid2::evalue() {
         /*******   なんかしらする  ************/
         /***********************************/
     }
-    
+    GAMaster::cleanupWorld(dynamicsWorld);
+
     return 0;
 }
 
@@ -75,8 +76,10 @@ float Ophiuroid2::evalue2() {
         /*******   なんかしらする  ************/
         /***********************************/
     }
-    
-    return 0;}
+    GAMaster::cleanupWorld(dynamicsWorld);
+
+    return 0;
+}
 
 bool Ophiuroid2::checkState() {
     btTransform tr = m_bodies[0]->getWorldTransform();

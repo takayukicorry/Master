@@ -15,6 +15,7 @@ class GAMaster {
 public:
     static btDiscreteDynamicsWorld* createWorld();
     static void createGround(btDiscreteDynamicsWorld*);
+    static void cleanupWorld(btDiscreteDynamicsWorld*);
 };
 
 #endif /* GAMaster_hpp */

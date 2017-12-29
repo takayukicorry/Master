@@ -55,3 +55,24 @@ void GAMaster::createGround(btDiscreteDynamicsWorld* ownerWorld) {
     ownerWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
 }
 
+void GAMaster::cleanupWorld(btDiscreteDynamicsWorld* dynamicsWorld) {
+        for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+        {
+            btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+            btRigidBody* body = btRigidBody::upcast(obj);
+            if (body && body->getMotionState())
+            {
+                delete body->getMotionState();
+            }
+            dynamicsWorld->removeCollisionObject(obj);
+            delete obj;
+        }
+        
+        for(int i = dynamicsWorld->getNumConstraints()-1; i>=0 ;i--){
+            btTypedConstraint* constraint = dynamicsWorld->getConstraint(i);
+            dynamicsWorld->removeConstraint(constraint);
+            delete constraint;
+        }
+    
+        delete dynamicsWorld;
+}

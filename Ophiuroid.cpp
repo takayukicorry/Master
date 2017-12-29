@@ -46,7 +46,7 @@ float Ophiuroid::evalue() {
         /*******   なんかしらする  ************/
         /***********************************/
     }
-    
+    GAMaster::cleanupWorld(dynamicsWorld);
     return 0;
 }
 
@@ -66,7 +66,7 @@ float Ophiuroid::evalue2() {
         /***********************************/
     }
     
-    return 0;
+    GAMaster::cleanupWorld(dynamicsWorld);
     return 0;
 }
 
