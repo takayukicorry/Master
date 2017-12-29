@@ -83,7 +83,7 @@ bool Ophiuroid::checkState() {
     
     btVector3 vY_O = vY - vOrigin;
 
-    return vY_O[1] > sin(2*M_PI/5);
+    return vY_O[1] > -sin(2*M_PI/5);
 }
 
 void Ophiuroid::initSF() {

@@ -61,6 +61,8 @@ void motorPreTickCallback2(btDynamicsWorld *world, btScalar timeStep) {
     demo->idleDemo();
 }
 
+btVector3 lightSource(-70, 0, 70);
+
 float Ophiuroid2::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
@@ -956,7 +958,11 @@ void Ophiuroid2::ContactAction()
 
 void Ophiuroid2::checkLightPattern() {
     //***************light_patternの更新
-    
+    //light_patternの数値 = 各腕の光からの距離に応じた受光量の強さを示す
+    for (int i = 1; i <= NUM_LEGS; i++){
+        btVector3 now = m_bodies[(NUM_JOINT+1)*i]->getCenterOfMassPosition();
+        m_param.light_pattern[i-1] = (int)sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
+    }
 }
 
 void Ophiuroid2::setDirection() {

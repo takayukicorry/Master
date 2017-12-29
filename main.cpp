@@ -17,16 +17,17 @@ int main (int argc, char** argv) {
     Master master = *new Master();//世界観作成
     
 #if 0
-    master.setStarfish(oph);
-    master.setParameter(manager.pool[0]);
-    mastermain(argc, argv, &master);
+    
 #else
-    for (int i = 0; i < NUM_GENARATION; i++) {
+    for (int i = 0; i < 20; i++) {
         manager.CreateNext();
         std::cout << "第" << i << "世代　最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
     }
-    
 #endif
+
+    master.setStarfish(oph);
+    master.setParameter(manager.pool[0]);
+    mastermain(argc, argv, &master);
     return 0;
 }
 
