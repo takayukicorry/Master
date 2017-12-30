@@ -49,12 +49,13 @@ GAparameter GAmanager::Adam() {
     {
         param.upperlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
         param.lowerlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
+        param.upperlimit2_2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE2_2 - MIN_ANGLE2_2) + MIN_ANGLE2_2;
+        param.lowerlimit2_2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE2_2 - MIN_ANGLE2_2) + MIN_ANGLE2_2;
         param.targetpercent2[i] = 0;//(rand()%1000)/1000.0;
         
-        while(param.upperlimit2[i] < param.lowerlimit2[i])
+        while(param.upperlimit2_2[i] < param.lowerlimit2_2[i])
         {
-            param.lowerlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
-            
+            param.lowerlimit2_2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE2_2 - MIN_ANGLE2_2) + MIN_ANGLE2_2;
         }
     }
     
@@ -122,13 +123,17 @@ GAparameter GAmanager::CrossOver(GAparameter p1,GAparameter p2)
     {
         c.upperlimit2[i] = p1.upperlimit2[i];
         c.lowerlimit2[i] = p1.lowerlimit2[i];
+        c.upperlimit2_2[i] = p1.upperlimit2_2[i];
+        c.lowerlimit2_2[i] = p1.lowerlimit2_2[i];
         c.targetpercent2[i] = p1.targetpercent2[i];
     }
     
-    for (int i = k1; i<ARRAY_LENGTH; i++)
+    for (int i = k1; i<ARRAY_LENGTH_2; i++)
     {
         c.upperlimit2[i] = p2.upperlimit2[i];
         c.lowerlimit2[i] = p2.lowerlimit2[i];
+        c.upperlimit2_2[i] = p2.upperlimit2_2[i];
+        c.lowerlimit2_2[i] = p2.lowerlimit2_2[i];
         c.targetpercent2[i] = p2.targetpercent2[i];
     }
     
@@ -246,10 +251,19 @@ GAparameter GAmanager::Mutate(GAparameter p)
             c.upperlimit2[i] += ((rand()%1000)/1000.0)*MAX_ANGLE_2/2.0 - MAX_ANGLE_2/4.0;
         }
         
-        
         if (rand()%100 < pacent)
         {
             c.lowerlimit2[i] += 0.5 * ((rand()%1000)/1000.0)*MAX_ANGLE_2/2.0 - MAX_ANGLE_2/4.0;
+        }
+        
+        if (rand()%100 < pacent)
+        {
+            c.upperlimit2_2[i] += ((rand()%1000)/1000.0)*MAX_ANGLE2_2/2.0 - MAX_ANGLE2_2/4.0;
+        }
+        
+        if (rand()%100 < pacent)
+        {
+            c.lowerlimit2_2[i] += 0.5 * ((rand()%1000)/1000.0)*MAX_ANGLE2_2/2.0 - MAX_ANGLE2_2/4.0;
         }
         
         if(c.upperlimit2[i] < MIN_ANGLE_2)
@@ -268,6 +282,24 @@ GAparameter GAmanager::Mutate(GAparameter p)
         if(c.lowerlimit2[i] > MAX_ANGLE_2)
         {
             c.lowerlimit2[i] = MAX_ANGLE_2;
+        }
+        
+        if(c.upperlimit2_2[i] < MIN_ANGLE2_2)
+        {
+            c.upperlimit2_2[i] = MIN_ANGLE2_2;
+        }
+        if(c.upperlimit2_2[i] > MAX_ANGLE2_2)
+        {
+            c.upperlimit2_2[i] = MAX_ANGLE2_2;
+        }
+        
+        if(c.lowerlimit2_2[i] < MIN_ANGLE2_2)
+        {
+            c.lowerlimit2_2[i] = MIN_ANGLE2_2;
+        }
+        if(c.lowerlimit2_2[i] > MAX_ANGLE2_2)
+        {
+            c.lowerlimit2_2[i] = MAX_ANGLE2_2;
         }
     }
 
@@ -296,9 +328,7 @@ GAparameter GAmanager::Mutate(GAparameter p)
         if (rand()%100 < pacent)
         {
             c.targetpercent2[i] += ((rand()%1000)/1000.0)*0.2 - 0.1;
-        }
-        
-        
+        }        
         
         if(c.targetpercent2[i] < 0.0)
         {

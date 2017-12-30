@@ -21,6 +21,8 @@ public:
     float cycle2;
     float upperlimit2[ARRAY_LENGTH_2];
     float lowerlimit2[ARRAY_LENGTH_2];
+    float upperlimit2_2[ARRAY_LENGTH_2];
+    float lowerlimit2_2[ARRAY_LENGTH_2];
     float targetpercent2[ARRAY_LENGTH_2];//shokiisou
     int turn_pattern[NUM_LEGS];
     int light_pattern[NUM_LEGS];

@@ -75,10 +75,6 @@ float Ophiuroid2::evalue() {
     create();
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
-        
-        /***********************************/
-        /*******   なんかしらする  ************/
-        /***********************************/
     }
     
     btVector3 now = m_bodies[0]->getCenterOfMassPosition();
@@ -268,8 +264,8 @@ void Ophiuroid2::create() {
             bodies_amp.push_back(body_amp);
             //tf - amp (constraint)
             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-            univ->setLowerLimit(-ANGLE, -M_PI);
-            univ->setUpperLimit(ANGLE, M_PI);
+            univ->setLowerLimit(MIN_ANGLE_2, MIN_ANGLE2_2);
+            univ->setUpperLimit(MAX_ANGLE_2, MAX_ANGLE2_2);
             TF_constraint_amp[index] = univ;
             constraints.push_back(univ);
             //tf - amp (motor)
