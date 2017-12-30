@@ -37,8 +37,8 @@ enum CollisionGroup{
 #define MIN_ANGLE -M_PI_2
 #define MAX_CYCLE_2 1000
 #define MIN_CYCLE_2 300
-#define MAX_ANGLE_2 M_PI_2
-#define MIN_ANGLE_2 -M_PI_2
+#define MAX_ANGLE_2 M_PI/3
+#define MIN_ANGLE_2 -M_PI/3
 #define MAX_ANGLE2_2 M_PI
 #define MIN_ANGLE2_2 -M_PI
 #define NUM_JOINT 3

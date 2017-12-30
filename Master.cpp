@@ -132,7 +132,7 @@ void Master::Render() {
             int index = body->getUserIndex();
             if (!starfish->drawTF && index>=100) continue;
             if (index==0) continue;
-            //if (10 <= index && index < 100) continue;
+            if (10 <= index && index < 100) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
