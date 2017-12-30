@@ -80,9 +80,14 @@ float Ophiuroid2::evalue() {
         /*******   なんかしらする  ************/
         /***********************************/
     }
+    
+    btVector3 now = m_bodies[0]->getCenterOfMassPosition();
+    
+    int value = 100 - (int)sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
+    value = (value >= 0) ? value : 0 ;
+    
     GAMaster::cleanupWorld(dynamicsWorld);
-
-    return 0;
+    return value;
 }
 
 bool Ophiuroid2::checkState() {
@@ -241,8 +246,6 @@ void Ophiuroid2::create() {
     for (int i = 0; i < NUM_TF; i++) {
         col = i % 2;
         row = i / 2;
-        ////pos_tf = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
-        ////pos_amp = btVector3(RADIUS_TF*2 + row * RADIUS_TF * 4, INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
         pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
         pos_amp = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y, pow(-1, col) * RADIUS_TF * 2);
         for (int j = 1; j <= NUM_LEGS; j++) {
@@ -958,7 +961,6 @@ void Ophiuroid2::ContactAction()
 }
 
 void Ophiuroid2::checkLightPattern() {
-    //***************light_patternの更新
     //light_patternの数値 = 各腕の光からの距離に応じた受光量の強さを示す
     for (int i = 1; i <= NUM_LEGS; i++){
         btVector3 now = m_bodies[(NUM_JOINT+1)*i]->getCenterOfMassPosition();

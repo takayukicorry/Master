@@ -26,7 +26,8 @@ enum CollisionGroup{
 };
 
 /*卒論で使用*/
-#define ARRAY_LENGTH 100
+#define ARRAY_LENGTH (NUM_JOINT+2)*NUM_LEGS
+#define ARRAY_LENGTH_2 NUM_TF*NUM_LEGS
 #define NUM_LEGS 5
 #define CONECT_LENGTH 5
 #define POOL_SIZE 100
@@ -34,6 +35,10 @@ enum CollisionGroup{
 #define MIN_CYCLE 300
 #define MAX_ANGLE M_PI_2
 #define MIN_ANGLE -M_PI_2
+#define MAX_CYCLE_2 1000
+#define MIN_CYCLE_2 300
+#define MAX_ANGLE_2 M_PI_2
+#define MIN_ANGLE_2 -M_PI_2
 #define NUM_JOINT 3
 #define NUM_GENARATION 100
 #define BODYPART_COUNT (NUM_JOINT+1) * NUM_LEGS + 1 //+ NUM_LEGS //最後のプラスはturn判定センサ

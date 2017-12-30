@@ -13,6 +13,7 @@ GAparameter GAmanager::Adam() {
     
     GAparameter param;
     param.cycle = rand()%(MAX_CYCLE-MIN_CYCLE) + MIN_CYCLE;
+    param.cycle2 = rand()%(MAX_CYCLE_2-MIN_CYCLE_2) + MIN_CYCLE_2;
     for (int i = 0; i < NUM_LEGS; i++)
     {
         param.turn_pattern[i] = 0;
@@ -40,6 +41,19 @@ GAparameter GAmanager::Adam() {
         while(param.upperlimit[i] < param.lowerlimit[i])
         {
             param.lowerlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
+            
+        }
+    }
+    
+    for (int i = 0; i<ARRAY_LENGTH_2; i++)
+    {
+        param.upperlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
+        param.lowerlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
+        param.targetpercent2[i] = 0;//(rand()%1000)/1000.0;
+        
+        while(param.upperlimit2[i] < param.lowerlimit2[i])
+        {
+            param.lowerlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
             
         }
     }
@@ -83,11 +97,13 @@ float GAmanager::evalue(GAparameter p)
 GAparameter GAmanager::CrossOver(GAparameter p1,GAparameter p2)
 {
     int k = rand()%ARRAY_LENGTH;
+    int k1 = rand()%ARRAY_LENGTH_2;
     int k2 = rand()%CONECT_LENGTH;
     int k3 = rand()%NUM_LEGS;
     
     GAparameter c;
     c.cycle = ((rand()%1000)/1000.0)*(p1.cycle - p2.cycle) + p2.cycle ;
+    c.cycle2 = ((rand()%1000)/1000.0)*(p1.cycle2 - p2.cycle2) + p2.cycle2 ;
     for (int i = 0; i<k; i++)
     {
         c.upperlimit[i] = p1.upperlimit[i];
@@ -100,6 +116,20 @@ GAparameter GAmanager::CrossOver(GAparameter p1,GAparameter p2)
         c.upperlimit[i] = p2.upperlimit[i];
         c.lowerlimit[i] = p2.lowerlimit[i];
         c.targetpercent[i] = p2.targetpercent[i];
+    }
+    
+    for (int i = 0; i<k1; i++)
+    {
+        c.upperlimit2[i] = p1.upperlimit2[i];
+        c.lowerlimit2[i] = p1.lowerlimit2[i];
+        c.targetpercent2[i] = p1.targetpercent2[i];
+    }
+    
+    for (int i = k1; i<ARRAY_LENGTH; i++)
+    {
+        c.upperlimit2[i] = p2.upperlimit2[i];
+        c.lowerlimit2[i] = p2.lowerlimit2[i];
+        c.targetpercent2[i] = p2.targetpercent2[i];
     }
     
     int l = rand()%2;
@@ -157,6 +187,18 @@ GAparameter GAmanager::Mutate(GAparameter p)
         if(c.cycle>MAX_CYCLE)
         {c.cycle = MAX_CYCLE;
         }
+        
+    }
+    if (rand()%100 < pacent)
+    {
+        c.cycle2 += rand()%1000-500;
+        if(c.cycle2<MIN_CYCLE_2)
+        {c.cycle2 = MIN_CYCLE_2;
+        }
+        if(c.cycle2>MAX_CYCLE_2)
+        {c.cycle2 = MAX_CYCLE_2;
+        }
+        
     }
     
     for(int i = 0; i<ARRAY_LENGTH; i++)
@@ -195,8 +237,40 @@ GAparameter GAmanager::Mutate(GAparameter p)
          c.lowerlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
          
          }
-         */    }
+         */
+    }
     
+    for(int i = 0; i<ARRAY_LENGTH_2; i++) {
+        if (rand()%100 < pacent)
+        {
+            c.upperlimit2[i] += ((rand()%1000)/1000.0)*MAX_ANGLE_2/2.0 - MAX_ANGLE_2/4.0;
+        }
+        
+        
+        if (rand()%100 < pacent)
+        {
+            c.lowerlimit2[i] += 0.5 * ((rand()%1000)/1000.0)*MAX_ANGLE_2/2.0 - MAX_ANGLE_2/4.0;
+        }
+        
+        if(c.upperlimit2[i] < MIN_ANGLE_2)
+        {
+            c.upperlimit2[i] = MIN_ANGLE_2;
+        }
+        if(c.upperlimit2[i] > MAX_ANGLE_2)
+        {
+            c.upperlimit2[i] = MAX_ANGLE_2;
+        }
+        
+        if(c.lowerlimit2[i] < MIN_ANGLE_2)
+        {
+            c.lowerlimit2[i] = MIN_ANGLE_2;
+        }
+        if(c.lowerlimit2[i] > MAX_ANGLE_2)
+        {
+            c.lowerlimit2[i] = MAX_ANGLE_2;
+        }
+    }
+
     for(int i = 0; i<ARRAY_LENGTH; i++)
     {
         if (rand()%100 < pacent)
@@ -213,6 +287,26 @@ GAparameter GAmanager::Mutate(GAparameter p)
         if(c.targetpercent[i] > 1.0)
         {
             c.targetpercent[i] = 1.0;
+        }
+        
+    }
+    
+    for(int i = 0; i<ARRAY_LENGTH_2; i++)
+    {
+        if (rand()%100 < pacent)
+        {
+            c.targetpercent2[i] += ((rand()%1000)/1000.0)*0.2 - 0.1;
+        }
+        
+        
+        
+        if(c.targetpercent2[i] < 0.0)
+        {
+            c.targetpercent2[i] = 0.0;
+        }
+        if(c.targetpercent2[i] > 1.0)
+        {
+            c.targetpercent2[i] = 1.0;
         }
         
     }

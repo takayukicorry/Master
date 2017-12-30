@@ -11,7 +11,7 @@
 #include "Master.hpp"
 
 int main (int argc, char** argv) {
-    GAmanager manager = *new GAmanager(1);//どっちの挙動のGAやるか
+    GAmanager manager = *new GAmanager(2);//どっちの挙動のGAやるか
     Starfish* oph = new Ophiuroid(manager.pool[0]);
     Starfish* oph2 = new Ophiuroid2(manager.pool[0]);
     Master master = *new Master();//世界観作成
@@ -19,13 +19,13 @@ int main (int argc, char** argv) {
 #if 0
     
 #else
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < NUM_GENARATION; i++) {
         manager.CreateNext();
         std::cout << "第" << i << "世代　最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
     }
 #endif
 
-    master.setStarfish(oph);
+    master.setStarfish(oph2);
     master.setParameter(manager.pool[0]);
     mastermain(argc, argv, &master);
     return 0;
