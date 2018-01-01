@@ -31,11 +31,11 @@ public:
     Master();
     void Render();
     void idle();
+    void idleDemo();
     void InitBullet();
     void CleanupBullet();
     void init();
-    void setStarfish(Starfish* s) {s->setWorld(dynamicsWorld); starfish = s;}
-    void setParameter(GAparameter m) { m_param = m; }
+    void setStarfish(Starfish* s);
     Starfish* getStarfishes() { return starfish; }
     void createGround();
     void createStarfish();

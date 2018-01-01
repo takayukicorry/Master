@@ -20,13 +20,13 @@ Ophiuroid2::Ophiuroid2(GAparameter p) {
     className = 2;
 }
 
-Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
+Ophiuroid2::Ophiuroid2(Starfish* sf) {
     ///////////////////////////////////
     ///  create() で変数は初期化される  ///
     ///////////////////////////////////
     stay = true;
     futto = true;
-    m_param = p;
+    m_param = sf->m_param;
     m_time_step = 0;
     className = 2;
     m_bodies = sf->m_bodies;

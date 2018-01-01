@@ -10,6 +10,7 @@
 #define Starfish_h
 
 #include "Variables.h"
+#include "GA.h"
 
 class Starfish {
 public:
@@ -24,6 +25,7 @@ public:
     int m_time_step;
     bool kCheck_first;
     int className;
+    GAparameter m_param;
 
     virtual void idle() = 0;
     virtual bool checkState() = 0;

@@ -20,11 +20,10 @@ class Ophiuroid : public Starfish {
 private:
     int leg_state[NUM_LEGS];
     int turn_direction[NUM_LEGS];
-    GAparameter m_param;
     
 public:
     Ophiuroid(GAparameter);
-    Ophiuroid(GAparameter, Starfish*);
+    Ophiuroid(Starfish*);
 
     void idle();
     void idleDemo();

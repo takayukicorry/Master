@@ -11,6 +11,6 @@
 
 #include "Master.hpp"
 
-void mastermain(int, char**, Master*);
+void mastermain(int, char**, Master*, bool);
 
 #endif /* MasterStuff_hpp */

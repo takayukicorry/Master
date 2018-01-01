@@ -280,7 +280,7 @@ void Master::createGround() {
             
             Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
         }
-    }
+    }/*
     groundTransform.setIdentity();
     groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1], (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
     
@@ -290,7 +290,7 @@ void Master::createGround() {
     body->setActivationState(DISABLE_DEACTIVATION);
     body->setUserIndex(2);
     
-    Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+    Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);*/
 }
 
 void Master::createStarfish() {
@@ -303,9 +303,9 @@ void Master::checkStarfish() {
         CleanupStarfish();
         Starfish* oph;
         if (starfish->className == 2) {
-            oph = new Ophiuroid(m_param, starfish);
+            oph = new Ophiuroid(starfish);
         } else {
-            oph= new Ophiuroid2(m_param, starfish);
+            oph= new Ophiuroid2(starfish);
         }
         oph->kCheck_first = !starfish->kCheck_first;
         setStarfish(oph);
@@ -318,6 +318,17 @@ void Master::idle() {
     
     starfish->idle();
     checkStarfish();
+}
+
+void Master::idleDemo() {
+    Master::dynamicsWorld->stepSimulation(1.f / FPS);
+    
+    starfish->idle();
+}
+
+void Master::setStarfish(Starfish* s){
+    s->setWorld(dynamicsWorld);
+    starfish = s;
 }
 
 void Master::init() {

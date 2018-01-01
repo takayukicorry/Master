@@ -18,12 +18,12 @@ Ophiuroid::Ophiuroid(GAparameter p) {
     className = 1;
 }
 
-Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
+Ophiuroid::Ophiuroid(Starfish* sf) {
     /************  create() で変数は初期化される  **************/
     for (int i = 0; i < NUM_LEGS; i++) {
         leg_state[i] = 0;
     }
-    m_param = p;
+    m_param = sf->m_param;
     m_time_step = 0;
     className = 1;
 
@@ -36,9 +36,9 @@ Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
 }
 
 void Ophiuroid::idle() {
-    m_time_step++;
+    //m_time_step++;
     
-    setMotorTarget(1);
+    //setMotorTarget(1);
     glutPostRedisplay();
 }
 
@@ -64,11 +64,7 @@ float Ophiuroid::evalue() {
     create();
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
-        /***********************************/
-        /*******   なんかしらする  ************/
-        /***********************************/
     }
-    
     btTransform tr = m_bodies[0]->getWorldTransform();
     btVector3 vY = tr*btVector3(0, 1, 0);
     btVector3 vOrigin = tr.getOrigin();
@@ -89,7 +85,7 @@ bool Ophiuroid::checkState() {
 }
 
 void Ophiuroid::initSF() {
-    
+    m_ownerWorld->setInternalTickCallback(motorPreTickCallback, this, true);
     float alpha = 37*M_PI/36;
     float theta = M_PI - alpha;
     

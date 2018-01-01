@@ -18,7 +18,11 @@ static void idle() {
     stuff->idle();
 }
 
-void mastermain(int argc, char** argv, Master* master) {
+static void idleDemo() {
+    stuff->idleDemo();
+}
+
+void mastermain(int argc, char** argv, Master* master, bool demo) {
     stuff = master;
     
     master->createGround();
@@ -30,9 +34,15 @@ void mastermain(int argc, char** argv, Master* master) {
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutCreateWindow(argv[0]);
     glutDisplayFunc(Render);
-    glutIdleFunc(idle);
+    if (demo) {
+        glutIdleFunc(idleDemo);
+    } else {
+        glutIdleFunc(idle);
+    }
     master->init();
     glutMainLoop();
     
     master->CleanupBullet();
 }
+
+

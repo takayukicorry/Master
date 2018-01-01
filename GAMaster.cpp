@@ -42,7 +42,7 @@ void GAMaster::createGround(btDiscreteDynamicsWorld* ownerWorld) {
             
             ownerWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
         }
-    }
+    }/*
     groundTransform.setIdentity();
     groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1], (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
     
@@ -52,7 +52,7 @@ void GAMaster::createGround(btDiscreteDynamicsWorld* ownerWorld) {
     body->setActivationState(DISABLE_DEACTIVATION);
     body->setUserIndex(2);
     
-    ownerWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+    ownerWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);*/
 }
 
 void GAMaster::cleanupWorld(btDiscreteDynamicsWorld* dynamicsWorld) {

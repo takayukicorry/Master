@@ -37,7 +37,6 @@ private:
     std::map<int, int> TF_dettach_state;
     std::map<int, btScalar> TF_start_angle;//angle between ground and TF when starting attach
     bool stay;
-    GAparameter m_param;
     int leg_state[NUM_LEGS];
     btVector3 pos_body_part[NUM_LEGS][NUM_JOINT];
     btVector3 vel_body_part[NUM_LEGS][NUM_JOINT];
@@ -50,7 +49,7 @@ private:
     
 public:
     Ophiuroid2(GAparameter);
-    Ophiuroid2(GAparameter, Starfish*);
+    Ophiuroid2(Starfish*);
 
     
     void idle();

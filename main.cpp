@@ -5,30 +5,31 @@
 //  Created by 増田貴行 on 2017/10/31.
 //  Copyright © 2017年 増田貴行. All rights reserved.
 //
-
+#define DEMO 1
+#define VERSION 1
 #include <stdio.h>
 #include "MasterStuff.hpp"
 #include "Master.hpp"
 
 int main (int argc, char** argv) {
-    GAmanager manager = *new GAmanager(2);//どっちの挙動のGAやるか
-    Starfish* oph = new Ophiuroid(manager.pool[0]);
-    Starfish* oph2 = new Ophiuroid2(manager.pool[0]);
-    oph2->kCheck_first = true;//先
-    Master master = *new Master();//世界観作成
+    GAmanager manager = *new GAmanager(VERSION);
+    Master master = *new Master();
+    std::map<int, Starfish*> Ss;
     
-#if 1
-    
-#else
-    for (int i = 0; i < NUM_GENARATION; i++) {
+#if DEMO
+    for (int i = 0; i < 10; i++) {
         manager.CreateNext();
         std::cout << "第" << i << "世代　最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
     }
 #endif
-
-    master.setStarfish(oph2);
-    master.setParameter(manager.pool[0]);
-    mastermain(argc, argv, &master);
+    
+    Ss[1] = new Ophiuroid(manager.pool[0]);
+    Ss[2] = new Ophiuroid2(manager.pool[0]);
+    Ss[VERSION]->kCheck_first = true;
+    
+    master.setStarfish(Ss[VERSION]);
+    mastermain(argc, argv, &master, DEMO);
+    
     return 0;
 }
 
