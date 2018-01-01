@@ -48,9 +48,9 @@ void Ophiuroid2::idle() {
         deleteTF();
         checkStay();
     }
-    if (m_time_step==100) {
+    /*if (m_time_step==100) {
         futtobi();
-    }
+    }*/
     glutPostRedisplay();
 
 }
@@ -71,8 +71,8 @@ void motorPreTickCallback2(btDynamicsWorld *world, btScalar timeStep) {
     demo->idleDemo();
 }
 
-btVector3 lightSource(-70, 0, 70);
-int lightThresh(70);
+btVector3 lightSource(70, 0, -70);
+int lightThresh(170);
 
 float Ophiuroid2::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
@@ -83,14 +83,16 @@ float Ophiuroid2::evalue() {
     GAMaster::createGround(dynamicsWorld);
     initSF();
     create();
+    float value = 0;
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
+        
+        btVector3 now = m_bodies[0]->getCenterOfMassPosition();
+        float val = 1000 - sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
+        val = (val >= 0) ? val : 0 ;
+        
+        if (value < val) value = val;
     }
-    
-    btVector3 now = m_bodies[0]->getCenterOfMassPosition();
-    
-    int value = 100 - (int)sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
-    value = (value >= 0) ? value : 0 ;
     
     GAMaster::cleanupWorld(dynamicsWorld);
     return value;
@@ -206,7 +208,6 @@ void Ophiuroid2::initSF() {
         
         const int AXIS1_ID = 2;
         const int AXIS2_ID = 1;
-        const float MAX_MOTOR_TORQUE = 10000000000;//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
         m_motor1[i] = hinge2C->getRotationalLimitMotor(AXIS1_ID);
         m_motor2[i] = hinge2C->getRotationalLimitMotor(AXIS2_ID);
         m_motor1[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;

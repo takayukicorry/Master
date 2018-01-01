@@ -84,7 +84,7 @@ void drawFrame(btTransform &tr)//ロボットについてる軸
     
     // z
     btVector3 vZ = tr*btVector3(0,0,fSize*3);
-    vertex(tr.getOrigin());    vertex(vZ);
+    //vertex(tr.getOrigin());    vertex(vZ);
     
     glEnd();
 }
@@ -140,7 +140,7 @@ void Master::Render() {
             btScalar rot = body->getOrientation().getAngle() * RADIAN;
             btVector3 axis = body->getOrientation().getAxis();
             btVector3 halfExtent = static_cast<const btBoxShape*>(body->getCollisionShape())->getHalfExtentsWithMargin();
-            
+
             glPushMatrix();
             if ( 10 <= index && index < 100) {
                 glTranslatef(pos[0]+2, pos[1]+2, pos[2]);
@@ -172,12 +172,11 @@ void Master::Render() {
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
             {
                 if ( 10 <= index && index < 100) {
-                    glScaled(halfExtent[1], halfExtent[1], halfExtent[1]);
                     glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
                     glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
                     glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
                     glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
-                    glutSolidSphere(1, 100, 100);
+                    glutSolidSphere(FLEG_WIDTH, 100, 100);
                 }
             }
             //capsule
@@ -280,17 +279,19 @@ void Master::createGround() {
             
             Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
         }
-    }/*
-    groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1], (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
-    
-    btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
-    btRigidBody* body = new btRigidBody(rbInfo);
-    body->setActivationState(DISABLE_DEACTIVATION);
-    body->setUserIndex(2);
-    
-    Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);*/
+    }
+    if (WALL) {
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1], (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
+        
+        btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
+        btRigidBody* body = new btRigidBody(rbInfo);
+        body->setActivationState(DISABLE_DEACTIVATION);
+        body->setUserIndex(2);
+        
+        Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+    }
 }
 
 void Master::createStarfish() {

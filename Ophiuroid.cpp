@@ -9,24 +9,24 @@
 #include "Ophiuroid.hpp"
 
 Ophiuroid::Ophiuroid(GAparameter p) {
-    /************  create() で変数は初期化される  **************/
     for (int i = 0; i < NUM_LEGS; i++) {
         leg_state[i] = 0;
     }
     m_param = p;
     m_time_step = 0;
     className = 1;
+    swing_phase = -3;
 }
 
 Ophiuroid::Ophiuroid(Starfish* sf) {
-    /************  create() で変数は初期化される  **************/
     for (int i = 0; i < NUM_LEGS; i++) {
         leg_state[i] = 0;
     }
     m_param = sf->m_param;
     m_time_step = 0;
     className = 1;
-
+    swing_phase = -3;
+    
     m_bodies = sf->m_bodies;
     m_shapes = sf->m_shapes;
     m_joints_hip = sf->m_joints_hip;
@@ -36,16 +36,14 @@ Ophiuroid::Ophiuroid(Starfish* sf) {
 }
 
 void Ophiuroid::idle() {
-    //m_time_step++;
-    
-    //setMotorTarget(1);
     glutPostRedisplay();
 }
 
 void Ophiuroid::idleDemo() {
     m_time_step++;
     
-    setMotorTarget(1);
+    //setMotorTarget(1);
+    setMotorTarget2(1);
 }
 
 void motorPreTickCallback(btDynamicsWorld *world, btScalar timeStep) {
@@ -62,16 +60,25 @@ float Ophiuroid::evalue() {
     GAMaster::createGround(dynamicsWorld);
     initSF();
     create();
+    btScalar value = swing_phase;
+    btVector3 up = btVector3(0, 1, 0);
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
+        btScalar val = swing_phase;
+        if (swing_phase >= -1) {
+            btTransform tr = m_bodies[0]->getWorldTransform();
+            btVector3 vY = tr*up;
+            btVector3 vOrigin = tr.getOrigin();
+            btVector3 vY_O = vY - vOrigin;
+            val = -vY_O[1];
+        }
+        if (value < val) {
+            value = val;
+        }
     }
-    btTransform tr = m_bodies[0]->getWorldTransform();
-    btVector3 vY = tr*btVector3(0, 1, 0);
-    btVector3 vOrigin = tr.getOrigin();
-    btVector3 vY_O = vY - vOrigin;
     
     GAMaster::cleanupWorld(dynamicsWorld);
-    return -vY_O[1];
+    return value;
 }
 
 bool Ophiuroid::checkState() {
@@ -184,7 +191,6 @@ void Ophiuroid::initSF() {
         
         const int AXIS1_ID = 2;
         const int AXIS2_ID = 1;
-        const float MAX_MOTOR_TORQUE = 10000000000;//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
         m_motor1[i] = hinge2C->getRotationalLimitMotor(AXIS1_ID);
         m_motor2[i] = hinge2C->getRotationalLimitMotor(AXIS2_ID);
         m_motor1[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;
@@ -205,7 +211,7 @@ void Ophiuroid::initSF() {
             if(k==1){pivotA = btVector3(0, 0, 0); pivotB = btVector3(0, FLEG_WIDTH*2 + FLEG_LENGTH/2, 0);}
             btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
             
-            //****************joint2->setLimit(m_param.lowerlimit[(NUM_JOINT+2)*i + 1 + k], m_param.upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            joint2->setLimit(m_param.lowerlimit[(NUM_JOINT+2)*i + 1 + k], m_param.upperlimit[(NUM_JOINT+2)*i + 1 + k]);
             joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             m_ownerWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
@@ -254,8 +260,10 @@ void Ophiuroid::setMotorTarget(double delta) {
                 tran.setIdentity();
                 rigid1->getMotionState()->getWorldTransform(tran);
                 btScalar y = tran.getOrigin().getY();
-                btVector3 pos = rigid1->getCenterOfMassPosition();
-                btScalar rot = btScalar(rigid1->getOrientation().getAngle()*RADIAN);
+                btVector3 vY = tran*btVector3(1, 0, 0);
+                btVector3 vOrigin = tran.getOrigin();
+                btVector3 vY_O = vY - vOrigin;
+                btScalar rot = btScalar(acos(vY_O[1])*RADIAN);
                 
                 if(rot>120){
                     if (y < 0.6){
@@ -274,11 +282,9 @@ void Ophiuroid::setMotorTarget(double delta) {
                     }
                 }
             }
-        }
-        //turn済//
-        int state = leg_state[(i+NUM_LEGS-1)%NUM_LEGS] + leg_state[(i+1)%NUM_LEGS];
-        
-        if (m_param.turn >= NUM_TURN){
+        } else {
+            swing_phase = true;
+            int state = leg_state[(i+NUM_LEGS-1)%NUM_LEGS] + leg_state[(i+1)%NUM_LEGS];
             //支脚以外の動き//
             if (leg_state[i] == 0){
                 //not支脚隣//
@@ -310,24 +316,26 @@ void Ophiuroid::setMotorTarget2(double delta) {
     //turn_pattern獲得後のため、センサからの入力値はわかってる。for文の外で出力値まで計算しちゃう。
     int mid[NUM_LEGS];
     int out[NUM_LEGS];
-    //中間層
-    for (int i = 0; i<NUM_LEGS; i++){
-        mid[i] = 0;
-        for (int k = 0; k<NUM_LEGS; k++){
-            mid[i] += m_param.turn_pattern[k]*m_param.conect[NUM_LEGS*i + k];
-        }
-        
-        if(mid[i] >= 0){
-            mid[i] = 1;
-        }else{
+    if (m_param.turn >= NUM_TURN) {
+        //中間層
+        for (int i = 0; i<NUM_LEGS; i++){
             mid[i] = 0;
+            for (int k = 0; k<NUM_LEGS; k++){
+                mid[i] += m_param.turn_pattern[k]*m_param.conect[NUM_LEGS*i + k];
+            }
+            
+            if(mid[i] >= 0){
+                mid[i] = 1;
+            }else{
+                mid[i] = 0;
+            }
         }
-    }
-    //出力層
-    for (int i = 0; i<NUM_LEGS; i++){
-        out[i] = 0;
-        for (int k = 0; k<NUM_LEGS; k++){
-            out[i] += mid[k]*m_param.conect[NUM_LEGS*(NUM_LEGS+i) + k];
+        //出力層
+        for (int i = 0; i<NUM_LEGS; i++){
+            out[i] = 0;
+            for (int k = 0; k<NUM_LEGS; k++){
+                out[i] += mid[k]*m_param.conect[NUM_LEGS*(NUM_LEGS+i) + k];
+            }
         }
     }
     
@@ -335,65 +343,53 @@ void Ophiuroid::setMotorTarget2(double delta) {
     for (int i=0; i<NUM_LEGS; i++){
         //第一段階（turn本数待ち）//
         if(m_param.turn < NUM_TURN){
+            if(m_param.turn==1) swing_phase = -2;
             //支脚以外の動き//
             if (leg_state[i] == 0){
                 
                 calcMotorTarget(i);
                 
-                //turn判定//
                 btRigidBody* rigid1 = m_bodies[(NUM_JOINT+1)*(i+1)];
                 btTransform tran;
                 tran.setIdentity();
                 rigid1->getMotionState()->getWorldTransform(tran);
                 btScalar y = tran.getOrigin().getY();
-                btTransform tr = rigid1->getWorldTransform();
-                btVector3 vY = tr*btVector3(0,1,0);
-                btVector3 v_origin = tr.getOrigin();
+                btVector3 vY = tran*btVector3(1, 0, 0);
+                btVector3 vOrigin = tran.getOrigin();
+                btVector3 vY_O = vY - vOrigin;
+                btScalar rot = btScalar(acos(vY_O[1]));
                 
-                btVector3 vY1 = vY - v_origin;
-                float vY2[3] = {vY1[0],0,vY1[2]};
-                float mv;
-                if (vY1[1] >= 0)
-                {
-                    mv = M_PI_2 - acos((vY1[0]*vY2[0]+vY1[1]*vY2[1]+vY1[2]*vY2[2])/sqrtf((vY1[0]*vY1[0]+vY1[1]*vY1[1]+vY1[2]*vY1[2])*(vY2[0]*vY2[0]+vY2[1]*vY2[1]+vY2[2]*vY2[2])));
-                    
-                }else
-                {
-                    mv = M_PI_2 + acos((vY1[0]*vY2[0]+vY1[1]*vY2[1]+vY1[2]*vY2[2])/sqrtf((vY1[0]*vY1[0]+vY1[1]*vY1[1]+vY1[2]*vY1[2])*(vY2[0]*vY2[0]+vY2[1]*vY2[1]+vY2[2]*vY2[2])));
-                    
-                }
-                if(mv > THRESHOLD){
-                    if (y < 0.6){
-                        if (m_param.turn_pattern[i]==1){
+                if(rot > THRESHOLD){
+                    if (y < FLEG_WIDTH){
+                        //if (m_param.turn_pattern[i]==1){
                             m_param.turn += 1;
                             m_param.ee = 1;
                             leg_state[i] = 1;
+                            m_param.turn_pattern[i] = 1;
                             turn_direction[i] = 1;//右ねじ正
                             rigid1->setFriction(FRICTION);
                             rigid1->setGravity(btVector3(0,-15.0,0));
-                        }
+                        //}
                     }
                 }
-                if(mv < -THRESHOLD){
-                    if (y < 0.6){
-                        if (m_param.turn_pattern[i]==1){
+                if(rot < -THRESHOLD){
+                    if (y < FLEG_WIDTH){
+                        //if (m_param.turn_pattern[i]==1){
                             m_param.turn += 1;
                             m_param.ee = 1;
                             leg_state[i] = 1;
+                            m_param.turn_pattern[i] = 1;
                             turn_direction[i] = -1;//右ねじ負
                             rigid1->setFriction(FRICTION);
                             rigid1->setGravity(btVector3(0,-15.0,0));
-                            
-                        }
+                        //}
                     }
                 }
             }
-            
         }
         //第二段階（turn後）//
-        
         if (m_param.turn >= NUM_TURN){
-            
+            swing_phase = -1;
             //支脚以外//
             if (leg_state[i] == 0){
                 float a = m_param.a[i];//シグモイド関数のパラメータ
@@ -466,8 +462,8 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;
         btScalar fDesiredAngularVel_ankle = fAngleError_ankle;
         switch (sW) {
-            case 2: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle * f, 100000000000); break;
-            default: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, 1000000000000); break;
+            case 2: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle * f, MAX_MOTOR_TORQUE); break;
+            default: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, MAX_MOTOR_TORQUE); break;
         }
     }
 }

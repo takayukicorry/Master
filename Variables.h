@@ -42,11 +42,13 @@ enum CollisionGroup{
 #define MAX_ANGLE2_2 M_PI
 #define MIN_ANGLE2_2 -M_PI
 #define NUM_JOINT 3
-#define NUM_GENARATION 100
+#define MAX_MOTOR_TORQUE 5.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
+
+
 #define BODYPART_COUNT (NUM_JOINT+1) * NUM_LEGS + 1 //+ NUM_LEGS //最後のプラスはturn判定センサ
 #define JOINT_COUNT BODYPART_COUNT - 1 //+ NUM_LEGS
 #define NUM_TURN 2
-#define THRESHOLD M_PI*2/3
+#define THRESHOLD M_PI/3
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
 #define M_OBJ 0.5
@@ -55,7 +57,7 @@ enum CollisionGroup{
 #define RADIAN 180/M_PI
 #define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
-#define M_BODY 5
+#define M_BODY 2
 #define M_ARM 1
 #define M_TF 1
 
@@ -70,9 +72,9 @@ enum CollisionGroup{
 #define NUM_GROUND 3
 #define NUM_TF_UNIT 4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
-#define DL_TIME 720
+#define DL_TIME 360
 #define THRESH_VEL 5
-#define SIMULATION_TIME_STEP 600
+#define SIMULATION_TIME_STEP 1200
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
@@ -81,5 +83,11 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_TF ANGLE*60/SECOND//管足振る角速度//kannsokufurukakusokudo
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
+//*******************************//
+#define NUM_GENARATION 10
+#define GA 1
+#define VERSION 2
+#define WALL 0
+//*******************************//
 #endif
 

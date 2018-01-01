@@ -18,6 +18,7 @@
 class Ophiuroid : public Starfish {
     
 private:
+    int swing_phase;
     int leg_state[NUM_LEGS];
     int turn_direction[NUM_LEGS];
     
