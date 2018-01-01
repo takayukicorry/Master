@@ -71,7 +71,7 @@ void motorPreTickCallback2(btDynamicsWorld *world, btScalar timeStep) {
     demo->idleDemo();
 }
 
-btVector3 lightSource(70, 0, -70);
+btVector3 lightSource(-70, 0, 70);
 int lightThresh(170);
 
 float Ophiuroid2::evalue() {
@@ -881,8 +881,10 @@ void Ophiuroid2::ContactAction()
                             m_ownerWorld->addRigidBody(body_amp, RX_COL_AMP, RX_COL_GROUND);
                             //tf - amp (constraint)
                             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-                            univ->setLowerLimit(MIN_ANGLE_2, MIN_ANGLE2_2);
-                            univ->setUpperLimit(MAX_ANGLE_2, MAX_ANGLE2_2);
+                            univ->setLowerLimit(m_param.lowerlimit2[index-101], m_param.lowerlimit2_2[index-101]);
+                            univ->setUpperLimit(m_param.upperlimit2[index-101], m_param.upperlimit2_2[index-101]);
+                            //ここuniv->setLowerLimit(MIN_ANGLE_2, MIN_ANGLE2_2);
+                            //ここuniv->setUpperLimit(MAX_ANGLE_2, MAX_ANGLE2_2);
                             TF_constraint_amp[index] = univ;
                             m_ownerWorld->addConstraint(univ);
                             //tf - amp (motor)
@@ -951,8 +953,10 @@ void Ophiuroid2::ContactAction()
                         
                         //create tubefeet - amp (constraint)
                         btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *TF_object[index], pos_amp, pos_amp-pos_tf, btVector3(cos(TF_axis_angle[index]), 0, sin(TF_axis_angle[index])));
-                        univ->setLowerLimit(MIN_ANGLE_2, 0);
-                        univ->setUpperLimit(MAX_ANGLE_2, 0);
+                        univ->setLowerLimit(m_param.lowerlimit2[index-101], m_param.lowerlimit2_2[index-101]);
+                        univ->setUpperLimit(m_param.upperlimit2[index-101], m_param.upperlimit2_2[index-101]);
+                        //ここuniv->setLowerLimit(MIN_ANGLE_2, 0);
+                        //ここuniv->setUpperLimit(MAX_ANGLE_2, 0);
                         TF_constraint_amp[index] = univ;
                         m_ownerWorld->addConstraint(univ);
                         

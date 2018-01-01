@@ -66,13 +66,13 @@ enum CollisionGroup{
 #define FLEG_WIDTH 5.f
 #define FHEIGHT 3.f
 #define RADIUS 3
-#define LENGTH 4
-#define RADIUS_TF 1
+#define LENGTH 6
+#define RADIUS_TF 3
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
 #define NUM_GROUND 3
 #define NUM_TF_UNIT 4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
-#define DL_TIME 360
+#define DL_TIME 720
 #define THRESH_VEL 5
 #define SIMULATION_TIME_STEP 1200
 
@@ -84,7 +84,7 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
-#define NUM_GENARATION 10
+#define NUM_GENARATION 100
 #define GA 1
 #define VERSION 2
 #define WALL 0
