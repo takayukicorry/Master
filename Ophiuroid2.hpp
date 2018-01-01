@@ -46,6 +46,7 @@ private:
     btScalar ang_body_part[NUM_LEGS+1];
     int firstBody_mindex;
     btVector3 firstBody_pos;
+    bool futto;
     
 public:
     Ophiuroid2(GAparameter);
@@ -69,7 +70,7 @@ public:
     void fixArmState();
     void checkStay();
     float evalue();
-
+    void futtobi();
 };
 
 #endif /* Ophiuroid2_hpp */

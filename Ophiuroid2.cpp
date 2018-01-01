@@ -14,8 +14,10 @@ Ophiuroid2::Ophiuroid2(GAparameter p) {
     ///  create() で変数は初期化される  ///
     ///////////////////////////////////
     stay = true;
+    futto = true;
     m_param = p;
     m_time_step = 0;
+    className = 2;
 }
 
 Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
@@ -23,8 +25,10 @@ Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
     ///  create() で変数は初期化される  ///
     ///////////////////////////////////
     stay = true;
+    futto = true;
     m_param = p;
     m_time_step = 0;
+    className = 2;
     m_bodies = sf->m_bodies;
     m_shapes = sf->m_shapes;
     m_joints_hip = sf->m_joints_hip;
@@ -36,13 +40,19 @@ Ophiuroid2::Ophiuroid2(GAparameter p, Starfish* sf) {
 void Ophiuroid2::idle() {
     m_time_step++;
     
-    ContactAction();
+    if (futto) {
+        ContactAction();
+        checkLightPattern();
+        setDirection();
+        ControllTubeFeet();
+        deleteTF();
+        checkStay();
+    }
+    if (m_time_step==100) {
+        futtobi();
+    }
     glutPostRedisplay();
-    checkLightPattern();
-    //ここsetDirection();
-    ControllTubeFeet();
-    deleteTF();
-    checkStay();
+
 }
 
 void Ophiuroid2::idleDemo() {
@@ -93,7 +103,7 @@ bool Ophiuroid2::checkState() {
     
     btVector3 vY_O = vY - vOrigin;
     
-    return true;//vY_O[1] > -sin(2*M_PI/5);
+    return (kCheck_first) ? (vY_O[1] > -sin(2*M_PI/5) || vOrigin[1] > FBODY_SIZE) : (vY_O[1] < sin(2*M_PI/5));
 }
 
 void Ophiuroid2::initSF() {
@@ -264,10 +274,8 @@ void Ophiuroid2::create() {
             bodies_amp.push_back(body_amp);
             //tf - amp (constraint)
             btUniversalConstraint* univ = new btUniversalConstraint(*body_amp, *body_tf, pos_amp, btVector3(0, 1, 0), btVector3(0, 0, 1));//global
-            //ここuniv->setLowerLimit(m_param.lowerlimit2[index-101], m_param.lowerlimit2_2[index-101]);
-            //ここuniv->setUpperLimit(m_param.upperlimit2[index-101], m_param.upperlimit2_2[index-101]);
-            univ->setLowerLimit(m_param.lowerlimit2[index-101], MIN_ANGLE2_2);
-            univ->setUpperLimit(m_param.upperlimit2[index-101], MAX_ANGLE2_2);
+            univ->setLowerLimit(m_param.lowerlimit2[index-101], m_param.lowerlimit2_2[index-101]);
+            univ->setUpperLimit(m_param.upperlimit2[index-101], m_param.upperlimit2_2[index-101]);
             
             TF_constraint_amp[index] = univ;
             constraints.push_back(univ);
@@ -1118,4 +1126,22 @@ void Ophiuroid2::fixArmState() {
 
 void Ophiuroid2::checkStay() {
     
+}
+
+void Ophiuroid2::futtobi() {
+    stay = false;
+    futto = false;
+    drawTF = false;
+    
+    std::map<int, bool> by;
+    btScalar m_0 = m_bodies[0]->getCenterOfMassPosition()[0];
+    for (int i = 0; i < NUM_LEGS; i++) {
+        if (m_0 > m_bodies[i*(NUM_JOINT+1)]->getCenterOfMassPosition()[0]) {
+            by[i*(NUM_JOINT+1)] = true;
+        }
+    }
+    
+    for (auto itr = by.begin(); itr != by.end(); ++itr) {
+        m_bodies[itr->first]->applyImpulse(btVector3(0, 220, 0), btVector3(0, 0, 0));
+    }
 }

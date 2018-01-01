@@ -14,6 +14,7 @@ int main (int argc, char** argv) {
     GAmanager manager = *new GAmanager(2);//どっちの挙動のGAやるか
     Starfish* oph = new Ophiuroid(manager.pool[0]);
     Starfish* oph2 = new Ophiuroid2(manager.pool[0]);
+    oph2->kCheck_first = true;//先
     Master master = *new Master();//世界観作成
     
 #if 1

@@ -15,6 +15,7 @@ Ophiuroid::Ophiuroid(GAparameter p) {
     }
     m_param = p;
     m_time_step = 0;
+    className = 1;
 }
 
 Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
@@ -24,6 +25,7 @@ Ophiuroid::Ophiuroid(GAparameter p, Starfish* sf) {
     }
     m_param = p;
     m_time_step = 0;
+    className = 1;
 
     m_bodies = sf->m_bodies;
     m_shapes = sf->m_shapes;
@@ -83,7 +85,7 @@ bool Ophiuroid::checkState() {
     
     btVector3 vY_O = vY - vOrigin;
 
-    return vY_O[1] > -sin(2*M_PI/5);
+    return (kCheck_first) ? (vY_O[1] > -sin(2*M_PI/5)) : (vY_O[1] < sin(2*M_PI/5));
 }
 
 void Ophiuroid::initSF() {

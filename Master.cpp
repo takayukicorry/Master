@@ -7,6 +7,7 @@
 //
 
 #include "Master.hpp"
+#include <cxxabi.h>
 
 /*色など*/
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
@@ -132,7 +133,7 @@ void Master::Render() {
             int index = body->getUserIndex();
             if (!starfish->drawTF && index>=100) continue;
             if (index==0) continue;
-            if (10 <= index && index < 100) continue;
+            //if (10 <= index && index < 100) continue;
 
             btVector3 pos = body->getCenterOfMassPosition();
             int shape = body->getCollisionShape()->getShapeType();
@@ -301,11 +302,12 @@ void Master::checkStarfish() {
     if (!starfish->checkState()) {
         CleanupStarfish();
         Starfish* oph;
-        if (!strcmp("Ophiuroid2",typeid(starfish).name())) {
+        if (starfish->className == 2) {
             oph = new Ophiuroid(m_param, starfish);
         } else {
             oph= new Ophiuroid2(m_param, starfish);
         }
+        oph->kCheck_first = !starfish->kCheck_first;
         setStarfish(oph);
         starfish->create();
     }
@@ -331,5 +333,5 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(-20,100,150, -20, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-20,200,250, -20, 0, 0.0, 0.0, 1.0, 0.0);
 }

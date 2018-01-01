@@ -22,6 +22,8 @@ public:
     btDynamicsWorld* m_ownerWorld;
     bool drawTF = true;
     int m_time_step;
+    bool kCheck_first;
+    int className;
 
     virtual void idle() = 0;
     virtual bool checkState() = 0;

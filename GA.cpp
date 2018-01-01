@@ -47,10 +47,10 @@ GAparameter GAmanager::Adam() {
     
     for (int i = 0; i<ARRAY_LENGTH_2; i++)
     {
-        param.upperlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
-        param.lowerlimit2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE_2 - MIN_ANGLE_2) + MIN_ANGLE_2;
-        param.upperlimit2_2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE2_2 - MIN_ANGLE2_2) + MIN_ANGLE2_2;
-        param.lowerlimit2_2[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE2_2 - MIN_ANGLE2_2) + MIN_ANGLE2_2;
+        param.upperlimit2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE_2;
+        param.lowerlimit2[i] = ((rand()%1000)/1000.0)*MIN_ANGLE_2;
+        param.upperlimit2_2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE2_2;
+        param.lowerlimit2_2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE2_2;
         param.targetpercent2[i] = 0;//(rand()%1000)/1000.0;
         
         while(param.upperlimit2_2[i] < param.lowerlimit2_2[i])
