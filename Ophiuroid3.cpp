@@ -53,7 +53,7 @@ void Ophiuroid3::motor() {
             //
             //handle
             //
-            btScalar angleY = motor_tY[index]->m_currentPosition;
+            btScalar angleY = motor_tX[index]->m_currentPosition;
             btScalar angle_target;
             if (TF_axis_direction[index][0] == 0) {
                 if (TF_axis_direction[index][2] < 0) {
@@ -66,7 +66,7 @@ void Ophiuroid3::motor() {
             } else {
                 angle_target = atan(TF_axis_direction[index][2]/TF_axis_direction[index][0]);
             }
-            motor_tY[index]->m_targetVelocity = (angle_target - angleY)/10;
+            motor_tX[index]->m_targetVelocity = (angle_target - angleY)/10;
             //
             //wheel
             //
@@ -76,11 +76,11 @@ void Ophiuroid3::motor() {
                 motor->m_targetVelocity = ANGLE_VELOCITY_TF;
             }
             
-            if (angleZ > M_PI_4-0.1) {
+            if (angleZ > M_PI_2+ANGLE-0.1) {
                 motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
             } else if (angleZ < 0) {
                 TF_object[index]->setFriction(0);
-                if (angleZ < ANGLE_DETACH+0.1) {
+                if (angleZ < M_PI_2+ANGLE_DETACH+0.1) {
                     motor->m_targetVelocity = ANGLE_VELOCITY_TF;
                     motor->m_maxMotorForce = 100000000;
                 }
@@ -112,7 +112,7 @@ void Ophiuroid3::contact() {
         int obIDB = obB->getUserIndex();
 
         //when a tubefeet attach ground
-        if ((10 < obIDA && obIDA < 100) || (10 < obIDB && obIDB < 100)) {
+        if ((10 <= obIDA && obIDA < 100) || (10 <= obIDB && obIDB < 100)) {
             break;
         }
         
@@ -145,10 +145,15 @@ void Ophiuroid3::contact() {
                     dl_time[obIDC] = m_time_step + DL_TIME;
                     //change motor state
                     motor_state[obIDC] = false;
-                    motor_tY[obIDC]->m_enableMotor = false;
+                    motor_tX[obIDC]->m_enableMotor = false;
                     motor_tZ[obIDC]->m_enableMotor = false;
                     //create tf - ground constraint
                     btUniversalConstraint* univ = new btUniversalConstraint(*bodyG, *bodyC, ptB+btVector3(0,RADIUS_TF,0), btVector3(0,1,0), btVector3(0,0,1));
+                    //*******************************************************
+                    //*******************************************************
+                    //*******************************************************
+                    //*******************************************************
+                    //ここ。groundとの拘束の第二にの軸方向は、tfのシリンダーの円柱垂線の地面投影に対して直角。transform使って求める。
                     univ->setLowerLimit(-M_PI, 0);
                     univ->setUpperLimit(M_PI, 0);
                     TF_constraint_ground[obIDC] = univ;
@@ -319,7 +324,7 @@ void Ophiuroid3::create() {
     btScalar scale[] = {btScalar(RADIUS_TF), btScalar(LENGTH)};
     btScalar dis_tf = FLEG_LENGTH/(btScalar)(NUM_TF_UNIT / 2 - 1);
     btVector3 pos_tf, pos_body;
-    btTransform tA, tB, tBody, tTF;
+    btTransform tA, tB, tBody, tTF_rel, tTF;
     pos_body = btVector3(0,FHEIGHT,0);
     
     int col, row, num;
@@ -328,18 +333,18 @@ void Ophiuroid3::create() {
         row = (i / 2) % (NUM_TF_UNIT / 2);
         num = i / NUM_TF_UNIT;
         
+        tTF_rel.setIdentity();
+        tTF_rel.setOrigin(btVector3(-RADIUS_TF-LENGTH/2.0, FLEG_LENGTH/2.0-dis_tf*row, pow(-1, col) * FLEG_WIDTH/2.0));
+        tTF_rel.setRotation(btQuaternion(btVector3(0,0,1), -M_PI_2));
         
-        tTF.setIdentity();
-        tTF.setOrigin(btVector3(-RADIUS_TF-LENGTH/2.0,,));
-        
-        pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
         for (int j = 1; j <= NUM_LEGS; j++) {
             int index = 100 + NUM_LEGS * i + j;
             int m_num = 2+num+(NUM_JOINT+1)*(j-1);
             tBody = m_bodies[m_num]->getWorldTransform();
+            tTF = tBody*tTF_rel;
             
             //body
-            btRigidBody* body_tf = initTubefeet(scale, pos_tf);
+            btRigidBody* body_tf = initTubefeet(scale, tTF);
             body_tf->setUserIndex(index);
             bodies_tf.push_back(body_tf);
             TF_Contact[index] = false;
@@ -349,9 +354,9 @@ void Ophiuroid3::create() {
             Init_tf[index] = false;
             //constraint
             tA.setIdentity(); tB.setIdentity();
-            tA.setOrigin(pos_tf-pos_body+btVector3(0,RADIUS_TF+LENGTH/2.0,0));
+            tA.setOrigin(tTF_rel.getOrigin()+btVector3(RADIUS_TF+LENGTH/2.0,0,0));
             tB.setOrigin(btVector3(0,RADIUS_TF+LENGTH/2.0,0));
-            btGeneric6DofSpringConstraint* spring = new btGeneric6DofSpringConstraint(*m_bodies[0], *body_tf,tA,tB,true);
+            btGeneric6DofSpringConstraint* spring = new btGeneric6DofSpringConstraint(*m_bodies[m_num], *body_tf,tA,tB,true);
             setSpring(spring, index);
             //for next
             pos_tf = RotateY(pos_tf, M_PI*2/5);
@@ -375,26 +380,26 @@ void Ophiuroid3::setSpring(btGeneric6DofSpringConstraint* spring, int index) {
     spring->setStiffness(0, 10.f);
     spring->setStiffness(1, 10.f);
     spring->setLinearLowerLimit(btVector3(-2,-2,0));
-    spring->setLinearUpperLimit(btVector3(2,0,0));
-    spring->setAngularLowerLimit(btVector3(0,0,-M_PI/3));
-    spring->setAngularUpperLimit(btVector3(0,0,M_PI/3));
+    spring->setLinearUpperLimit(btVector3(0,2,0));
+    spring->setAngularLowerLimit(btVector3(-M_PI,0,M_PI-M_PI/3));
+    spring->setAngularUpperLimit(btVector3(M_PI,0,M_PI+M_PI/3));
     TF_constraint[index] = spring;
     constraints.push_back(spring);
     //motor
-    btRotationalLimitMotor* motorRotY = spring->getRotationalLimitMotor(1);
+    btRotationalLimitMotor* motorRotX = spring->getRotationalLimitMotor(0);
     btRotationalLimitMotor* motorRotZ = spring->getRotationalLimitMotor(2);
-    motorRotY->m_enableMotor = true;
-    motorRotY->m_targetVelocity = 0;
-    motorRotY->m_maxMotorForce = 100000000;
+    motorRotX->m_enableMotor = true;
+    motorRotX->m_targetVelocity = 0;
+    motorRotX->m_maxMotorForce = 100000000;
     motorRotZ->m_enableMotor = true;
     motorRotZ->m_targetVelocity = 0;
     motorRotZ->m_maxMotorForce = 100000000;
-    motor_tY[index] = motorRotY;
+    motor_tX[index] = motorRotX;
     motor_tZ[index] = motorRotZ;
     motor_state[index] = true;
 }
 
-btRigidBody* Ophiuroid3::initTubefeet(btScalar* scale, const btVector3 position)
+btRigidBody* Ophiuroid3::initTubefeet(btScalar* scale, const btTransform &startTransform)
 {
     btCollisionShape* sBodyShape = new btCapsuleShape(scale[0], scale[1]);
     
@@ -405,11 +410,7 @@ btRigidBody* Ophiuroid3::initTubefeet(btScalar* scale, const btVector3 position)
     if (isDynamic)
         sBodyShape->calculateLocalInertia(mass1, localInertia1);
     
-    btTransform sBodyTransform;
-    sBodyTransform.setIdentity();
-    sBodyTransform.setOrigin(position);
-    btDefaultMotionState* myMotionState1 = new btDefaultMotionState(sBodyTransform);
-    
+    btDefaultMotionState* myMotionState1 = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
     btRigidBody* body = new btRigidBody(rbInfo);
     

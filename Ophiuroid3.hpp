@@ -17,7 +17,7 @@
 class Ophiuroid3 : public Starfish {
     
 private:
-    std::map<int, btRotationalLimitMotor* > motor_tY;
+    std::map<int, btRotationalLimitMotor* > motor_tX;
     std::map<int, btRotationalLimitMotor* > motor_tZ;
     std::map<int, btRotationalLimitMotor* > motor_to_groundY;
     std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
@@ -46,8 +46,7 @@ public:
     void motor();
     void contact();
     void setSpring(btGeneric6DofSpringConstraint*, int);
-    btRigidBody* initAmp(btScalar, const btVector3);
-    btRigidBody* initTubefeet(btScalar*, const btVector3);
+    btRigidBody* initTubefeet(btScalar*, const btTransform&);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
 };
 
