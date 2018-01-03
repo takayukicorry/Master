@@ -11,6 +11,7 @@
 
 #include "Ophiuroid.hpp"
 #include "Ophiuroid2.hpp"
+#include "Ophiuroid3.hpp"
 
 
 class Master {

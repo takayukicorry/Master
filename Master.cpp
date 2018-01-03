@@ -37,16 +37,28 @@ GLfloat shininess = 30.0;
 
 void glutSolidCylinder(btScalar radius, btScalar halfheight, int num)
 {
-    glBegin(GL_POLYGON);
-    
+    glBegin(GL_QUADS);
     for (int i = 0; i < num; i++) {
+        glNormal3d(cos((M_PI*2/num)*(i+0.5)), 0, sin((M_PI*2/num)*(i+0.5)));
         glVertex3d(radius * cos((M_PI*2/num)*i), halfheight, radius * sin((M_PI*2/num)*i));
         glVertex3d(radius * cos((M_PI*2/num)*(i+1)), halfheight, radius * sin((M_PI*2/num)*(i+1)));
         glVertex3d(radius * cos((M_PI*2/num)*(i+1)), - halfheight, radius * sin((M_PI*2/num)*(i+1)));
         glVertex3d(radius * cos((M_PI*2/num)*i), - halfheight, radius * sin((M_PI*2/num)*i));
-        
     }
+    glEnd();
     
+    glBegin(GL_POLYGON);
+    glNormal3d(0, 1, 0);
+    for (int i = 0; i < num; i++) {
+        glVertex3d(radius * cos((M_PI*2/num)*i), halfheight, radius * sin((M_PI*2/num)*i));
+    }
+    glEnd();
+    
+    glBegin(GL_POLYGON);
+    glNormal3d(0, -1, 0);
+    for (int i = 0; i < num; i++) {
+        glVertex3d(radius * cos((M_PI*2/num)*i), -halfheight, radius * sin((M_PI*2/num)*i));
+    }
     glEnd();
 }
 
@@ -192,10 +204,10 @@ void Master::Render() {
             else if (shape == CYLINDER_SHAPE_PROXYTYPE)
             {
                 glScaled(halfExtent[0], halfExtent[1], halfExtent[2]);
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
-                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ms_ruby.ambient);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ms_ruby.diffuse);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ms_ruby.specular);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &ms_ruby.shininess);
                 glutSolidCylinder(1, 1, 10);
             }
             glPopMatrix();
@@ -345,5 +357,5 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(-20,200,250, -20, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(0,50,50, 0, 0, 0.0, 0.0, 1.0, 0.0);
 }

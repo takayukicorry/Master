@@ -25,6 +25,7 @@ int main (int argc, char** argv) {
     
     Ss[1] = new Ophiuroid(manager.pool[0]);
     Ss[2] = new Ophiuroid2(manager.pool[0]);
+    Ss[3] = new Ophiuroid3(manager.pool[0]);
     Ss[VERSION]->kCheck_first = true;
     
     master.setStarfish(Ss[VERSION]);

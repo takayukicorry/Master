@@ -38,8 +38,6 @@ Ophiuroid2::Ophiuroid2(Starfish* sf) {
 }
 
 void Ophiuroid2::idle() {
-    m_time_step++;
-    
     if (futto) {
         ContactAction();
         checkLightPattern();

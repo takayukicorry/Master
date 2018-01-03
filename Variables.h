@@ -52,14 +52,11 @@ enum CollisionGroup{
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
 #define M_OBJ 0.5
+#define M_TF 1
 
 #define FPS 60.f
 #define RADIAN 180/M_PI
 #define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
-
-#define M_BODY 2
-#define M_ARM 1
-#define M_TF 1
 
 #define FBODY_SIZE 7.5f
 #define FLEG_LENGTH 22.5f/NUM_JOINT
@@ -85,8 +82,8 @@ enum CollisionGroup{
 
 //*******************************//
 #define NUM_GENARATION 100
-#define GA 1
-#define VERSION 2
+#define GA 0
+#define VERSION 3
 #define WALL 0
 //*******************************//
 #endif
