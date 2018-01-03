@@ -16,6 +16,12 @@
 
 class Ophiuroid3 : public Starfish {
     
+private:
+    std::map<int, btRotationalLimitMotor* > motor_tY;
+    std::map<int, btRotationalLimitMotor* > motor_tZ;
+    std::map<int, btTranslationalLimitMotor* > motor_tran;
+    std::map<int, btRotationalLimitMotor* > motor_to_groundY;
+    std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
 public:
     Ophiuroid3(GAparameter);
     
@@ -24,6 +30,9 @@ public:
     void idle();
     void idleDemo();
     bool checkState();
+    void motor();
+    void contact();
+    btRigidBody* initTubefeet(btScalar*, const btVector3);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
 };
 

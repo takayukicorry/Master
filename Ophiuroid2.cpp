@@ -38,6 +38,8 @@ Ophiuroid2::Ophiuroid2(Starfish* sf) {
 }
 
 void Ophiuroid2::idle() {
+    m_time_step++;
+    
     if (futto) {
         ContactAction();
         checkLightPattern();
@@ -346,8 +348,6 @@ btRigidBody* Ophiuroid2::initAmp(btScalar scale, const btVector3 position)
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
     
-    body->setActivationState(DISABLE_DEACTIVATION);
-    
     return  body;
 }
 
@@ -369,8 +369,6 @@ btRigidBody* Ophiuroid2::initTubefeet(btScalar* scale, const btVector3 position)
     
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass1, myMotionState1, sBodyShape, localInertia1);
     btRigidBody* body = new btRigidBody(rbInfo);
-    
-    body->setActivationState(DISABLE_DEACTIVATION);
     
     return body;
 }

@@ -155,7 +155,7 @@ void Master::Render() {
 
             glPushMatrix();
             if ( 10 <= index && index < 100) {
-                glTranslatef(pos[0]+2, pos[1]+2, pos[2]);
+                glTranslatef(pos[0], pos[1], pos[2]);
             } else {
                 glTranslatef(pos[0], pos[1], pos[2]);
             }
@@ -281,7 +281,7 @@ void Master::createGround() {
     for (int i = 0; i < NUM_GROUND; i++) {
         for (int j = 0; j < NUM_GROUND; j++) {
             groundTransform.setIdentity();
-            groundTransform.setOrigin(btVector3((NUM_GROUND-1-i*2)*gShape[0], -gShape[1], (NUM_GROUND-1-j*2)*gShape[2]));
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-i*2)*gShape[0], -gShape[1]-10, (NUM_GROUND-1-j*2)*gShape[2]));
             
             btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
             btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
@@ -294,7 +294,7 @@ void Master::createGround() {
     }
     if (WALL) {
         groundTransform.setIdentity();
-        groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1], (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
+        groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1]-10, (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
         
         btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
         btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
@@ -357,5 +357,5 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(0,50,50, 0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(0,20,100, 0, 0, 0.0, 0.0, 1.0, 0.0);
 }
