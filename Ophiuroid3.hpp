@@ -30,7 +30,8 @@ private:
     std::map<int, btGeneric6DofSpringConstraint*> TF_constraint;
     std::map<int, btUniversalConstraint*> TF_constraint_ground;
     std::map<int, btVector3> TF_axis_direction;
-    
+    std::map<int, btVector3> TF_pos;
+
     std::vector<btRigidBody* > bodies_tf;
     std::vector<btTypedConstraint* > constraints;
 

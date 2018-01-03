@@ -67,7 +67,7 @@ enum CollisionGroup{
 #define RADIUS_TF 1
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
 #define NUM_GROUND 3
-#define NUM_TF_UNIT 4
+#define NUM_TF_UNIT 4//>=4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
 #define DL_TIME 720
 #define THRESH_VEL 5

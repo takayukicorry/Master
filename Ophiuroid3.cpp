@@ -7,6 +7,7 @@
 //
 
 #include "Ophiuroid3.hpp"
+#include "Utils.hpp"
 
 Ophiuroid3::Ophiuroid3(GAparameter p) {
     m_param = p;
@@ -316,31 +317,45 @@ void Ophiuroid3::create() {
     std::uniform_int_distribution<> rand100(0, 99);
     
     btScalar scale[] = {btScalar(RADIUS_TF), btScalar(LENGTH)};
+    btScalar dis_tf = FLEG_LENGTH/(btScalar)(NUM_TF_UNIT / 2 - 1);
     btVector3 pos_tf, pos_body;
-    btTransform tA, tB;
+    btTransform tA, tB, tBody, tTF;
     pos_body = btVector3(0,FHEIGHT,0);
     
-    int col, row;
+    int col, row, num;
     for (int i = 0; i < NUM_TF; i++) {
-        col = i/3;
-        row = i%3;
-        int index = 100+i;
-        //body
-        pos_tf = btVector3((col-1)*F_SIZE/2.0,FHEIGHT-FLEG_SIZE_WIDTH/2.0-RADIUS_TF-LENGTH/2.0,(row-1)*F_SIZE/2.0);
-        btRigidBody* body_tf = initTubefeet(scale, pos_tf);
-        body_tf->setUserIndex(100+i);
-        bodies_tf.push_back(body_tf);
-        TF_Contact[index] = false;
-        TF_axis_direction[index] = btVector3(0, 0, 1);
-        InitTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
-        TF_object[index] = body_tf;
-        Init_tf[index] = false;
-        //constraint
-        tA.setIdentity(); tB.setIdentity();
-        tA.setOrigin(pos_tf-pos_body+btVector3(0,RADIUS_TF+LENGTH/2.0,0));
-        tB.setOrigin(btVector3(0,RADIUS_TF+LENGTH/2.0,0));
-        btGeneric6DofSpringConstraint* spring = new btGeneric6DofSpringConstraint(*m_bodies[0], *body_tf,tA,tB,true);
-        setSpring(spring, index);
+        col = i % 2;
+        row = (i / 2) % (NUM_TF_UNIT / 2);
+        num = i / NUM_TF_UNIT;
+        
+        
+        tTF.setIdentity();
+        tTF.setOrigin(btVector3(-RADIUS_TF-LENGTH/2.0,,));
+        
+        pos_tf = btVector3(FBODY_SIZE+FLEG_WIDTH*2+(1+row*2)*(FLEG_LENGTH+FLEG_WIDTH*2)/(2+2*(NUM_TF_UNIT/2-1)), INIT_POS_Y-(RADIUS_TF*2+LENGTH/2), pow(-1, col) * RADIUS_TF * 2);
+        for (int j = 1; j <= NUM_LEGS; j++) {
+            int index = 100 + NUM_LEGS * i + j;
+            int m_num = 2+num+(NUM_JOINT+1)*(j-1);
+            tBody = m_bodies[m_num]->getWorldTransform();
+            
+            //body
+            btRigidBody* body_tf = initTubefeet(scale, pos_tf);
+            body_tf->setUserIndex(index);
+            bodies_tf.push_back(body_tf);
+            TF_Contact[index] = false;
+            TF_axis_direction[index] = btVector3(0, 0, 1);
+            InitTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
+            TF_object[index] = body_tf;
+            Init_tf[index] = false;
+            //constraint
+            tA.setIdentity(); tB.setIdentity();
+            tA.setOrigin(pos_tf-pos_body+btVector3(0,RADIUS_TF+LENGTH/2.0,0));
+            tB.setOrigin(btVector3(0,RADIUS_TF+LENGTH/2.0,0));
+            btGeneric6DofSpringConstraint* spring = new btGeneric6DofSpringConstraint(*m_bodies[0], *body_tf,tA,tB,true);
+            setSpring(spring, index);
+            //for next
+            pos_tf = RotateY(pos_tf, M_PI*2/5);
+        }
     }
     
     for (int i = 0; i < bodies_tf.size(); i++) {
@@ -360,7 +375,7 @@ void Ophiuroid3::setSpring(btGeneric6DofSpringConstraint* spring, int index) {
     spring->setStiffness(0, 10.f);
     spring->setStiffness(1, 10.f);
     spring->setLinearLowerLimit(btVector3(-2,-2,0));
-    spring->setLinearUpperLimit(btVector3(2,2,0));
+    spring->setLinearUpperLimit(btVector3(2,0,0));
     spring->setAngularLowerLimit(btVector3(0,0,-M_PI/3));
     spring->setAngularUpperLimit(btVector3(0,0,M_PI/3));
     TF_constraint[index] = spring;
