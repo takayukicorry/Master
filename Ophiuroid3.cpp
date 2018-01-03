@@ -35,11 +35,122 @@ bool Ophiuroid3::checkState() {
 }
 
 void Ophiuroid3::motor() {
+    for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
+        int index = itr->first;
+        if (motor_state[index]) {
+            btRotationalLimitMotor* motor = itr->second;
+
+            if (motor->m_targetVelocity == 0) {
+                motor->m_targetVelocity = ANGLE_VELOCITY_TF;
+            }
+            
+            btScalar angle = motor->m_currentPosition;
+            if (angle > ANGLE-0.1) {
+                motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
+            } else if (angle < -(ANGLE-0.1)) {
+                motor->m_targetVelocity = ANGLE_VELOCITY_TF;
+            }
+        }
+    }
     
+    for (auto itr = motor_to_groundZ.begin(); itr != motor_to_groundZ.end(); ++itr) {
+        btRotationalLimitMotor* motor = itr->second;
+        motor->m_targetVelocity = -ANGLE_VELOCITY_GROUND;
+    }
 }
 
 void Ophiuroid3::contact() {
+    std::vector<int > contacts;
     
+    int numManifolds = m_ownerWorld->getDispatcher()->getNumManifolds();
+    for (int i = 0; i < numManifolds; i++)
+    {
+        btPersistentManifold* contactManifold =  m_ownerWorld->getDispatcher()->getManifoldByIndexInternal(i);
+        const btCollisionObject* obA = contactManifold->getBody0();
+        const btCollisionObject* obB = contactManifold->getBody1();
+        btRigidBody* bodyA = btRigidBody::upcast(const_cast<btCollisionObject *>(obA));
+        btRigidBody* bodyB = btRigidBody::upcast(const_cast<btCollisionObject *>(obB));
+        btRigidBody* bodyC;
+        btRigidBody* bodyG;
+
+        int obIDA = obA->getUserIndex();
+        int obIDB = obB->getUserIndex();
+
+        //when a tubefeet attach ground
+        if (obIDA == 10 || obIDB == 10) {
+            break;
+        }
+        
+        if (0 < obIDA && obIDA <= NUM_GROUND*NUM_GROUND) {
+            bodyC = bodyB;
+            bodyG = bodyA;
+        } else if (0 < obIDB && obIDB <= NUM_GROUND*NUM_GROUND) {
+            bodyC = bodyA;
+            bodyG = bodyB;
+        } else {
+            break;
+        }
+        int numContacts = contactManifold->getNumContacts();
+        if (numContacts >= 1) {
+            int k = -1;
+            for (int j = 0; j < numContacts; j++) {
+                btManifoldPoint& pt = contactManifold->getContactPoint(j);
+                if (pt.getDistance() < 0.5f)
+                {
+                    k = j;
+                    break;
+                }
+            }
+            if (k == -1) {
+                break;
+            }
+        
+            btManifoldPoint& pt = contactManifold->getContactPoint(k);
+            const btVector3& ptB = pt.getPositionWorldOnB();
+            int obIDC = bodyC->getUserIndex();
+        
+            if (!TF_Contact[obIDC]) {
+                btScalar angle = motor_tZ[obIDC]->m_currentPosition;
+                if (angle > ANGLE_ATTACH) {
+                    TF_Contact[obIDC] = true;
+                    dl_time[obIDC] = m_time_step + DL_TIME;
+                    //change motor state
+                    motor_state[obIDC] = false;
+                    motor_tY[obIDC]->m_enableMotor = false;
+                    motor_tZ[obIDC]->m_enableMotor = false;
+                    //create tf - ground constraint
+                    btUniversalConstraint* univ = new btUniversalConstraint(*bodyG, *bodyC, ptB+btVector3(0,RADIUS_TF,0), btVector3(0,1,0), btVector3(0,0,1));
+                    univ->setLowerLimit(-M_PI, 0);
+                    univ->setUpperLimit(M_PI, 0);
+                    TF_constraint_ground[obIDC] = univ;
+                    m_ownerWorld->addConstraint(univ);
+                    //create tf - ground motor
+                    btRotationalLimitMotor* motor1 = univ->getRotationalLimitMotor(1);//wheel
+                    btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
+                    motor1->m_enableMotor = true;
+                    motor1->m_targetVelocity = 0;
+                    motor1->m_maxMotorForce = 10;
+                    motor2->m_enableMotor = true;
+                    motor2->m_targetVelocity = 0;
+                    motor2->m_maxMotorForce = 10;
+                    motor_to_groundZ[obIDC] = motor1;
+                    motor_to_groundY[obIDC] = motor2;
+                }
+            } else {
+                btScalar angle = motor_to_groundZ[obIDC]->m_currentPosition;
+                if(angle < ANGLE_DETACH - ANGLE_ATTACH || dl_time[obIDC] < m_time_step) {
+                    //remove tubefeet - ground (constraint & motor)
+                    m_ownerWorld->removeConstraint(TF_constraint_ground[obIDC]);
+                    motor_to_groundY.erase(obIDC);
+                    motor_to_groundZ.erase(obIDC);
+                    TF_Contact[obIDC] = false;
+                    motor_state[obIDC] = true;
+                    //activate tf motor
+                    motor_tZ[obIDC]->m_targetVelocity = ANGLE_VELOCITY_TF;
+                }
+            }
+        }
+    }
 }
 
 btScalar F_SIZE = FBODY_SIZE*2;
@@ -152,6 +263,7 @@ void Ophiuroid3::create() {
         btRigidBody* body_tf = initTubefeet(scale, pos_tf);
         body_tf->setUserIndex(100+i);
         bodies_tf.push_back(body_tf);
+        TF_Contact[index] = false;
         //constraint
         tA.setIdentity(); tB.setIdentity();
         tA.setOrigin(btVector3(pow(-1, col)*F_SIZE/2.0,-FLEG_SIZE_WIDTH/2.0,pow(-1, row)*F_SIZE/2.0));
@@ -168,20 +280,21 @@ void Ophiuroid3::create() {
         spring->setStiffness(2, 1.f);
         spring->setLinearLowerLimit(btVector3(-2,-2,-2));
         spring->setLinearUpperLimit(btVector3(2,2,2));
-        spring->setAngularLowerLimit(btVector3(-M_PI_2,-M_PI,-M_PI_2));
-        spring->setAngularUpperLimit(btVector3(M_PI_2,M_PI,M_PI_2));
+        spring->setAngularLowerLimit(btVector3(0,0,-M_PI/3));
+        spring->setAngularUpperLimit(btVector3(0,0,M_PI/3));
         constraints.push_back(spring);
         //motor
         btRotationalLimitMotor* motorRotY = spring->getRotationalLimitMotor(1);
         btRotationalLimitMotor* motorRotZ = spring->getRotationalLimitMotor(2);
         motorRotY->m_enableMotor = true;
-        motorRotY->m_targetVelocity = M_PI_4;
+        motorRotY->m_targetVelocity = 0;
         motorRotY->m_maxMotorForce = 1;
         motorRotZ->m_enableMotor = true;
-        motorRotZ->m_targetVelocity = M_PI_4;
+        motorRotZ->m_targetVelocity = 0;
         motorRotZ->m_maxMotorForce = 1;
         motor_tY[index] = motorRotY;
         motor_tZ[index] = motorRotZ;
+        motor_state[index] = true;
     }
     
     for (int i = 0; i < bodies_tf.size(); i++) {

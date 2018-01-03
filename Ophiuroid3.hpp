@@ -22,6 +22,11 @@ private:
     std::map<int, btTranslationalLimitMotor* > motor_tran;
     std::map<int, btRotationalLimitMotor* > motor_to_groundY;
     std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
+    std::map<int, bool > motor_state;
+    std::map<int, bool > TF_Contact;
+    std::map<int, int > dl_time;
+    std::map<int, btTypedConstraint*> TF_constraint_ground;
+
 public:
     Ophiuroid3(GAparameter);
     
