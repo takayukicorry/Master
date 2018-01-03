@@ -182,41 +182,66 @@ void Ophiuroid3::contact() {
     }
 }
 
-btScalar F_SIZE = FBODY_SIZE*4;
+btScalar F_SIZE = FBODY_SIZE;
 btScalar FLEG_SIZE = F_SIZE/2.0;
-btScalar FLEG_SIZE_WIDTH = FLEG_WIDTH/5.0;
+btScalar FLEG_SIZE_WIDTH = FLEG_WIDTH;
 
 void Ophiuroid3::initSF() {
     m_ownerWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
 
-    m_shapes[0] = new btCylinderShape(btVector3(F_SIZE,FLEG_SIZE_WIDTH,F_SIZE));
-    int i, j;
-    for (i = 0; i < NUM_LEGS; i++) {
-        for (j = 1; j <= NUM_JOINT; j++) {
-            m_shapes[NUM_JOINT*i+j] = new btCylinderShape(btVector3(FLEG_SIZE,FLEG_SIZE_WIDTH,FLEG_SIZE));
+    m_shapes[0] = new btCylinderShape(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE));
+    int i;
+    
+    for ( i=0; i<NUM_LEGS; i++)
+    {
+        m_shapes[1 + (NUM_JOINT+1)*i] = new btSphereShape(FLEG_WIDTH);
+        for (int k = 1; k <= NUM_JOINT; k++)
+        {
+            m_shapes[k + 1 + (NUM_JOINT+1)*i] = new btCapsuleShape(btScalar(FLEG_WIDTH), btScalar(FLEG_LENGTH));
         }
     }
     //
     // Setup rigid bodies
     //
-    btTransform transform;
     // root
+    float alpha = 37*M_PI/36;
+    float theta = M_PI - alpha;
+    
+    btVector3 vRoot = btVector3(btScalar(0.), btScalar(FHEIGHT), btScalar(0.));
+    btTransform transform, transformY, transformS, transformSY;
     transform.setIdentity();
-    transform.setOrigin(btVector3(btScalar(0.), btScalar(FHEIGHT), btScalar(0.)));
+    transform.setOrigin(vRoot);
     m_bodies[0] = createRigidBody(btScalar(M_OBJ), transform, m_shapes[0], 10);
+    
     // legs
-    for (i = 0; i < NUM_LEGS; i++) {
+    for ( i=0; i<NUM_LEGS; i++)
+    {
         float fAngle = 2 * M_PI * i / NUM_LEGS;
-        float fSin = sin(fAngle);
+        float fSin = sin(fAngle);//左ねじの方向に正
         float fCos = cos(fAngle);
-        btVector3 point = btVector3(fCos*(F_SIZE+FLEG_SIZE),FHEIGHT,fSin*(F_SIZE+FLEG_SIZE));
-        for (j = 1; j <= NUM_JOINT; j++) {
+        
+        btVector3 vBoneOrigin = btVector3(btScalar(fCos*(FBODY_SIZE + FLEG_WIDTH + (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*cos(theta))), btScalar(FHEIGHT - (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*sin(theta)), btScalar(fSin*(FBODY_SIZE + FLEG_WIDTH + (0.5*FLEG_LENGTH+2*FLEG_WIDTH)*cos(theta))));
+        btVector3 Point = vBoneOrigin;
+        btVector3 spherePoint = btVector3(btScalar(fCos*(FBODY_SIZE + FLEG_WIDTH)), btScalar(FHEIGHT), btScalar(fSin*(FBODY_SIZE + FLEG_WIDTH)));
+        
+        transformS.setIdentity();
+        transformS.setOrigin(spherePoint);
+        transformS.setRotation(btQuaternion(btVector3(0, 1, 0), -fAngle));//右ねじの方向に正
+        transformSY.setIdentity();
+        transformSY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2));
+        
+        m_bodies[1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transformS*transformSY, m_shapes[1+(NUM_JOINT+1)*i], 10+1+(NUM_JOINT+1)*i);
+        
+        for (int k = 1; k <= NUM_JOINT; k++)
+        {
             transform.setIdentity();
-            transform.setOrigin(point);
-            transform.setRotation(btQuaternion(btVector3(0,1,0),-fAngle));
-            m_bodies[NUM_JOINT*i+j] = createRigidBody(btScalar(M_OBJ), transform, m_shapes[NUM_JOINT*i+j], 10+NUM_JOINT*i+j);
+            transform.setOrigin(Point);
+            transform.setRotation(btQuaternion(btVector3(0, 1, 0), -fAngle));
+            transformY.setIdentity();
+            transformY.setRotation(btQuaternion(btVector3(0, 0, 1), M_PI_2 - theta * k));
             
-            point += btVector3(fCos*2*FLEG_SIZE,0,fSin*2*FLEG_SIZE);
+            m_bodies[k+1+(NUM_JOINT+1)*i] = createRigidBody(btScalar(M_OBJ), transform*transformY, m_shapes[k+1+(NUM_JOINT+1)*i], 10+k+1+(NUM_JOINT+1)*i);
+            Point += btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin(k*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos(k*theta))) + btVector3(btScalar(fCos*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)),btScalar(-(0.5*FLEG_LENGTH+FLEG_WIDTH)*sin((k+1)*theta)),btScalar(fSin*(0.5*FLEG_LENGTH+FLEG_WIDTH)*cos((k+1)*theta)));
         }
     }
     //
@@ -233,47 +258,58 @@ void Ophiuroid3::initSF() {
     //
     // Setup the constraints
     //
-    btVector3 axisA(0, 0, 1);
-    btVector3 axisB(0, 0, 1);
-    btVector3 pivotA(FLEG_SIZE,0,0);
-    btVector3 pivotB(-FLEG_SIZE,0,0);
-    for ( i=0; i<NUM_LEGS; i++) {
+    btTransform localA, localB, localC, jP, objP;
+    
+    for ( i=0; i<NUM_LEGS; i++)
+    {
         float fAngle = 2 * M_PI * i / NUM_LEGS;
         float fSin = sin(fAngle);
         float fCos = cos(fAngle);
+        
         // hip joints
-        btVector3 parentAxis( fCos, 0, fSin);
-        btVector3 childAxis( fSin, 0, -fCos);
-        btVector3 anchor( fCos*F_SIZE, FHEIGHT, fSin*F_SIZE);
-        btUniversalConstraint* univ = new btUniversalConstraint(*m_bodies[0],*m_bodies[NUM_JOINT*i+1],anchor,parentAxis,childAxis);
-        univ->setLowerLimit(-M_PI_2, -M_PI_2);
-        univ->setUpperLimit(M_PI_2, M_PI_2);
-        univ->setLinearLowerLimit(btVector3(0,0,0));
-        univ->setLinearUpperLimit(btVector3(0,0,0));
-        m_joints_hip[i] = univ;
+        btVector3 parentAxis( fCos, 0, fSin);//第一ジョイント回転軸１（ワールド座標）-->ローカルz軸(handle)
+        btVector3 childAxis( fSin, 0, -fCos);//第一ジョイント回転軸２（ワールド座標）-->ローカルy軸(wheel)
+        btVector3 anchor( fCos*(FBODY_SIZE+FLEG_WIDTH), FHEIGHT, fSin*(FBODY_SIZE+FLEG_WIDTH));//上の２軸の交点（ワールド座標）
+        
+        btUniversalConstraint* hinge2C = new btUniversalConstraint(*m_bodies[0], *m_bodies[1+(NUM_JOINT+1)*i], anchor, parentAxis, childAxis);
+        hinge2C->setLinearLowerLimit(btVector3(0,0,0));
+        hinge2C->setLinearUpperLimit(btVector3(0,0,0));
+        hinge2C->setLowerLimit(-M_PI_2, -M_PI_2);//(wheel, handle)右ねじ
+        hinge2C->setUpperLimit(M_PI_2, M_PI_2);
+        hinge2C->setUserConstraintId(10);
+        m_joints_hip[i] = hinge2C;
         m_ownerWorld->addConstraint(m_joints_hip[i], true);
-
+        
         const int AXIS1_ID = 2;
         const int AXIS2_ID = 1;
-        m_motor1[i] = univ->getRotationalLimitMotor(AXIS1_ID);
-        m_motor2[i] = univ->getRotationalLimitMotor(AXIS2_ID);
+        m_motor1[i] = hinge2C->getRotationalLimitMotor(AXIS1_ID);
+        m_motor2[i] = hinge2C->getRotationalLimitMotor(AXIS2_ID);
         m_motor1[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;
         m_motor2[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;
+        
         m_motor1[i]->m_enableMotor = true;
         m_motor2[i]->m_enableMotor = true;
         
-        //ankle joints
-        for (int j = 1; j < NUM_JOINT; j++) {
-            btHingeConstraint* hin = new btHingeConstraint(*m_bodies[NUM_JOINT*i+j],*m_bodies[NUM_JOINT*i+j+1],pivotA,pivotB,axisA,axisB);
-            hin->setLimit(-M_PI_2, M_PI_2);
-            hin->setUserConstraintId(10);
-            m_joints_ankle[(NUM_JOINT-1)*i+j-1] = hin;
-            m_ownerWorld->addConstraint(m_joints_ankle[(NUM_JOINT-1)*i+j-1], true);
+        for (int k = 1; k <= NUM_JOINT; k++)
+        {
+            btVector3 axisA(0, 0, 1);
+            btVector3 axisB(0, 0, 1);
+            btVector3 pivotA(0, -(FLEG_WIDTH + FLEG_LENGTH/2), 0);
+            btVector3 pivotB(0, FLEG_WIDTH + FLEG_LENGTH/2, 0);
+            if(k==1){pivotA = btVector3(0, 0, 0); pivotB = btVector3(0, FLEG_WIDTH*2 + FLEG_LENGTH/2, 0);}
+            btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
+            
+            //*****************************************joint2->setLimit(m_param.lowerlimit[(NUM_JOINT+2)*i + 1 + k], m_param.upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            joint2->setLimit(-M_PI, M_PI);
+            joint2->setUserConstraintId(10);
+            m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
+            m_ownerWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
         }
     }
 }
 
 void Ophiuroid3::create() {
+    activateTwist(false);
     
     std::random_device rnd;
     std::mt19937 mt(rnd());
@@ -285,7 +321,7 @@ void Ophiuroid3::create() {
     pos_body = btVector3(0,FHEIGHT,0);
     
     int col, row;
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < NUM_TF; i++) {
         col = i/3;
         row = i%3;
         int index = 100+i;
