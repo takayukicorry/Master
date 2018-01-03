@@ -51,7 +51,7 @@ enum CollisionGroup{
 #define THRESHOLD M_PI/3
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 0
+#define M_OBJ 5
 #define M_TF 1
 
 #define FPS 60.f

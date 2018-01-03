@@ -39,7 +39,7 @@ void Ophiuroid3::motor() {
     btVector3 pos_body = tra_body.getOrigin();
     tra_body.setIdentity();
     if (pos_body[1] < FHEIGHT) {
-        pos_body[1] = FHEIGHT;
+        //pos_body[1] = FHEIGHT;
     }
     tra_body.setOrigin(pos_body);
     m_bodies[0]->setCenterOfMassTransform(tra_body);
@@ -172,8 +172,8 @@ void Ophiuroid3::contact() {
                     motor_to_groundY.erase(obIDC);
                     motor_to_groundZ.erase(obIDC);
                     TF_Contact[obIDC] = false;
-                    //change motor state
                     motor_state[obIDC] = true;
+                    //activate tf motor
                     motor_tZ[obIDC]->m_enableMotor = true;
                     motor_tZ[obIDC]->m_targetVelocity = ANGLE_VELOCITY_TF;
                 }
@@ -280,7 +280,7 @@ void Ophiuroid3::create() {
     std::uniform_int_distribution<> rand100(0, 99);
     
     btScalar scale[] = {btScalar(RADIUS_TF), btScalar(LENGTH)};
-    btVector3 pos_tf, pos_amp, pos_body;
+    btVector3 pos_tf, pos_body;
     btTransform tA, tB;
     pos_body = btVector3(0,FHEIGHT,0);
     
@@ -290,13 +290,9 @@ void Ophiuroid3::create() {
         row = i%3;
         int index = 100+i;
         //body
-        pos_amp = btVector3((col-1)*F_SIZE/2.0,FHEIGHT-FLEG_SIZE_WIDTH/2.0-RADIUS_TF,(row-1)*F_SIZE/2.0);
-        pos_tf = btVector3((col-1)*F_SIZE/2.0,FHEIGHT-FLEG_SIZE_WIDTH/2.0-RADIUS_TF*2-LENGTH/2.0,(row-1)*F_SIZE/2.0);
-        btRigidBody* body_amp = initAmp(RADIUS_TF, pos_amp);
+        pos_tf = btVector3((col-1)*F_SIZE/2.0,FHEIGHT-FLEG_SIZE_WIDTH/2.0-RADIUS_TF-LENGTH/2.0,(row-1)*F_SIZE/2.0);
         btRigidBody* body_tf = initTubefeet(scale, pos_tf);
-        body_amp->setUserIndex(100+i);
         body_tf->setUserIndex(100+i);
-        bodies_tf.push_back(body_amp);
         bodies_tf.push_back(body_tf);
         TF_Contact[index] = false;
         TF_axis_direction[index] = btVector3(0, 0, 1);
@@ -305,9 +301,9 @@ void Ophiuroid3::create() {
         Init_tf[index] = false;
         //constraint
         tA.setIdentity(); tB.setIdentity();
-        tA.setOrigin(btVector3(0,-RADIUS_TF,0));
+        tA.setOrigin(pos_tf-pos_body+btVector3(0,RADIUS_TF+LENGTH/2.0,0));
         tB.setOrigin(btVector3(0,RADIUS_TF+LENGTH/2.0,0));
-        btGeneric6DofSpringConstraint* spring = new btGeneric6DofSpringConstraint(*body_amp, *body_tf,tA,tB,true);
+        btGeneric6DofSpringConstraint* spring = new btGeneric6DofSpringConstraint(*m_bodies[0], *body_tf,tA,tB,true);
         setSpring(spring, index);
     }
     
@@ -334,36 +330,17 @@ void Ophiuroid3::setSpring(btGeneric6DofSpringConstraint* spring, int index) {
     TF_constraint[index] = spring;
     constraints.push_back(spring);
     //motor
+    btRotationalLimitMotor* motorRotY = spring->getRotationalLimitMotor(1);
     btRotationalLimitMotor* motorRotZ = spring->getRotationalLimitMotor(2);
+    motorRotY->m_enableMotor = true;
+    motorRotY->m_targetVelocity = 0;
+    motorRotY->m_maxMotorForce = 100000000;
     motorRotZ->m_enableMotor = true;
     motorRotZ->m_targetVelocity = 0;
     motorRotZ->m_maxMotorForce = 100000000;
+    motor_tY[index] = motorRotY;
     motor_tZ[index] = motorRotZ;
     motor_state[index] = true;
-}
-
-btRigidBody* Ophiuroid3::initAmp(btScalar scale, const btVector3 position)
-{
-    btCollisionShape* colShape = new btSphereShape(scale);
-    
-    btTransform startTransform;
-    startTransform.setIdentity();
-    
-    btScalar mass(M_TF);
-    
-    bool isDynamic = (mass != 0.f);
-    
-    btVector3 localInertia(0, 0, 0);
-    if (isDynamic)
-        colShape->calculateLocalInertia(mass, localInertia);
-    
-    startTransform.setOrigin(position);
-    
-    btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-    btRigidBody* body = new btRigidBody(rbInfo);
-    
-    return  body;
 }
 
 btRigidBody* Ophiuroid3::initTubefeet(btScalar* scale, const btVector3 position)
