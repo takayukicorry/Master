@@ -19,13 +19,20 @@ class Ophiuroid3 : public Starfish {
 private:
     std::map<int, btRotationalLimitMotor* > motor_tY;
     std::map<int, btRotationalLimitMotor* > motor_tZ;
-    std::map<int, btTranslationalLimitMotor* > motor_tran;
     std::map<int, btRotationalLimitMotor* > motor_to_groundY;
     std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
     std::map<int, bool > motor_state;
     std::map<int, bool > TF_Contact;
+    std::map<int, btRigidBody* > TF_object;
     std::map<int, int > dl_time;
-    std::map<int, btTypedConstraint*> TF_constraint_ground;
+    std::map<int, int> InitTime_tf;
+    std::map<int, int> Init_tf;
+    std::map<int, btGeneric6DofSpringConstraint*> TF_constraint;
+    std::map<int, btUniversalConstraint*> TF_constraint_ground;
+    std::map<int, btVector3> TF_axis_direction;
+    
+    std::vector<btRigidBody* > bodies_tf;
+    std::vector<btTypedConstraint* > constraints;
 
 public:
     Ophiuroid3(GAparameter);
@@ -37,6 +44,8 @@ public:
     bool checkState();
     void motor();
     void contact();
+    void setSpring(btGeneric6DofSpringConstraint*, int);
+    btRigidBody* initAmp(btScalar, const btVector3);
     btRigidBody* initTubefeet(btScalar*, const btVector3);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
 };
