@@ -24,6 +24,7 @@ private:
     std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
     std::map<int, bool > motor_state;
     std::map<int, bool > TF_Contact;
+    std::map<int, bool > TF_foward;
     std::map<int, btRigidBody* > TF_object;
     std::map<int, int > dl_time;
     std::map<int, int> InitTime_tf;

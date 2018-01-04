@@ -70,7 +70,7 @@ enum CollisionGroup{
 #define NUM_TF_UNIT 8//>=4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
 #define DL_TIME 120
-#define RE_TIME 120
+#define RE_TIME 360
 #define THRESH_VEL 5
 #define SIMULATION_TIME_STEP 1200
 

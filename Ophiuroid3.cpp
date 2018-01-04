@@ -36,14 +36,6 @@ bool Ophiuroid3::checkState() {
 }
 
 void Ophiuroid3::motor() {
-    btTransform tra_body = m_bodies[0]->getWorldTransform();
-    btVector3 pos_body = tra_body.getOrigin();
-    tra_body.setIdentity();
-    if (pos_body[1] < FHEIGHT) {
-        //pos_body[1] = FHEIGHT;
-    }
-    tra_body.setOrigin(pos_body);
-    //m_bodies[0]->setCenterOfMassTransform(tra_body);
     
     for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
         int index = itr->first;
@@ -131,7 +123,7 @@ void Ophiuroid3::contact() {
                 if (pt.getDistance() < 0.5f){k = j;break;}
             }
             if (k == -1) {break;}
-        
+            
             btManifoldPoint& pt = contactManifold->getContactPoint(k);
             const btVector3& ptB = pt.getPositionWorldOnB();
             int obIDC = bodyC->getUserIndex();
@@ -203,7 +195,6 @@ void Ophiuroid3::contact() {
 btScalar F_SIZE = FBODY_SIZE;
 btScalar FLEG_SIZE = F_SIZE/2.0;
 btScalar FLEG_SIZE_WIDTH = FLEG_WIDTH;
-
 
 void Ophiuroid3::setSpring(btGeneric6DofSpringConstraint* spring, int index) {
     spring->enableSpring(0, true);
@@ -434,6 +425,7 @@ void Ophiuroid3::create() {
             TF_object[index] = body_tf;
             TF_object[index]->setFriction(0);
             Init_tf[index] = false;
+            TF_foward[index] = true;
             //constraint
             tA.setIdentity(); tB.setIdentity();
             tA.setOrigin(tTF_rel.getOrigin()+btVector3(RADIUS_TF+LENGTH/2.0,0,0));
