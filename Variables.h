@@ -29,7 +29,7 @@ enum CollisionGroup{
 #define ARRAY_LENGTH (NUM_JOINT+2)*NUM_LEGS
 #define ARRAY_LENGTH_2 NUM_TF*NUM_LEGS
 #define NUM_LEGS 5
-#define CONECT_LENGTH 5
+#define CONECT_LENGTH 2*NUM_LEGS*NUM_LEGS
 #define POOL_SIZE 100
 #define MAX_CYCLE 1000
 #define MIN_CYCLE 300
