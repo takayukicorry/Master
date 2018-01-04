@@ -46,8 +46,10 @@ public:
     void idle();
     void idleDemo();
     bool checkState();
+    void checkLightPattern();
     void motor();
     void contact();
+    void setDirection();
     void setSpring(btGeneric6DofSpringConstraint*, int);
     btRigidBody* initTubefeet(btScalar*, const btTransform&);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);

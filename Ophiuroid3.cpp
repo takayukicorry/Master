@@ -35,6 +35,50 @@ bool Ophiuroid3::checkState() {
     return true;
 }
 
+btVector3 lightSource(-70, 0, 70);
+int lightThresh(170);
+
+void Ophiuroid3::checkLightPattern() {
+    //light_patternの数値 = 各腕の光からの距離に応じた受光量の強さを示す
+    for (int i = 1; i <= NUM_LEGS; i++){
+        btVector3 now = m_bodies[(NUM_JOINT+1)*i]->getCenterOfMassPosition();
+        m_param.light_pattern[i-1] = lightThresh - (int)sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
+        m_param.light_pattern[i-1] = (m_param.light_pattern[i-1] >= 0) ? m_param.light_pattern[i-1] : 0 ;
+    }
+}
+
+void Ophiuroid3::setDirection() {
+    int mid[NUM_LEGS];
+    int out[NUM_LEGS];
+    
+    //中間層
+    for (int i = 0; i<NUM_LEGS; i++){
+        mid[i] = 0;
+        for (int k = 0; k<NUM_LEGS; k++){
+            mid[i] += m_param.light_pattern[k]*m_param.conect[NUM_LEGS*i + k];
+        }
+        
+        if(mid[i] >= 0){
+            mid[i] = 1;
+        }else{
+            mid[i] = 0;
+        }
+    }
+    //出力層
+    for (int i = 0; i<NUM_LEGS; i++){
+        out[i] = 0;
+        for (int k = 0; k<NUM_LEGS; k++){
+            out[i] += mid[k]*m_param.conect[NUM_LEGS*(NUM_LEGS+i) + k];
+        }
+    }
+    //出力値
+    for (int i = 0; i<NUM_LEGS; i++){
+        float a = m_param.a[i];//シグモイド関数のパラメータ
+        float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
+        
+    }
+}
+
 void Ophiuroid3::motor() {
     
     for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
