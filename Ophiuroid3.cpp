@@ -57,7 +57,11 @@ void Ophiuroid3::motor() {
             } else {
                 angle_target = atan(TF_axis_direction[index][2]/TF_axis_direction[index][0]);
             }
+            if (TF_axis_direction[index][0] < 0) {
+                TF_foward[index] = false;
+            }
             motor_tY[index]->m_targetVelocity = (angle_target - angleX)/10;
+            
             //
             //wheel
             //
@@ -69,11 +73,9 @@ void Ophiuroid3::motor() {
             
             if (angleZ > M_PI_2+ANGLE-0.1) {
                 motor->m_targetVelocity = -ANGLE_VELOCITY_TF;
-            } else if (angleZ < 0) {
-                if (angleZ < M_PI_2+ANGLE_DETACH+0.1) {
-                    motor->m_targetVelocity = ANGLE_VELOCITY_TF;
-                    motor->m_maxMotorForce = 100000000;
-                }
+            } else if (angleZ < M_PI_2-(ANGLE-0.1)) {
+                motor->m_targetVelocity = ANGLE_VELOCITY_TF;
+                motor->m_maxMotorForce = 100000000;
             }
         }
     }
@@ -131,8 +133,8 @@ void Ophiuroid3::contact() {
             if (!TF_Contact[obIDC]) {
                 btScalar angle = motor_tZ[obIDC]->m_currentPosition;
                 int percent = rand()%100;
-                if (percent < 5) {
-                    if (angle > ANGLE_ATTACH || ResumeTime_ground[obIDC] < m_time_step) {
+                if (percent < 50) {
+                    if (((angle > ANGLE_ATTACH_Z_foward && TF_foward[obIDC]) || (angle < ANGLE_ATTACH_Z_back && !TF_foward[obIDC])) && ResumeTime_ground[obIDC] < m_time_step) {
                         TF_Contact[obIDC] = true;
                         dl_time[obIDC] = m_time_step + DL_TIME;
                         //change motor state
@@ -185,7 +187,12 @@ void Ophiuroid3::contact() {
                     motor_tX[obIDC]->m_enableMotor = true;
                     motor_tY[obIDC]->m_enableMotor = true;
                     motor_tZ[obIDC]->m_enableMotor = true;
-                    motor_tX[obIDC]->m_targetVelocity = ANGLE_VELOCITY_TF;
+                    if (TF_foward[obIDC]) {
+                        motor_tZ[obIDC]->m_targetVelocity = ANGLE_VELOCITY_TF;
+                    } else {
+                        motor_tZ[obIDC]->m_targetVelocity = -ANGLE_VELOCITY_TF;
+                    }
+                    
                 }
             }
         }

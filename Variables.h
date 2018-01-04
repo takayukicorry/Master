@@ -77,6 +77,8 @@ enum CollisionGroup{
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
 #define ANGLE_ATTACH M_PI/8//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
+#define ANGLE_ATTACH_Z_foward M_PI_2+ANGLE_ATTACH//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
+#define ANGLE_ATTACH_Z_back M_PI_2-ANGLE_ATTACH//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
 #define ANGLE_DETACH -ANGLE/2//管足、地面からの離脱判定角度下限//kannsoku,jimenntonoridatuhannteikakudojougenn
 #define ANGLE_VELOCITY_TF ANGLE*60/SECOND//管足振る角速度//kannsokufurukakusokudo
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
