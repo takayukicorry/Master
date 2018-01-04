@@ -51,7 +51,7 @@ enum CollisionGroup{
 #define THRESHOLD M_PI/3
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 5
+#define M_OBJ 1
 #define M_TF 1
 
 #define FPS 60.f
@@ -70,6 +70,7 @@ enum CollisionGroup{
 #define NUM_TF_UNIT 4//>=4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
 #define DL_TIME 720
+#define RE_TIME 60
 #define THRESH_VEL 5
 #define SIMULATION_TIME_STEP 1200
 

@@ -18,6 +18,7 @@ class Ophiuroid3 : public Starfish {
     
 private:
     std::map<int, btRotationalLimitMotor* > motor_tX;
+    std::map<int, btRotationalLimitMotor* > motor_tY;
     std::map<int, btRotationalLimitMotor* > motor_tZ;
     std::map<int, btRotationalLimitMotor* > motor_to_groundY;
     std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
@@ -26,6 +27,7 @@ private:
     std::map<int, btRigidBody* > TF_object;
     std::map<int, int > dl_time;
     std::map<int, int> InitTime_tf;
+    std::map<int, int> ResumeTime_ground;
     std::map<int, int> Init_tf;
     std::map<int, btGeneric6DofSpringConstraint*> TF_constraint;
     std::map<int, btUniversalConstraint*> TF_constraint_ground;
