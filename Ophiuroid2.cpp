@@ -237,6 +237,7 @@ void Ophiuroid2::initSF() {
 void Ophiuroid2::create() {
     //activateMotor(false);
     activateTwist(false);
+    zeroFriction(false);
     
     std::vector<btRigidBody* > bodies_tf;
     std::vector<btRigidBody* > bodies_amp;

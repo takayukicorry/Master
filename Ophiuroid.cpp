@@ -224,6 +224,7 @@ void Ophiuroid::initSF() {
 void Ophiuroid::create() {
     activateMotor(true);
     activateTwist(true);
+    zeroFriction(false);
 }
 
 btRigidBody* Ophiuroid::createRigidBody(btScalar mass, const btTransform &startTransform, btCollisionShape *shape, int index) {

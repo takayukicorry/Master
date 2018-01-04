@@ -53,6 +53,13 @@ public:
             itr->second->setUpperLimit(M_PI_2, 0);
         }
     }
+    
+    void zeroFriction(bool t) {
+        btScalar f = (t) ? 0 : 5;
+        for (auto itr = m_bodies.begin(); itr != m_bodies.end(); ++itr) {
+            itr->second->setFriction(f);
+        }
+    }
     void setWorld(btDynamicsWorld* ownerWorld) {m_ownerWorld = ownerWorld;}
 };
 
