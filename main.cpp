@@ -18,10 +18,7 @@ int main (int argc, char** argv) {
     std::map<int, Starfish*> Ss;
     
 #if NT
-    for (int i = 0; i < NUM_GENARATION; i++) {
-        
-        std::cout << "第" << i << "世代　最優秀個体:" <<  <<std::endl;
-    }
+    
 #elseif GA
     for (int i = 0; i < NUM_GENARATION; i++) {
         manager.CreateNext();
