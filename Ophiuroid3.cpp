@@ -72,7 +72,7 @@ float Ophiuroid3::evalue() {
 }
 
 float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
-    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
+    /*btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     dynamicsWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
     setWorld(dynamicsWorld);
@@ -88,7 +88,8 @@ float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
     }
     
     GAMaster::cleanupWorld(dynamicsWorld);
-    return (m_value == -1) ? 0 : value;
+    return (m_value == -1) ? 0 : value;*/
+    return 0;
 }
 
 btVector3 lightSource(-70, 0, 70);

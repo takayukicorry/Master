@@ -20,7 +20,7 @@ int main (int argc, char** argv) {
     
 #if NT
     pop = oph_test_realtime(&manager);
-#else if GA
+#elif GA
     for (int i = 0; i < NUM_GENARATION; i++) {
         manager.CreateNext();
         std::cout << "第" << i << "世代　最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
