@@ -11,7 +11,7 @@
 
 #include "Variables.h"
 #include "GA.h"
-#include "network.h"
+#include "network.hpp"
 
 class Starfish {
 public:
