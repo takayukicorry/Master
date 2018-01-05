@@ -14,6 +14,7 @@ Ophiuroid3::Ophiuroid3(GAparameter p) {
     m_time_step = 0;
     className = 3;
     m_value = 0;
+    hasNet = false;
 }
 
 void motorPreTickCallback3(btDynamicsWorld *world, btScalar timeStep) {
@@ -85,13 +86,10 @@ float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
         //ここ　　　評価をどう計算するか
-        float val = rand()%100;
-        value = (value > val) ? value : val;
     }
     
     GAMaster::cleanupWorld(dynamicsWorld);
-    return (m_value == -1) ? 0 : value;
-    return 0;
+    return (m_value == -1) ? 0 : m_value;
 }
 
 btVector3 lightSource(-70, 0, 70);
@@ -146,9 +144,10 @@ void Ophiuroid3::setDirection_NEAT() {
     if (!(m_net->activate())) { m_value = -1; return; }
     for (auto itr = m_net->outputs.begin(); itr != m_net->outputs.end(); ++itr) {
         f[i] = (*itr)->activation;
+        i++;
     }
     //ここ　　　fをどう使うか
-    double a = f[0];
+    m_value += f[0];
 }
 
 void Ophiuroid3::motor() {
@@ -387,8 +386,11 @@ btRigidBody* Ophiuroid3::createRigidBody(btScalar mass, const btTransform &start
 }
 
 void Ophiuroid3::initSF() {
-    m_ownerWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
-    
+    if (!hasNet) {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
+    } else {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
+    }
     m_shapes[0] = new btCylinderShape(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE));
     int i;
     

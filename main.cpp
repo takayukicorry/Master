@@ -32,7 +32,7 @@ int main (int argc, char** argv) {
     Ss[VERSION]->kCheck_first = true;
     
     master.setStarfish(Ss[VERSION]);
-    mastermain(argc, argv, &master, GA);
+    mastermain(argc, argv, &master, GA, NT);
     
     return 0;
 }

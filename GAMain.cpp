@@ -9,6 +9,8 @@
 #include "GAMain.hpp"
 
 Population *oph_test_realtime(GAmanager* m) {
+    char date[64];
+    
     Population *pop=0;
     Genome *start_genome;
     char curword[20];
@@ -38,6 +40,11 @@ Population *oph_test_realtime(GAmanager* m) {
         pop->verify();
         
         for (int gen=1;gen<=NUM_GENARATION;gen++) {
+            std::cout << "ただいま第" << gen << "世代" << std::endl;
+            time_t t = time(NULL);
+            strftime(date, sizeof(date), "%Y/%m/%d %a %H:%M:%S", localtime(&t));
+            printf("%s\n", date);
+            
             fnamebuf=new std::ostringstream();
             (*fnamebuf)<<"gen_"<<gen<<std::ends;
             
@@ -103,7 +110,7 @@ bool oph_evaluate(Organism *org, Starfish *oph) {
     Network *net = org->net;
     
     org->fitness = oph->evalue_NEAT(net);
-    
+
     org->winner = false;
     
     return false;

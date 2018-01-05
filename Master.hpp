@@ -33,6 +33,7 @@ public:
     void Render();
     void idle();
     void idleDemo();
+    void idleNEAT();
     void InitBullet();
     void CleanupBullet();
     void init();

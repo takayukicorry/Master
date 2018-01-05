@@ -341,6 +341,12 @@ void Master::idleDemo() {
     starfish->idle();
 }
 
+void Master::idleNEAT() {
+    Master::dynamicsWorld->stepSimulation(1.f / FPS);
+    
+    starfish->idleNEAT();
+}
+
 void Master::setStarfish(Starfish* s){
     s->setWorld(dynamicsWorld);
     starfish = s;

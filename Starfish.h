@@ -28,8 +28,10 @@ public:
     int className;
     GAparameter m_param;
     NEAT::Network* m_net;
+    bool hasNet;
 
     virtual void idle() = 0;
+    virtual void idleNEAT() = 0;
     virtual bool checkState() = 0;
     virtual void create() = 0;
     virtual void initSF() = 0;
@@ -65,7 +67,7 @@ public:
         }
     }
     void setWorld(btDynamicsWorld* ownerWorld) {m_ownerWorld = ownerWorld;}
-    void setNet(NEAT::Network* net) {m_net = net;}
+    void setNet(NEAT::Network* net) {m_net = net; hasNet = true;}
     void setParam(GAparameter p) {m_param = p;}
 };
 

@@ -18,6 +18,8 @@ Ophiuroid2::Ophiuroid2(GAparameter p) {
     m_param = p;
     m_time_step = 0;
     className = 2;
+    hasNet = false;
+
 }
 
 Ophiuroid2::Ophiuroid2(Starfish* sf) {
@@ -35,19 +37,11 @@ Ophiuroid2::Ophiuroid2(Starfish* sf) {
     m_joints_ankle = sf->m_joints_ankle;
     m_motor1 = sf->m_motor1;
     m_motor2 = sf->m_motor2;
+    hasNet = false;
+
 }
 
 void Ophiuroid2::idle() {
-    m_time_step++;
-    
-    if (futto) {
-        ContactAction();
-        checkLightPattern();
-        setDirection();
-        ControllTubeFeet();
-        deleteTF();
-        checkStay();
-    }
     /*if (m_time_step==100) {
         futtobi();
     }*/
@@ -64,11 +58,28 @@ void Ophiuroid2::idleDemo() {
     ControllTubeFeet();
     deleteTF();
     checkStay();
+    
+}
+
+void Ophiuroid2::idleNEAT() {
+    m_time_step++;
+    
+    ContactAction();
+    checkLightPattern();
+    setDirection();
+    ControllTubeFeet();
+    deleteTF();
+    checkStay();
 }
 
 void motorPreTickCallback2(btDynamicsWorld *world, btScalar timeStep) {
     Ophiuroid2* demo = (Ophiuroid2*)world->getWorldUserInfo();
     demo->idleDemo();
+}
+
+void motorPreTickCallback2_NEAT(btDynamicsWorld *world, btScalar timeStep) {
+    Ophiuroid2* demo = (Ophiuroid2*)world->getWorldUserInfo();
+    demo->idleNEAT();
 }
 
 float Ophiuroid2::evalue() {
@@ -98,7 +109,7 @@ float Ophiuroid2::evalue() {
 float Ophiuroid2::evalue_NEAT(NEAT::Network* net) {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    dynamicsWorld->setInternalTickCallback(motorPreTickCallback2, this, true);
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback2_NEAT, this, true);
     setWorld(dynamicsWorld);
     
     GAMaster::createGround(dynamicsWorld);
@@ -130,7 +141,11 @@ bool Ophiuroid2::checkState() {
 }
 
 void Ophiuroid2::initSF() {
-    
+    if (!hasNet) {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback2, this, true);
+    } else {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback2_NEAT, this, true);
+    }
     float alpha = 37*M_PI/36;
     float theta = M_PI - alpha;
    

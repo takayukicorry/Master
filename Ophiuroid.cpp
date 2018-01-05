@@ -16,6 +16,7 @@ Ophiuroid::Ophiuroid(GAparameter p) {
     m_time_step = 0;
     className = 1;
     swing_phase = -3;
+    hasNet = false;
 }
 
 Ophiuroid::Ophiuroid(Starfish* sf) {
@@ -33,6 +34,8 @@ Ophiuroid::Ophiuroid(Starfish* sf) {
     m_joints_ankle = sf->m_joints_ankle;
     m_motor1 = sf->m_motor1;
     m_motor2 = sf->m_motor2;
+    hasNet = false;
+
 }
 
 void Ophiuroid::idle() {
@@ -46,9 +49,21 @@ void Ophiuroid::idleDemo() {
     setMotorTarget2(1);
 }
 
+void Ophiuroid::idleNEAT() {
+    m_time_step++;
+    
+    //setMotorTarget(1);
+    setMotorTarget2(1);
+}
+
 void motorPreTickCallback(btDynamicsWorld *world, btScalar timeStep) {
     Ophiuroid* demo = (Ophiuroid*)world->getWorldUserInfo();
     demo->idleDemo();
+}
+
+void motorPreTickCallback_NEAT(btDynamicsWorld *world, btScalar timeStep) {
+    Ophiuroid* demo = (Ophiuroid*)world->getWorldUserInfo();
+    demo->idleNEAT();
 }
 
 float Ophiuroid::evalue() {
@@ -84,7 +99,7 @@ float Ophiuroid::evalue() {
 float Ophiuroid::evalue_NEAT(NEAT::Network* net) {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    dynamicsWorld->setInternalTickCallback(motorPreTickCallback, this, true);
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback_NEAT, this, true);
     setWorld(dynamicsWorld);
     
     GAMaster::createGround(dynamicsWorld);
@@ -123,7 +138,11 @@ bool Ophiuroid::checkState() {
 }
 
 void Ophiuroid::initSF() {
-    m_ownerWorld->setInternalTickCallback(motorPreTickCallback, this, true);
+    if (!hasNet) {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback, this, true);
+    } else {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback_NEAT, this, true);
+    }
     float alpha = 37*M_PI/36;
     float theta = M_PI - alpha;
     

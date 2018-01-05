@@ -28,6 +28,7 @@ public:
 
     void idle();
     void idleDemo();
+    void idleNEAT();
     bool checkState();
     void create();
     void initSF();

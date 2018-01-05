@@ -21,8 +21,11 @@ static void idle() {
 static void idleDemo() {
     stuff->idleDemo();
 }
+static void idleNEAT() {
+    stuff->idleNEAT();
+}
 
-void mastermain(int argc, char** argv, Master* master, bool demo) {
+void mastermain(int argc, char** argv, Master* master, bool demo, bool neat) {
     stuff = master;
     
     master->createGround();
@@ -34,7 +37,9 @@ void mastermain(int argc, char** argv, Master* master, bool demo) {
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutCreateWindow(argv[0]);
     glutDisplayFunc(Render);
-    if (demo) {
+    if(neat) {
+        glutIdleFunc(idleNEAT);
+    } else if (demo) {
         glutIdleFunc(idleDemo);
     } else {
         glutIdleFunc(idle);
