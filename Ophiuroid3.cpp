@@ -35,6 +35,44 @@ bool Ophiuroid3::checkState() {
     return true;
 }
 
+float Ophiuroid3::evalue() {
+    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
+    setWorld(dynamicsWorld);
+    
+    GAMaster::createGround(dynamicsWorld);
+    initSF();
+    create();
+    float value = 0;
+    for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
+        dynamicsWorld->stepSimulation(1.f / FPS);
+        
+    }
+    
+    GAMaster::cleanupWorld(dynamicsWorld);
+    return value;
+}
+
+float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
+    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
+    setWorld(dynamicsWorld);
+    
+    GAMaster::createGround(dynamicsWorld);
+    initSF();
+    create();
+    float value = 0;
+    for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
+        dynamicsWorld->stepSimulation(1.f / FPS);
+        
+    }
+    
+    GAMaster::cleanupWorld(dynamicsWorld);
+    return value;
+}
+
 btVector3 lightSource(-70, 0, 70);
 int lightThresh(170);
 

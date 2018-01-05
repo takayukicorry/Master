@@ -50,6 +50,8 @@ public:
     void motor();
     void contact();
     void setDirection();
+    float evalue();
+    float evalue_NEAT(NEAT::Network*);
     void setSpring(btGeneric6DofSpringConstraint*, int);
     btRigidBody* initTubefeet(btScalar*, const btTransform&);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);

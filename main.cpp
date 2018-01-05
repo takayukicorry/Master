@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "MasterStuff.hpp"
 #include "Master.hpp"
+#include "GAMain.hpp"
 
 int main (int argc, char** argv) {
     srand((unsigned)time(NULL));

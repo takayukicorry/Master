@@ -50,7 +50,6 @@ private:
 public:
     Ophiuroid2(GAparameter);
     Ophiuroid2(Starfish*);
-
     
     void idle();
     void idleDemo();
@@ -69,6 +68,7 @@ public:
     void fixArmState();
     void checkStay();
     float evalue();
+    float evalue_NEAT(NEAT::Network*);
     void futtobi();
 };
 

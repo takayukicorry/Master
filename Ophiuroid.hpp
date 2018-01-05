@@ -32,6 +32,7 @@ public:
     void create();
     void initSF();
     float evalue();
+    float evalue_NEAT(NEAT::Network*);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
     void setMotorTarget(double);
     void setMotorTarget2(double);

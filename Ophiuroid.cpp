@@ -81,6 +81,37 @@ float Ophiuroid::evalue() {
     return value;
 }
 
+float Ophiuroid::evalue_NEAT(NEAT::Network* net) {
+    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback, this, true);
+    setWorld(dynamicsWorld);
+    
+    GAMaster::createGround(dynamicsWorld);
+    initSF();
+    create();
+    btScalar value = swing_phase;
+    btVector3 up = btVector3(0, 1, 0);
+    for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
+        dynamicsWorld->stepSimulation(1.f / FPS);
+        btScalar val = swing_phase;
+        if (swing_phase >= -1) {
+            btTransform tr = m_bodies[0]->getWorldTransform();
+            btVector3 vY = tr*up;
+            btVector3 vOrigin = tr.getOrigin();
+            btVector3 vY_O = vY - vOrigin;
+            val = -vY_O[1];
+        }
+        if (value < val) {
+            value = val;
+        }
+    }
+    
+    GAMaster::cleanupWorld(dynamicsWorld);
+    return value;
+}
+
+
 bool Ophiuroid::checkState() {
     btTransform tr = m_bodies[0]->getWorldTransform();
     btVector3 vY = tr*btVector3(0, 1, 0);
