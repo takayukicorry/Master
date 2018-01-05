@@ -26,7 +26,6 @@ int main (int argc, char** argv) {
         std::cout << "第" << i << "世代　最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
     }
 #endif
-    
     Ss[1] = new Ophiuroid(manager.pool[0]);
     Ss[2] = new Ophiuroid2(manager.pool[0]);
     Ss[3] = new Ophiuroid3(manager.pool[0]);
