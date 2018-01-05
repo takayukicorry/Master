@@ -31,8 +31,8 @@
 
 using namespace NEAT;
 
-Population *oph_test_realtime(GAparameter);
-bool oph_evaluate(Organism *org,bool velocity, Starfish *oph);
-void oph_realtime_loop(Population *pop, Starfish *oph);
+Population *oph_test_realtime(GAmanager*);
+bool oph_evaluate(Organism*, Starfish*);
+void oph_realtime_loop(Population*, Starfish*, GAmanager*);
 
 #endif /* GAMain_hpp */

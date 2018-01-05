@@ -8,7 +8,7 @@
 
 #include "GAMain.hpp"
 
-Population *oph_test_realtime(GAparameter p) {
+Population *oph_test_realtime(GAmanager* m) {
     
     //
     //set param
@@ -22,13 +22,13 @@ Population *oph_test_realtime(GAparameter p) {
     Population *pop = new Population(start_genome,NEAT::pop_size);
     pop->verify();
     
-    Starfish* oph = new Ophiuroid3(p);
-    oph_realtime_loop(pop, oph);
+    Starfish* oph = new Ophiuroid3(m->pool[0]);
+    oph_realtime_loop(pop, oph, m);
     
     return pop;
 }
 
-bool oph_evaluate(Organism *org,bool velocity, Starfish *oph) {
+bool oph_evaluate(Organism *org, Starfish *oph) {
     Network *net = org->net;
     
     org->fitness = oph->evalue_NEAT(net);
@@ -38,7 +38,7 @@ bool oph_evaluate(Organism *org,bool velocity, Starfish *oph) {
     return false;
 }
 
-void oph_realtime_loop(Population *pop, Starfish *oph) {
+void oph_realtime_loop(Population *pop, Starfish *oph, GAmanager* m) {
     std::vector<Organism*>::iterator curorg;
     std::vector<Species*>::iterator curspecies;
     std::vector<Species*> sorted_species;
@@ -60,7 +60,8 @@ void oph_realtime_loop(Population *pop, Starfish *oph) {
             std::cout<<"ERROR EMPTY GEMOME!"<<std::endl;
             //cin>>pause;
         }
-        if (oph_evaluate((*curorg),1,oph)) win=true;
+        oph->setParam(m->pool[(*curorg)->species->id]);
+        if (oph_evaluate((*curorg),oph)) win=true;
         
     }
 
@@ -118,7 +119,9 @@ void oph_realtime_loop(Population *pop, Starfish *oph) {
         //Note that in a true real-time simulation, evaluation would be happening to all individuals at all times.
         //That is, this call would not appear here in a true online simulation.
         std::cout<<"Evaluating new baby: "<<std::endl;
-        if (oph_evaluate(new_org,1,oph)) win=true;
+        
+        oph->setParam(m->pool[new_org->species->id]);
+        if (oph_evaluate(new_org,oph)) win=true;
         
         if (win) {
             std::cout<<"WINNER"<<std::endl;

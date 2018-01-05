@@ -37,6 +37,8 @@ private:
 
     std::vector<btRigidBody* > bodies_tf;
     std::vector<btTypedConstraint* > constraints;
+    
+    double m_value;
 
 public:
     Ophiuroid3(GAparameter);
@@ -45,11 +47,13 @@ public:
     void create();
     void idle();
     void idleDemo();
+    void idleNEAT();
     bool checkState();
-    void checkLightPattern();
+    void checkLightDistance();
     void motor();
     void contact();
     void setDirection();
+    void setDirection_NEAT();
     float evalue();
     float evalue_NEAT(NEAT::Network*);
     void setSpring(btGeneric6DofSpringConstraint*, int);

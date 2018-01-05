@@ -13,11 +13,17 @@ Ophiuroid3::Ophiuroid3(GAparameter p) {
     m_param = p;
     m_time_step = 0;
     className = 3;
+    m_value = 0;
 }
 
 void motorPreTickCallback3(btDynamicsWorld *world, btScalar timeStep) {
     Ophiuroid3* demo = (Ophiuroid3*)world->getWorldUserInfo();
     demo->idleDemo();
+}
+
+void motorPreTickCallback3_NEAT(btDynamicsWorld *world, btScalar timeStep) {
+    Ophiuroid3* demo = (Ophiuroid3*)world->getWorldUserInfo();
+    demo->idleNEAT();
 }
 
 void Ophiuroid3::idle() {
@@ -27,6 +33,17 @@ void Ophiuroid3::idle() {
 void Ophiuroid3::idleDemo() {
     m_time_step++;
     
+    checkLightDistance();
+    setDirection();
+    motor();
+    contact();
+}
+
+void Ophiuroid3::idleNEAT() {
+    m_time_step++;
+    
+    checkLightDistance();
+    setDirection_NEAT();
     motor();
     contact();
 }
@@ -57,8 +74,9 @@ float Ophiuroid3::evalue() {
 float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    dynamicsWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
+    dynamicsWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
     setWorld(dynamicsWorld);
+    setNet(net);
     
     GAMaster::createGround(dynamicsWorld);
     initSF();
@@ -66,17 +84,17 @@ float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
     float value = 0;
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
-        
+        //ここ　　　評価をどう計算するか
     }
     
     GAMaster::cleanupWorld(dynamicsWorld);
-    return value;
+    return (m_value == -1) ? 0 : value;
 }
 
 btVector3 lightSource(-70, 0, 70);
 int lightThresh(170);
 
-void Ophiuroid3::checkLightPattern() {
+void Ophiuroid3::checkLightDistance() {
     //light_patternの数値 = 各腕の光からの距離に応じた受光量の強さを示す
     for (int i = 1; i <= NUM_LEGS; i++){
         btVector3 now = m_bodies[(NUM_JOINT+1)*i]->getCenterOfMassPosition();
@@ -115,6 +133,19 @@ void Ophiuroid3::setDirection() {
         float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
         
     }
+}
+
+void Ophiuroid3::setDirection_NEAT() {
+    std::map<int, double> f;
+    int i = 0;
+    
+    m_net->load_sensors(m_param.light_pattern);
+    if (!(m_net->activate())) { m_value = -1; return; }
+    for (auto itr = m_net->outputs.begin(); itr != m_net->outputs.end(); ++itr) {
+        f[i] = (*itr)->activation;
+    }
+    //ここ　　　fをどう使うか
+    double a = f[0];
 }
 
 void Ophiuroid3::motor() {

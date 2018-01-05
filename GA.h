@@ -19,7 +19,7 @@ public:
     float lowerlimit[ARRAY_LENGTH];
     float targetpercent[ARRAY_LENGTH];//shokiisou
     int turn_pattern[NUM_LEGS];
-    int light_pattern[NUM_LEGS];
+    double light_pattern[NUM_LEGS];
     
     int conect[CONECT_LENGTH];//weight of the conection
     double a[NUM_LEGS];//parameter of sigumoido function

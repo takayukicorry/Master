@@ -86,6 +86,7 @@ enum CollisionGroup{
 //*******************************//
 #define NUM_GENARATION 100
 #define GA 0
+#define NT 0
 #define VERSION 3
 #define WALL 0
 //*******************************//

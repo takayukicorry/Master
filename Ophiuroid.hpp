@@ -37,7 +37,6 @@ public:
     void setMotorTarget(double);
     void setMotorTarget2(double);
     void calcMotorTarget(int, int = 0, float = 0);
-    void setParam(GAparameter p) {m_param = p;}
 };
 
 #endif /* Ophiuroid_hpp */

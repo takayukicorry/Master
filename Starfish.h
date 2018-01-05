@@ -27,6 +27,7 @@ public:
     bool kCheck_first;
     int className;
     GAparameter m_param;
+    NEAT::Network* m_net;
 
     virtual void idle() = 0;
     virtual bool checkState() = 0;
@@ -64,6 +65,8 @@ public:
         }
     }
     void setWorld(btDynamicsWorld* ownerWorld) {m_ownerWorld = ownerWorld;}
+    void setNet(NEAT::Network* net) {m_net = net;}
+    void setParam(GAparameter p) {m_param = p;}
 };
 
 #endif /* Starfish_h */
