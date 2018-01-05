@@ -13,8 +13,9 @@ Population *oph_test_realtime(GAmanager* m) {
     //
     //set param
     //
-    NEAT::pop_size = 100;
-    
+    const char *filename = "param.txt";
+    NEAT::load_neat_params(filename, false);
+    std::cout << NEAT::pop_size << std::endl;
     //
     //start
     //

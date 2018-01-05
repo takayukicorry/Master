@@ -11,6 +11,9 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
+#include <iostream>
+#include <string>
+#include <cstdlib>
 
 int NEAT::time_alive_minimum = 0;
 double NEAT::trait_param_mut_prob = 0;

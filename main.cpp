@@ -16,10 +16,11 @@ int main (int argc, char** argv) {
     GAmanager manager = *new GAmanager(VERSION);
     Master master = *new Master();
     std::map<int, Starfish*> Ss;
+    Population* pop;
     
 #if NT
-    
-#elseif GA
+    pop = oph_test_realtime(&manager);
+#else if GA
     for (int i = 0; i < NUM_GENARATION; i++) {
         manager.CreateNext();
         std::cout << "第" << i << "世代　最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
