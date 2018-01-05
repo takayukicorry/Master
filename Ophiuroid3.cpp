@@ -72,7 +72,7 @@ float Ophiuroid3::evalue() {
 }
 
 float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
-    /*btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
+    btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     dynamicsWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
     setWorld(dynamicsWorld);
@@ -85,10 +85,12 @@ float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
         //ここ　　　評価をどう計算するか
+        float val = rand()%100;
+        value = (value > val) ? value : val;
     }
     
     GAMaster::cleanupWorld(dynamicsWorld);
-    return (m_value == -1) ? 0 : value;*/
+    return (m_value == -1) ? 0 : value;
     return 0;
 }
 

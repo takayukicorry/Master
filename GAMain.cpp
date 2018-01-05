@@ -9,24 +9,94 @@
 #include "GAMain.hpp"
 
 Population *oph_test_realtime(GAmanager* m) {
+    Population *pop=0;
+    Genome *start_genome;
+    char curword[20];
+    int id;
     
+    std::ostringstream *fnamebuf;
+    int gen;
+    
+    int expcount;
+    int status;
+    int runs[NEAT::num_runs];
+    int totalevals;
+    int samples;
+    
+    memset (runs, 0, NEAT::num_runs * sizeof(int));
     //
     //set param
     //
     const char *filename = "/Users/masudatakayuki/M1/Master/Master/param.txt";
     NEAT::load_neat_params(filename, false);
-    std::cout << NEAT::pop_size << std::endl;
     //
     //start
     //
-    Genome *start_genome = new Genome(NUM_LEGS, NUM_LEGS, NUM_LEGS*NUM_LEGS, 1);
-    Population *pop = new Population(start_genome,NEAT::pop_size);
-    pop->verify();
+    start_genome = new Genome(NUM_LEGS, NUM_LEGS, NUM_LEGS*NUM_LEGS, 1);
+    for(int expcount=0;expcount<NEAT::num_runs;expcount++) {
+        pop= new Population(start_genome,NEAT::pop_size);
+        pop->verify();
+        
+        for (int gen=1;gen<=NUM_GENARATION;gen++) {
+            fnamebuf=new std::ostringstream();
+            (*fnamebuf)<<"gen_"<<gen<<std::ends;
+            
+            char temp[50];
+            sprintf (temp, "gen_%d", gen);
+            status = oph_epoch(pop,gen,temp,m);
+            
+            if (status) {
+                runs[expcount]=status;
+                gen = NUM_GENARATION+1;
+            }
+            
+            fnamebuf->clear();
+            delete fnamebuf;
+            
+        }
+        
+        if (expcount<NEAT::num_runs-1) delete pop;
+    }
     
-    Starfish* oph = new Ophiuroid3(m->pool[0]);
-    oph_realtime_loop(pop, oph, m);
+    totalevals=0;
+    samples=0;
+    for(expcount=0;expcount<NEAT::num_runs;expcount++) {
+        std::cout<<runs[expcount]<<std::endl;
+        if (runs[expcount]>0)
+        {
+            totalevals+=runs[expcount];
+            samples++;
+        }
+    }
+    
+    std::cout<<"Failures: "<<(NEAT::num_runs-samples)<<" out of "<<NEAT::num_runs<<" runs"<<std::endl;
+    std::cout<<"Average evals: "<<(samples>0 ? (double)totalevals/samples : 0)<<std::endl;
     
     return pop;
+}
+
+int oph_epoch(Population *pop,int generation,char *filename, GAmanager* m) {
+    std::vector<Organism*>::iterator curorg;
+    std::vector<Species*>::iterator curspecies;
+    
+    bool win=false;
+    int winnernum;
+    
+    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+        Starfish* oph = new Ophiuroid3(m->pool[(*curorg)->species->id]);
+        if (oph_evaluate(*curorg, oph)) win=true;
+    }
+    
+    for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
+        (*curspecies)->compute_average_fitness();
+        (*curspecies)->compute_max_fitness();
+    }
+    
+    //Create the next generation
+    pop->epoch(generation);
+    
+    if (win) return ((generation-1)*NEAT::pop_size+winnernum);
+    else return 0;
 }
 
 bool oph_evaluate(Organism *org, Starfish *oph) {
