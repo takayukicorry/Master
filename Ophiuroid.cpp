@@ -375,7 +375,6 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
         if (!(m_net->activate())) { m_value = -1; return; }
         for (auto itr = m_net->outputs.begin(); itr != m_net->outputs.end(); ++itr) {
             f[i] = (*itr)->activation;
-            if(m_value < f[i]) m_value = f[i];
             i++;
         }
     }
