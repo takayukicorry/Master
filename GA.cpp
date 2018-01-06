@@ -368,6 +368,7 @@ GAmanager::GAmanager(int spiecies)
     for (int i = 0; i<POOL_SIZE; i++)
     {
         pool[i] = Adam();
+        v[i] = 0;
     }
     spiecies_of_starfish = spiecies;
 }

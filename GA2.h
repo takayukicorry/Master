@@ -16,6 +16,7 @@ class GAmanager {
 public:
     GAparameter f;
     GAparameter pool[POOL_SIZE];
+    double v[POOL_SIZE];
     int spiecies_of_starfish;
     
     GAmanager(int);

@@ -47,8 +47,7 @@ Population *oph_test_realtime(GAmanager* m) {
             status = oph_epoch(pop,gen,m);
             
             if (status) {
-                runs[expcount]=status;
-                gen = NUM_GENARATION+1;
+                
             }
             
         }
@@ -76,13 +75,13 @@ Population *oph_test_realtime(GAmanager* m) {
 int oph_epoch(Population *pop,int generation, GAmanager* m) {
     std::vector<Organism*>::iterator curorg;
     std::vector<Species*>::iterator curspecies;
-    char date[64];
-    bool win=false;
-    int winnernum;
     
     for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-        Starfish* oph = new Ophiuroid3(m->pool[(*curorg)->species->id]);
-        if (oph_evaluate(*curorg, oph)) win=true;
+        Starfish* oph;
+        if (VERSION==1) oph = new Ophiuroid(m->pool[(*curorg)->species->id]);
+        else if (VERSION==3) oph = new Ophiuroid3(m->pool[(*curorg)->species->id]);
+        
+        oph_evaluate(*curorg, oph);
     }
     
     for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
@@ -93,8 +92,7 @@ int oph_epoch(Population *pop,int generation, GAmanager* m) {
     //Create the next generation
     pop->epoch(generation);
     
-    if (win) return ((generation-1)*NEAT::pop_size+winnernum);
-    else return 0;
+    return 0;
 }
 
 bool oph_evaluate(Organism *org, Starfish *oph) {
