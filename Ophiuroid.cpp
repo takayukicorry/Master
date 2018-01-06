@@ -52,8 +52,7 @@ void Ophiuroid::idleDemo() {
 void Ophiuroid::idleNEAT() {
     m_time_step++;
     
-    //setMotorTarget(1);
-    setMotorTarget2(1);
+    setMotorTarget2_NEAT(1);
 }
 
 void motorPreTickCallback(btDynamicsWorld *world, btScalar timeStep) {
@@ -101,6 +100,7 @@ float Ophiuroid::evalue_NEAT(NEAT::Network* net) {
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     dynamicsWorld->setInternalTickCallback(motorPreTickCallback_NEAT, this, true);
     setWorld(dynamicsWorld);
+    setNet(net);
     
     GAMaster::createGround(dynamicsWorld);
     initSF();
@@ -357,7 +357,94 @@ void Ophiuroid::setMotorTarget(double delta) {
         }
     }
 }
-
+void Ophiuroid::setMotorTarget2_NEAT(double delta) {
+    //動かなくならんように//
+    for (int i = 0; i<BODYPART_COUNT; i++){
+        m_bodies[i]->activate(true);
+    }
+    
+    std::map<int, double> f;
+    int i = 0;
+    if (m_param.turn >= NUM_TURN) {
+        double tp[NUM_LEGS];
+        for (int j = 0; j < NUM_LEGS; j++) {
+            tp[j] = m_param.turn_pattern[j];
+        }
+        m_net->load_sensors(tp);
+        if (!(m_net->activate())) { m_value = -1; return; }
+        for (auto itr = m_net->outputs.begin(); itr != m_net->outputs.end(); ++itr) {
+            f[i] = (*itr)->activation;
+            if(m_value < f[i]) m_value = f[i];
+            i++;
+        }
+    }
+    
+    
+    //脚動き//
+    for (int i=0; i<NUM_LEGS; i++){
+        //第一段階（turn本数待ち）//
+        if(m_param.turn < NUM_TURN){
+            if(m_param.turn==1) swing_phase = -2;
+            //支脚以外の動き//
+            if (leg_state[i] == 0){
+                
+                calcMotorTarget(i);
+                
+                btRigidBody* rigid1 = m_bodies[(NUM_JOINT+1)*(i+1)];
+                btTransform tran;
+                tran.setIdentity();
+                rigid1->getMotionState()->getWorldTransform(tran);
+                btScalar y = tran.getOrigin().getY();
+                btVector3 vY = tran*btVector3(1, 0, 0);
+                btVector3 vOrigin = tran.getOrigin();
+                btVector3 vY_O = vY - vOrigin;
+                btScalar rot = btScalar(acos(vY_O[1]));
+                
+                if(rot > THRESHOLD){
+                    if (y < FLEG_WIDTH){
+                        //if (m_param.turn_pattern[i]==1){
+                        m_param.turn += 1;
+                        m_param.ee = 1;
+                        leg_state[i] = 1;
+                        m_param.turn_pattern[i] = 1;
+                        turn_direction[i] = 1;//右ねじ正
+                        rigid1->setFriction(FRICTION);
+                        rigid1->setGravity(btVector3(0,-15.0,0));
+                        //}
+                    }
+                }
+                if(rot < -THRESHOLD){
+                    if (y < FLEG_WIDTH){
+                        //if (m_param.turn_pattern[i]==1){
+                        m_param.turn += 1;
+                        m_param.ee = 1;
+                        leg_state[i] = 1;
+                        m_param.turn_pattern[i] = 1;
+                        turn_direction[i] = -1;//右ねじ負
+                        rigid1->setFriction(FRICTION);
+                        rigid1->setGravity(btVector3(0,-15.0,0));
+                        //}
+                    }
+                }
+            }
+        }
+        //第二段階（turn後）//
+        if (m_param.turn >= NUM_TURN){
+            swing_phase = -1;
+            //支脚以外//
+            if (leg_state[i] == 0){
+                
+                calcMotorTarget(i, 2, f[i]);
+            }
+            
+            //支脚
+            if (leg_state[i] == 1){
+                
+            }
+        }
+    }
+    
+}
 void Ophiuroid::setMotorTarget2(double delta) {
     //動かなくならんように//
     for (int i = 0; i<BODYPART_COUNT; i++){

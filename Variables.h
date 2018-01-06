@@ -31,12 +31,12 @@ enum CollisionGroup{
 #define NUM_LEGS 5
 #define CONECT_LENGTH 2*NUM_LEGS*NUM_LEGS
 #define POOL_SIZE 150
-#define MAX_CYCLE 1000
+#define MAX_CYCLE 2000
 #define MIN_CYCLE 300
 #define MAX_ANGLE M_PI_2
 #define MIN_ANGLE -M_PI_2
-#define MAX_CYCLE_2 1000
-#define MIN_CYCLE_2 300
+#define MAX_CYCLE_2 2000
+#define MIN_CYCLE_2 100
 #define MAX_ANGLE_2 M_PI/3
 #define MIN_ANGLE_2 -M_PI/3
 #define MAX_ANGLE2_2 M_PI
@@ -72,7 +72,6 @@ enum CollisionGroup{
 #define DL_TIME 120
 #define RE_TIME 360
 #define THRESH_VEL 5
-#define SIMULATION_TIME_STEP 1200
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
@@ -84,10 +83,12 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
-#define NUM_GENARATION 100
+#define NUM_GENARATION 10
+#define SIMULATION_TIME_STEP 1200
 #define GA 0
 #define NT 1
-#define VERSION 3
+#define VERSION 1
+#define SINGLE 1
 #define WALL 0
 //*******************************//
 #endif

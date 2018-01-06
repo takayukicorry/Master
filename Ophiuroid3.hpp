@@ -38,11 +38,11 @@ private:
     std::vector<btRigidBody* > bodies_tf;
     std::vector<btTypedConstraint* > constraints;
     
-    double m_value;
 
 public:
     Ophiuroid3(GAparameter);
-    
+    Ophiuroid3(Starfish*);
+
     void initSF();
     void create();
     void idle();
@@ -57,6 +57,7 @@ public:
     float evalue();
     float evalue_NEAT(NEAT::Network*);
     void setSpring(btGeneric6DofSpringConstraint*, int);
+    btScalar calcMotorVel(int);
     btRigidBody* initTubefeet(btScalar*, const btTransform&);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
 };

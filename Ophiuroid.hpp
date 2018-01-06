@@ -37,6 +37,7 @@ public:
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
     void setMotorTarget(double);
     void setMotorTarget2(double);
+    void setMotorTarget2_NEAT(double);
     void calcMotorTarget(int, int = 0, float = 0);
 };
 

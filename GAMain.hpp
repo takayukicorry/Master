@@ -32,7 +32,7 @@
 using namespace NEAT;
 
 Population *oph_test_realtime(GAmanager*);
-int oph_epoch(Population*, int, char*, GAmanager*);
+int oph_epoch(Population*, int, GAmanager*);
 bool oph_evaluate(Organism*, Starfish*);
 void oph_realtime_loop(Population*, Starfish*, GAmanager*);
 

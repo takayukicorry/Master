@@ -29,6 +29,7 @@ public:
     GAparameter m_param;
     NEAT::Network* m_net;
     bool hasNet;
+    double m_value;
 
     virtual void idle() = 0;
     virtual void idleNEAT() = 0;

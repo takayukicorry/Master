@@ -9,16 +9,19 @@
 #include "GAMain.hpp"
 
 Population *oph_test_realtime(GAmanager* m) {
-    char date[64];
+    //
+    //set param
+    //
+    const char *filename = "/Users/masudatakayuki/M1/Master/Master/param.txt";
+    NEAT::load_neat_params(filename, false);
     
+    char date[64];
     Population *pop=0;
     Genome *start_genome;
-    char curword[20];
-    int id;
-    
-    std::ostringstream *fnamebuf;
+    //char curword[20];
+    //int id;
+    //std::ostringstream *fnamebuf;
     int gen;
-    
     int expcount;
     int status;
     int runs[NEAT::num_runs];
@@ -26,39 +29,27 @@ Population *oph_test_realtime(GAmanager* m) {
     int samples;
     
     memset (runs, 0, NEAT::num_runs * sizeof(int));
-    //
-    //set param
-    //
-    const char *filename = "/Users/masudatakayuki/M1/Master/Master/param.txt";
-    NEAT::load_neat_params(filename, false);
+    
     //
     //start
     //
     start_genome = new Genome(NUM_LEGS, NUM_LEGS, NUM_LEGS*NUM_LEGS, 1);
-    for(int expcount=0;expcount<NEAT::num_runs;expcount++) {
+    for(expcount=0;expcount<NEAT::num_runs;expcount++) {
         pop= new Population(start_genome,NEAT::pop_size);
         pop->verify();
         
-        for (int gen=1;gen<=NUM_GENARATION;gen++) {
+        for (gen=1;gen<=NUM_GENARATION;gen++) {
             std::cout << "ただいま第" << gen << "世代" << std::endl;
             time_t t = time(NULL);
             strftime(date, sizeof(date), "%Y/%m/%d %a %H:%M:%S", localtime(&t));
             printf("%s\n", date);
             
-            //fnamebuf=new std::ostringstream();
-            //(*fnamebuf)<<"gen_"<<gen<<std::ends;
-            
-            char temp[50];
-            sprintf (temp, "gen_%d", gen);
-            status = oph_epoch(pop,gen,temp,m);
+            status = oph_epoch(pop,gen,m);
             
             if (status) {
                 runs[expcount]=status;
                 gen = NUM_GENARATION+1;
             }
-            
-            //fnamebuf->clear();
-            //delete fnamebuf;
             
         }
         
@@ -82,10 +73,10 @@ Population *oph_test_realtime(GAmanager* m) {
     return pop;
 }
 
-int oph_epoch(Population *pop,int generation,char *filename, GAmanager* m) {
+int oph_epoch(Population *pop,int generation, GAmanager* m) {
     std::vector<Organism*>::iterator curorg;
     std::vector<Species*>::iterator curspecies;
-    
+    char date[64];
     bool win=false;
     int winnernum;
     

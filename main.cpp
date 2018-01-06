@@ -31,8 +31,24 @@ int main (int argc, char** argv) {
     Ss[3] = new Ophiuroid3(manager.pool[0]);
     Ss[VERSION]->kCheck_first = true;
     
+#if NT
+    std::vector<Organism*>::iterator curorg;
+    double max_fitness=0;
+    Organism *champ;
+    champ=*(pop->organisms.begin()); //Make sure at least something is chosen
+    //Find the population champ
+    for(curorg = pop->organisms.begin(); curorg != pop->organisms.end(); ++curorg) {
+        if ((*curorg)->fitness > max_fitness){
+            champ=(*curorg);
+            max_fitness=champ->fitness;
+        }
+    }
+    Ss[VERSION]->setNet(champ->net);
+    Ss[VERSION]->setParam(manager.pool[champ->species->id]);
+#endif
+    return 0;
     master.setStarfish(Ss[VERSION]);
-    mastermain(argc, argv, &master, GA, NT);
+    mastermain(argc, argv, &master, false);
     
     return 0;
 }

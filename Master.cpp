@@ -7,7 +7,7 @@
 //
 
 #include "Master.hpp"
-#include <cxxabi.h>
+//#include <cxxabi.h>
 
 /*色など*/
 GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
@@ -317,10 +317,10 @@ void Master::checkStarfish() {
     if (!starfish->checkState()) {
         CleanupStarfish();
         Starfish* oph;
-        if (starfish->className == 2) {
+        if (starfish->className == 3) {
             oph = new Ophiuroid(starfish);
         } else {
-            oph= new Ophiuroid2(starfish);
+            oph= new Ophiuroid3(starfish);
         }
         oph->kCheck_first = !starfish->kCheck_first;
         setStarfish(oph);
@@ -344,7 +344,7 @@ void Master::idleDemo() {
 void Master::idleNEAT() {
     Master::dynamicsWorld->stepSimulation(1.f / FPS);
     
-    starfish->idleNEAT();
+    starfish->idle();
 }
 
 void Master::setStarfish(Starfish* s){
