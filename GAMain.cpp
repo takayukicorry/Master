@@ -45,8 +45,8 @@ Population *oph_test_realtime(GAmanager* m) {
             strftime(date, sizeof(date), "%Y/%m/%d %a %H:%M:%S", localtime(&t));
             printf("%s\n", date);
             
-            fnamebuf=new std::ostringstream();
-            (*fnamebuf)<<"gen_"<<gen<<std::ends;
+            //fnamebuf=new std::ostringstream();
+            //(*fnamebuf)<<"gen_"<<gen<<std::ends;
             
             char temp[50];
             sprintf (temp, "gen_%d", gen);
@@ -57,8 +57,8 @@ Population *oph_test_realtime(GAmanager* m) {
                 gen = NUM_GENARATION+1;
             }
             
-            fnamebuf->clear();
-            delete fnamebuf;
+            //fnamebuf->clear();
+            //delete fnamebuf;
             
         }
         
