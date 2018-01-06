@@ -68,7 +68,7 @@ void motorPreTickCallback_NEAT(btDynamicsWorld *world, btScalar timeStep) {
 float Ophiuroid::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    dynamicsWorld->setInternalTickCallback(motorPreTickCallback, this, true);
+    //dynamicsWorld->setInternalTickCallback(motorPreTickCallback, this, true);
     setWorld(dynamicsWorld);
 
     GAMaster::createGround(dynamicsWorld);
@@ -98,7 +98,7 @@ float Ophiuroid::evalue() {
 float Ophiuroid::evalue_NEAT(NEAT::Network* net) {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    dynamicsWorld->setInternalTickCallback(motorPreTickCallback_NEAT, this, true);
+    //dynamicsWorld->setInternalTickCallback(motorPreTickCallback_NEAT, this, true);
     setWorld(dynamicsWorld);
     setNet(net);
     
@@ -302,6 +302,7 @@ void Ophiuroid::setMotorTarget(double delta) {
     for (int i = 0; i < NUM_LEGS; i++) {
         
         if (m_param.turn < NUM_TURN) {
+            if(m_param.turn==1) swing_phase=-2;;
             if (leg_state[i] == 0) {
                 
                 calcMotorTarget(i);
@@ -334,7 +335,7 @@ void Ophiuroid::setMotorTarget(double delta) {
                 }
             }
         } else {
-            swing_phase = true;
+            swing_phase = -1;
             int state = leg_state[(i+NUM_LEGS-1)%NUM_LEGS] + leg_state[(i+1)%NUM_LEGS];
             //支脚以外の動き//
             if (leg_state[i] == 0){

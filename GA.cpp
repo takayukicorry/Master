@@ -376,14 +376,13 @@ GAmanager::GAmanager(int spiecies)
 void GAmanager::CreateNext()
 {
     GAparameter stock[POOL_SIZE];//pool[]を移す
-    float value[POOL_SIZE];//評価値
+    float value[POOL_SIZE];
     float select[POOL_SIZE];//親として選ばれる確率
     
     for (int i = 0; i<POOL_SIZE; i++)
     {
         stock[i] = pool[i];
-        value[i] = evalue(stock[i]);
-        
+        if(GA) value[i] = evalue(pool[i]);
     }
     
     for (int i = 0; i<POOL_SIZE; i++)
@@ -391,9 +390,16 @@ void GAmanager::CreateNext()
         int num = 1;
         for (int k = 0; k<POOL_SIZE; k++)//順位
         {
-            if (value[i] < value[k])
-            {
-                num++;
+            if (!GA) {
+                if (v[i] < v[k])
+                {
+                    num++;
+                }
+            } else {
+                if (value[i] < value[k])
+                {
+                    num++;
+                }
             }
         }
         
@@ -466,12 +472,20 @@ GAparameter GAmanager::first()
     float val = 0;
     for (int k = 0; k<POOL_SIZE; k++)
     {
-        if (evalue(pool[k]) > val)
-        {
-            i = k;
-            val = evalue(pool[k]);
+        if (!GA) {
+            if (v[k] > val)
+            {
+                i = k;
+                val = v[k];
+            }
+        } else {
+            float va = evalue(pool[k]);
+            if (va > val)
+            {
+                i = k;
+                val = va;
+            }
         }
-        
     }
     
     f = pool[i];

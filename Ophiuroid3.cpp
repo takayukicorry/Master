@@ -75,33 +75,31 @@ bool Ophiuroid3::checkState() {
 float Ophiuroid3::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    dynamicsWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
+    //dynamicsWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
     setWorld(dynamicsWorld);
     
     GAMaster::createGround(dynamicsWorld);
     initSF();
     create();
-    float value = 0;
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
         
     }
     
     GAMaster::cleanupWorld(dynamicsWorld);
-    return value;
+    return (m_value == -1) ? 0 : m_value;
 }
 
 float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    dynamicsWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
+    //dynamicsWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
     setWorld(dynamicsWorld);
     setNet(net);
     
     GAMaster::createGround(dynamicsWorld);
     initSF();
     create();
-    float value = 0;
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
     }
@@ -128,7 +126,7 @@ void Ophiuroid3::checkLightDistance() {
 void Ophiuroid3::setDirection() {
     int mid[NUM_LEGS];
     int out[NUM_LEGS];
-    
+    std::map<int, double> f;
     //中間層
     for (int i = 0; i<NUM_LEGS; i++){
         mid[i] = 0;
@@ -152,8 +150,15 @@ void Ophiuroid3::setDirection() {
     //出力値
     for (int i = 0; i<NUM_LEGS; i++){
         float a = m_param.a[i];//シグモイド関数のパラメータ
-        float f = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
+        f[i] = 1/(1+exp(-a*out[i]));//出力層からの出力値（シグモイド関数[0,1]）
         
+    }
+    
+    for (auto itr = TF_axis_direction.begin(); itr != TF_axis_direction.end(); ++itr) {
+        int index = itr->first;
+        int i = (index-101)%NUM_LEGS;
+        btScalar angle_target = 2*M_PI*f[i];
+        TF_axis_direction[index] = btVector3(cos(angle_target),0,sin(angle_target));
     }
 }
 

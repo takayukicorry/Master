@@ -44,7 +44,6 @@ int main (int argc, char** argv) {
         }
     }
     Ss[VERSION]->setNet(champ->net);
-    Ss[VERSION]->setParam(manager.pool[champ->species->id]);
 #endif
     master.setStarfish(Ss[VERSION]);
     mastermain(argc, argv, &master, SINGLE);
