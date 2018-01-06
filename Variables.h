@@ -51,7 +51,8 @@ enum CollisionGroup{
 #define THRESHOLD M_PI/3
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 5
+#define M_OBJ 3
+#define M_OBJ0 1
 #define M_TF 1
 
 #define FPS 60.f
@@ -67,10 +68,10 @@ enum CollisionGroup{
 #define RADIUS_TF 1
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
 #define NUM_GROUND 3
-#define NUM_TF_UNIT 12//>=4
+#define NUM_TF_UNIT 4//>=4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
 #define DL_TIME 120
-#define RE_TIME 360
+#define RE_TIME 120
 #define THRESH_VEL 5
 
 /*以下、要調整*/
@@ -83,11 +84,11 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
-#define NUM_GENARATION 100
+#define NUM_GENARATION 10
 #define SIMULATION_TIME_STEP 1200
 #define GA 0
 #define NT 1
-#define VERSION 1
+#define VERSION 3
 #define SINGLE 1
 #define WALL 0
 //*******************************//

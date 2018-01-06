@@ -18,12 +18,18 @@ int main (int argc, char** argv) {
     std::map<int, Starfish*> Ss;
     Population* pop;
     
+    char date[64];
+    
 #if NT
     pop = oph_test_realtime(&manager);
 #elif GA
     for (int i = 0; i < NUM_GENARATION; i++) {
+        time_t t = time(NULL);
+        strftime(date, sizeof(date), "%Y/%m/%d %a %H:%M:%S", localtime(&t));
+        printf("第%d世代 %s\n", i, date);
+        
         manager.CreateNext();
-        std::cout << "第" << i << "世代　最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
+        std::cout << "最優秀個体:" << manager.evalue(manager.pool[0]) <<std::endl;
     }
 #endif
     Ss[1] = new Ophiuroid(manager.pool[0]);

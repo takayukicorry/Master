@@ -88,9 +88,12 @@ float GAmanager::evalue(GAparameter p)
     if (spiecies_of_starfish == 1) {
         Ophiuroid oph(p);
         value = oph.evalue();
-    } else {
+    } else if (spiecies_of_starfish == 2) {
         Ophiuroid2 oph2(p);
         value = oph2.evalue();
+    } else {
+        Ophiuroid3 oph3(p);
+        value = oph3.evalue();
     }
     return value;
 }

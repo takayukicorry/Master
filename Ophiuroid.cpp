@@ -166,7 +166,7 @@ void Ophiuroid::initSF() {
     btTransform transform, transformY, transformS, transformSY;
     transform.setIdentity();
     transform.setOrigin(vRoot);
-    m_bodies[0] = createRigidBody(btScalar(M_OBJ), transform, m_shapes[0], 10);
+    m_bodies[0] = createRigidBody(btScalar(M_OBJ0), transform, m_shapes[0], 10);
     
     // legs
     for ( i=0; i<NUM_LEGS; i++)
