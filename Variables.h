@@ -59,9 +59,9 @@ enum CollisionGroup{
 #define RADIAN 180/M_PI
 #define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
-#define FBODY_SIZE 7.5f
+#define FBODY_SIZE 15.f
 #define FLEG_LENGTH 22.5f/NUM_JOINT
-#define FLEG_WIDTH 5.f
+#define FLEG_WIDTH 10.f
 #define FHEIGHT 15.f
 #define RADIUS 3
 #define LENGTH 6
@@ -73,6 +73,7 @@ enum CollisionGroup{
 #define DL_TIME 120
 #define RE_TIME 120
 #define THRESH_VEL 5
+#define THRESH_TURN 0.8
 
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
@@ -84,13 +85,13 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
-#define NUM_GENARATION 10
+#define NUM_GENARATION 100
 #define SIMULATION_TIME_STEP 1200
 #define GA 0
 #define NT 1
-#define VERSION 3
 #define VERSION_1_3 1
-#define SINGLE 1
+#define VERSION 1
+#define SINGLE 0
 #define WALL 0
 //*******************************//
 #endif

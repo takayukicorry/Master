@@ -137,7 +137,7 @@ bool Ophiuroid2::checkState() {
     
     btVector3 vY_O = vY - vOrigin;
     
-    return (kCheck_first) ? (vY_O[1] > -sin(2*M_PI/5) || vOrigin[1] > FBODY_SIZE) : (vY_O[1] < sin(2*M_PI/5));
+    return (kCheck_first) ? (vY_O[1] > -THRESH_TURN || vOrigin[1] > FBODY_SIZE) : (vY_O[1] < THRESH_TURN);
 }
 
 void Ophiuroid2::initSF() {

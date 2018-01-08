@@ -365,5 +365,5 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(0,20,150, 0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(0,200,200, 0, 0, 0.0, 0.0, 1.0, 0.0);
 }

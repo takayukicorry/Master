@@ -102,7 +102,7 @@ double oph_evaluate(Organism *org, GAparameter p) {
         Ophiuroid oph1(p);
         Ophiuroid3 oph3(p);
         v = oph1.evalue_NEAT(net);
-        if (v>=-1) v = oph3.evalue_NEAT(net);
+        if (v>=THRESH_TURN) v = oph3.evalue_NEAT(net);
     } else if (VERSION==1) {
         Ophiuroid oph(p);
         v = oph.evalue_NEAT(net);
