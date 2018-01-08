@@ -8,7 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 //#include <GL/glut.h>
-#include <GLUT/GLUT.h>
+//#include <GLUT/GLUT.h>
+#include <GL/freeglut.h>
 #include <OpenGL/OpenGL.h>
 #include <iostream>
 #include <vector>
@@ -44,11 +45,13 @@ enum CollisionGroup{
 #define NUM_JOINT 3
 #define MAX_MOTOR_TORQUE 5.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
 
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 
 #define BODYPART_COUNT (NUM_JOINT+1) * NUM_LEGS + 1 //+ NUM_LEGS //最後のプラスはturn判定センサ
 #define JOINT_COUNT BODYPART_COUNT - 1 //+ NUM_LEGS
 #define NUM_TURN 2
-#define THRESHOLD M_PI/3
+#define THRESHOLD_ROT M_PI/3
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
 #define M_OBJ 3
@@ -57,15 +60,15 @@ enum CollisionGroup{
 
 #define FPS 60.f
 #define RADIAN 180/M_PI
-#define SECOND 120//管足振る周期の半分//kannsokufurushuukinohannbunn
+#define SECONDS 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
 #define FBODY_SIZE 15.f
 #define FLEG_LENGTH 22.5f/NUM_JOINT
 #define FLEG_WIDTH 10.f
 #define FHEIGHT 15.f
 #define RADIUS 3
-#define LENGTH 6
-#define RADIUS_TF 1
+#define LENGTH 10
+#define RADIUS_TF 3
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
 #define NUM_GROUND 3
 #define NUM_TF_UNIT 4//>=4
@@ -81,17 +84,17 @@ enum CollisionGroup{
 #define ANGLE_ATTACH_Z_foward M_PI_2+ANGLE_ATTACH//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
 #define ANGLE_ATTACH_Z_back M_PI_2-ANGLE_ATTACH//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
 #define ANGLE_DETACH -ANGLE/2//管足、地面からの離脱判定角度下限//kannsoku,jimenntonoridatuhannteikakudojougenn
-#define ANGLE_VELOCITY_TF ANGLE*60/SECOND//管足振る角速度//kannsokufurukakusokudo
+#define ANGLE_VELOCITY_TF ANGLE*60/SECONDS//管足振る角速度//kannsokufurukakusokudo
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
 #define NUM_GENARATION 100
-#define SIMULATION_TIME_STEP 1200
+#define SIMULATION_TIME_STEP 120
 #define GA 0
-#define NT 1
+#define NT 0
 #define VERSION_1_3 1
 #define VERSION 1
-#define SINGLE 0
+#define SINGLE 1
 #define WALL 0
 //*******************************//
 #endif

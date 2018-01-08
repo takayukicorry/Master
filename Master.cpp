@@ -119,6 +119,10 @@ btCollisionShape* Master::groundShape = new btBoxShape(gShape);
 
 Master::Master() {
     Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    save = true;
+    video_buf = cvCreateImage(cvSize(WINDOW_WIDTH,WINDOW_HEIGHT), IPL_DEPTH_8U, 3);
+    video = cvCreateImage(cvSize(WINDOW_WIDTH,WINDOW_HEIGHT), IPL_DEPTH_8U, 3);
+    videoWriter = cvCreateVideoWriter( "/Users/masudatakayuki/M1/gl_video.avi", CV_FOURCC('X','V','I','D') , FPS , cvSize(video->width, video->height), 1 );
 }
 
 void Master::Render() {
@@ -217,6 +221,8 @@ void Master::Render() {
     }
     
     glPopMatrix();
+    
+    if (save) saveVideo();
     
     glDisable(GL_LIGHTING);
     
@@ -365,5 +371,26 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(0,200,200, 0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(0,150,250, 0, 0, 0.0, 0.0, 1.0, 0.0);
+}
+
+void Master::saveVideo() {
+    glReadBuffer(GL_FRONT);
+    glReadPixels(0, 0, WINDOW_WIDTH , WINDOW_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, video_buf->imageData);
+    glFlush();
+    cvConvertImage(video_buf, video, CV_CVTIMG_FLIP+CV_CVTIMG_SWAP_RB);
+    
+    cvWriteFrame(videoWriter,video);
+    
+    if (starfish->m_time_step > SIMULATION_TIME_STEP*2) {
+        releaseVideo();
+        save = false;
+        glutLeaveMainLoop();
+    }
+}
+
+void Master::releaseVideo() {
+    cvReleaseVideoWriter(&videoWriter);
+    cvReleaseImage(&video_buf);
+    cvReleaseImage(&video);
 }

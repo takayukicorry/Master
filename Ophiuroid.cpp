@@ -208,8 +208,7 @@ void Ophiuroid::initSF() {
     {
         m_bodies[i]->setDamping(0.05, 0.85);
         m_bodies[i]->setDeactivationTime(1000000000000.f);
-        m_bodies[i]->setSleepingThresholds(1.6, 2.5);
-        m_bodies[i]->setSleepingThresholds(0.5f, 0.5f);
+        m_bodies[i]->setSleepingThresholds(0.0f, 0.0f);
         m_bodies[i]->forceActivationState(DISABLE_DEACTIVATION);
         
     }
@@ -400,7 +399,7 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
                 btVector3 vY_O = vY - vOrigin;
                 btScalar rot = btScalar(acos(vY_O[1]));
                 
-                if(rot > THRESHOLD){
+                if(rot > THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
                         //if (m_param.turn_pattern[i]==1){
                         m_param.turn += 1;
@@ -413,7 +412,7 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
                         //}
                     }
                 }
-                if(rot < -THRESHOLD){
+                if(rot < -THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
                         //if (m_param.turn_pattern[i]==1){
                         m_param.turn += 1;
@@ -497,7 +496,7 @@ void Ophiuroid::setMotorTarget2(double delta) {
                 btVector3 vY_O = vY - vOrigin;
                 btScalar rot = btScalar(acos(vY_O[1]));
                 
-                if(rot > THRESHOLD){
+                if(rot > THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
                         //if (m_param.turn_pattern[i]==1){
                             m_param.turn += 1;
@@ -510,7 +509,7 @@ void Ophiuroid::setMotorTarget2(double delta) {
                         //}
                     }
                 }
-                if(rot < -THRESHOLD){
+                if(rot < -THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
                         //if (m_param.turn_pattern[i]==1){
                             m_param.turn += 1;

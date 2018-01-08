@@ -11,6 +11,7 @@
 #include "GAMain.hpp"
 
 int main (int argc, char** argv) {
+ 
     srand((unsigned)time(NULL));
     
     GAmanager manager = *new GAmanager(VERSION);
@@ -53,6 +54,7 @@ int main (int argc, char** argv) {
 #endif
     master.setStarfish(Ss[VERSION]);
     mastermain(argc, argv, &master, SINGLE);
+    
     
     return 0;
 }

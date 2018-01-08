@@ -491,8 +491,7 @@ void Ophiuroid3::initSF() {
     for (i = 0; i < m_bodies.size(); ++i) {
         m_bodies[i]->setDamping(0.05, 0.85);
         m_bodies[i]->setDeactivationTime(1000000000000.f);
-        m_bodies[i]->setSleepingThresholds(1.6, 2.5);
-        m_bodies[i]->setSleepingThresholds(0.5f, 0.5f);
+        m_bodies[i]->setSleepingThresholds(0.f, 0.f);
         m_bodies[i]->forceActivationState(DISABLE_DEACTIVATION);
         
     }
@@ -584,7 +583,7 @@ void Ophiuroid3::create() {
             bodies_tf.push_back(body_tf);
             TF_Contact[index] = false;
             TF_axis_direction[index] = btVector3(0, 0, 1);
-            InitTime_tf[index] = 2*SECOND*( rand100(mt)/100.0 );
+            InitTime_tf[index] = 2*SECONDS*( rand100(mt)/100.0 );
             ResumeTime_ground[index] = InitTime_tf[index];
             TF_object[index] = body_tf;
             TF_object[index]->setFriction(0);

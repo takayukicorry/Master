@@ -27,9 +27,8 @@ void mastermain(int argc, char** argv, Master* master, bool single) {
     
     master->createGround();
     master->createStarfish();
-    
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(640, 480);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutCreateWindow(argv[0]);
@@ -40,6 +39,7 @@ void mastermain(int argc, char** argv, Master* master, bool single) {
         glutIdleFunc(idle);
     }
     master->init();
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,GLUT_ACTION_GLUTMAINLOOP_RETURNS);
     glutMainLoop();
     
     master->CleanupBullet();

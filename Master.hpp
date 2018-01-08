@@ -12,7 +12,10 @@
 #include "Ophiuroid.hpp"
 #include "Ophiuroid2.hpp"
 #include "Ophiuroid3.hpp"
-
+//#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 class Master {
     
@@ -24,6 +27,12 @@ private:
     
     Starfish* starfish;
     GAparameter m_param;
+    
+    IplImage* video_buf;
+    IplImage* video;
+    CvVideoWriter* videoWriter;
+    
+    bool save;
     
 public:
     static btDiscreteDynamicsWorld* dynamicsWorld;
@@ -43,7 +52,8 @@ public:
     void createStarfish();
     void CleanupStarfish();
     void checkStarfish();
-    
+    void saveVideo();
+    void releaseVideo();
 };
 
 #endif /* Master_hpp */
