@@ -89,13 +89,14 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
-#define NUM_GENARATION 100
+#define NUM_GENARATION 10
 #define SIMULATION_TIME_STEP 120
 #define GA 0
 #define NT 1
 #define VERSION_1_3 1
+#define SINGLE 0
+
 #define VERSION 1
-#define SINGLE 1
 #define WALL 0
 //*******************************//
 #endif
