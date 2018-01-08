@@ -117,12 +117,12 @@ btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Mas
 btVector3 gShape(btScalar(100.), btScalar(50.), btScalar(100.));
 btCollisionShape* Master::groundShape = new btBoxShape(gShape);
 
-Master::Master() {
+Master::Master(const char *fn) {
     Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
     save = true;
     video_buf = cvCreateImage(cvSize(WINDOW_WIDTH,WINDOW_HEIGHT), IPL_DEPTH_8U, 3);
     video = cvCreateImage(cvSize(WINDOW_WIDTH,WINDOW_HEIGHT), IPL_DEPTH_8U, 3);
-    videoWriter = cvCreateVideoWriter( "/Users/masudatakayuki/M1/gl_video.avi", CV_FOURCC('X','V','I','D') , FPS , cvSize(video->width, video->height), 1 );
+    videoWriter = cvCreateVideoWriter( fn, CV_FOURCC('X','V','I','D') , FPS , cvSize(video->width, video->height), 1 );
 }
 
 void Master::Render() {

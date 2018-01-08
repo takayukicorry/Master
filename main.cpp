@@ -11,15 +11,24 @@
 #include "GAMain.hpp"
 
 int main (int argc, char** argv) {
- 
     srand((unsigned)time(NULL));
     
+    char date[64];
+    time_t t = time(NULL);
+    strftime(date, sizeof(date), "%m%d_%H%M%S", localtime(&t));
+    std::string fnstr{date};
+    std::string fnstr_avi, fnstr_data;
+    
+    fnstr_avi = "/Users/masudatakayuki/M1/修士論文/動画/"+fnstr+".avi";
+    const char *fn_avi = fnstr_avi.c_str();
+    fnstr_data = "/Users/masudatakayuki/M1/修士論文/データ/"+fnstr;
+    const char *fn_data = fnstr_data.c_str();
+    
+    
     GAmanager manager = *new GAmanager(VERSION);
-    Master master = *new Master();
+    Master master = *new Master(fn_avi);
     std::map<int, Starfish*> Ss;
     Population* pop;
-    
-    char date[64];
     
 #if NT
     pop = oph_test_realtime(&manager);
@@ -51,6 +60,8 @@ int main (int argc, char** argv) {
         }
     }
     Ss[VERSION]->setNet(champ->net);
+    
+    NEAT::print_Genome_tofile(champ->gnome, fn_data);
 #endif
     master.setStarfish(Ss[VERSION]);
     mastermain(argc, argv, &master, SINGLE);

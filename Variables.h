@@ -16,6 +16,7 @@
 #include <math.h>
 #include <map>
 #include <random>
+#include <string>
 //#include <OpenGL/DemoApplication.h>
 
 enum CollisionGroup{
@@ -91,7 +92,7 @@ enum CollisionGroup{
 #define NUM_GENARATION 100
 #define SIMULATION_TIME_STEP 120
 #define GA 0
-#define NT 0
+#define NT 1
 #define VERSION_1_3 1
 #define VERSION 1
 #define SINGLE 1

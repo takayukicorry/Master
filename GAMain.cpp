@@ -45,11 +45,6 @@ Population *oph_test_realtime(GAmanager* m) {
             printf("%s\n", date);
             
             status = oph_epoch(pop,gen,m);
-            
-            if (status) {
-                
-            }
-            
         }
         
         if (expcount<NEAT::num_runs-1) delete pop;
