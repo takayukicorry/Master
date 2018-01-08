@@ -89,8 +89,8 @@ enum CollisionGroup{
 #define GA 0
 #define NT 1
 #define VERSION 3
+#define VERSION_1_3 1
 #define SINGLE 1
 #define WALL 0
 //*******************************//
 #endif
-

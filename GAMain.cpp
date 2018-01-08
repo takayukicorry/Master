@@ -98,7 +98,12 @@ double oph_evaluate(Organism *org, GAparameter p) {
     double v;
     Network *net = org->net;
     
-    if (VERSION==1) {
+    if (VERSION_1_3) {
+        Ophiuroid oph1(p);
+        Ophiuroid3 oph3(p);
+        v = oph1.evalue_NEAT(net);
+        if (v>=-1) v = oph3.evalue_NEAT(net);
+    } else if (VERSION==1) {
         Ophiuroid oph(p);
         v = oph.evalue_NEAT(net);
     } else if (VERSION==3) {
