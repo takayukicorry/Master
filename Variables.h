@@ -44,7 +44,7 @@ enum CollisionGroup{
 #define MAX_ANGLE2_2 M_PI
 #define MIN_ANGLE2_2 -M_PI
 #define NUM_JOINT 2
-#define MAX_MOTOR_TORQUE 50.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
+#define MAX_MOTOR_TORQUE 500.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -55,9 +55,9 @@ enum CollisionGroup{
 #define NUM_TURN 2
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 0.f
-#define M_OBJ0 0.f
-#define M_TF 0.f
+#define M_OBJ 0.5f
+#define M_OBJ0 0.5f
+#define M_TF 0.5f
 
 #define FPS 60.f
 #define RADIAN 180/M_PI
@@ -93,7 +93,7 @@ enum CollisionGroup{
 #define NUM_GENARATION 100
 #define SIMULATION_TIME_STEP 1200
 #define GA 0
-#define NT 0
+#define NT 1
 #define VERSION_1_3 0
 #define SINGLE 1
 
