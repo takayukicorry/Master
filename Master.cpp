@@ -30,13 +30,19 @@ struct MaterialStruct {
 MaterialStruct ms_jade = {
     { 0.135, 0.2225, 0.1575, 1.0 },
     //{ 0.54, 0.89, 0.63, 1.0 },
-    { 0.1, 0.01, 0.01, 1.0 },
+    { 0.5, 0.5, 0.5, 1.0 },
     { 0.316228, 0.316228, 0.316228, 1.0 },
     12.8 };
 MaterialStruct ms_ruby = {
     { 0.1745, 0.01175, 0.01175, 1.0 },
     //{ 0.61424, 0.04136, 0.04136, 1.0 },
-    { 0.1, 0.01, 0.01, 1.0 },
+    { 0.08, 0.05, 0.05, 1.0 },
+    { 0.727811, 0.626959, 0.626959, 1.0 },
+    76.8 };
+MaterialStruct ms_tf = {
+    { 0.1745, 0.01175, 0.01175, 1.0 },
+    //{ 0.61424, 0.04136, 0.04136, 1.0 },
+    { 0.16, 0.1, 0.1, 1.0 },
     { 0.727811, 0.626959, 0.626959, 1.0 },
     76.8 };
 GLfloat red[] = { 0.8, 0.2, 0.2, 1.0 };
@@ -157,11 +163,23 @@ void Master::Render() {
     glLightfv(GL_LIGHT3, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT3, GL_POSITION, light_position5);
     
+    glLightfv(GL_LIGHT4, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT4, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT4, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT4, GL_POSITION, light_position4);
+    
+    glLightfv(GL_LIGHT5, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT5, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT5, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT5, GL_POSITION, light_position5);
+    
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_LIGHT2);
     glEnable(GL_LIGHT3);
+    glEnable(GL_LIGHT4);
+    glEnable(GL_LIGHT5);
     
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
@@ -242,11 +260,12 @@ void Master::Render() {
                     glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
                     glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
                 } else {
-                    glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
-                    glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
-                    glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
-                    glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+                    glMaterialfv(GL_FRONT, GL_AMBIENT, ms_tf.ambient);
+                    glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_tf.diffuse);
+                    glMaterialfv(GL_FRONT, GL_SPECULAR, ms_tf.specular);
+                    glMaterialfv(GL_FRONT, GL_SHININESS, &ms_tf.shininess);
                 }
+                
                 glutSolidCapusule(halfExtent[0], halfExtent[1], 100);
 
             }
@@ -404,12 +423,14 @@ void Master::setStarfish(Starfish* s){
 }
 
 void Master::init() {
-    
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//アルファの設定
+    glEnable(GL_BLEND);//アルファのブレンド有効
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(0,120,120, 0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(0,200,250, 0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void Master::saveVideo() {
