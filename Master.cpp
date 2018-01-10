@@ -309,7 +309,8 @@ void Master::createGround() {
     }
     if (WALL) {
         groundTransform.setIdentity();
-        groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1], (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
+        groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, 0, (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
+        groundTransform.setRotation(btQuaternion(btVector3(0,0,1),M_PI_4));
         
         btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
         btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
