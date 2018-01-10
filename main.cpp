@@ -53,12 +53,16 @@ int main (int argc, char** argv) {
     Organism *champ;
     champ=*(pop->organisms.begin()); //Make sure at least something is chosen
     //Find the population champ
+    std::cout << ".....now evaluating CHAMP....." <<std::endl;
     for(curorg = pop->organisms.begin(); curorg != pop->organisms.end(); ++curorg) {
-        if ((*curorg)->fitness > max_fitness){
-            champ=(*curorg);
-            max_fitness=champ->fitness;
+        double fitness = oph_evaluate(*curorg, manager.pool[0]);
+        if (fitness > max_fitness){
+            champ=*curorg;
+            max_fitness=fitness;
         }
     }
+    std::cout << max_fitness <<std::endl;
+
     Ss[VERSION]->setNet(champ->net);
     
     NEAT::print_Genome_tofile(champ->gnome, fn_data);

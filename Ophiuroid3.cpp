@@ -27,6 +27,27 @@ Ophiuroid3::Ophiuroid3(Starfish* sf) {
     m_joints_ankle = sf->m_joints_ankle;
     m_motor1 = sf->m_motor1;
     m_motor2 = sf->m_motor2;
+    
+    motor_tX = sf->motor_tX;
+    motor_tY = sf->motor_tY;
+    motor_tZ = sf->motor_tZ;
+    motor_to_groundY = sf->motor_to_groundY;
+    motor_to_groundZ = sf->motor_to_groundZ;
+    motor_state = sf->motor_state;
+    TF_Contact = sf->TF_Contact;
+    TF_foward = sf->TF_foward;
+    TF_object = sf->TF_object;
+    dl_time = sf->dl_time;
+    InitTime_tf = sf->InitTime_tf;
+    ResumeTime_ground = sf->ResumeTime_ground;
+    Init_tf = sf->Init_tf;
+    TF_constraint = sf->TF_constraint;
+    TF_constraint_ground = sf->TF_constraint_ground;
+    TF_axis_direction = sf->TF_axis_direction;
+    TF_pos = sf->TF_pos;
+    bodies_tf = sf->bodies_tf;
+    constraints = sf->constraints;
+
     hasNet = false;
 }
 
@@ -69,7 +90,7 @@ bool Ophiuroid3::checkState() {
     
     btVector3 vY_O = vY - vOrigin;
     
-    return (kCheck_first) ? (vY_O[1] > -THRESH_TURN || vOrigin[1] > FBODY_SIZE) : (vY_O[1] < THRESH_TURN);
+    return vY_O[1] > -THRESH_TURN || vOrigin[1] > FLEG_WIDTH;
 }
 
 float Ophiuroid3::evalue() {
@@ -78,14 +99,14 @@ float Ophiuroid3::evalue() {
     //dynamicsWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
     setWorld(dynamicsWorld);
     
-    GAMaster::createGround(dynamicsWorld);
+    GAMaster::createGround(m_ownerWorld);
     initSF();
     create();
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
     }
     
-    GAMaster::cleanupWorld(dynamicsWorld);
+    GAMaster::cleanupWorld(m_ownerWorld);
     return (m_value == -1) ? 0 : m_value;
 }
 
@@ -96,14 +117,14 @@ float Ophiuroid3::evalue_NEAT(NEAT::Network* net) {
     setWorld(dynamicsWorld);
     setNet(net);
     
-    GAMaster::createGround(dynamicsWorld);
+    GAMaster::createGround(m_ownerWorld);
     initSF();
     create();
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         dynamicsWorld->stepSimulation(1.f / FPS);
     }
     
-    GAMaster::cleanupWorld(dynamicsWorld);
+    GAMaster::cleanupWorld(m_ownerWorld);
     return (m_value == -1) ? 0 : m_value;
 }
 
@@ -122,6 +143,7 @@ void Ophiuroid3::checkLightDistance() {
     now = m_bodies[0]->getCenterOfMassPosition();
     dis = lightThresh - sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
     m_value += (dis > 0) ? dis : 0;
+    //if (m_time_step < SIMULATION_TIME_STEP) std::cout << m_value << std::endl;
 }
 
 void Ophiuroid3::setDirection() {
@@ -288,7 +310,7 @@ void Ophiuroid3::contact() {
             if (!TF_Contact[obIDC]) {
                 btScalar angle = motor_tZ[obIDC]->m_currentPosition;
                 int percent = rand()%100;
-                if (percent < 50) {
+                if (percent < TF_PERCENT) {
                     if (((angle > ANGLE_ATTACH_Z_foward && TF_foward[obIDC]) || (angle < ANGLE_ATTACH_Z_back && !TF_foward[obIDC])) && ResumeTime_ground[obIDC] < m_time_step) {
                         TF_Contact[obIDC] = true;
                         dl_time[obIDC] = m_time_step + DL_TIME;
@@ -425,11 +447,7 @@ btRigidBody* Ophiuroid3::createRigidBody(btScalar mass, const btTransform &start
 }
 
 void Ophiuroid3::initSF() {
-    if (!hasNet) {
-        m_ownerWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
-    } else {
-        m_ownerWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
-    }
+    
     m_shapes[0] = new btCylinderShape(btVector3(FBODY_SIZE,FLEG_WIDTH,FBODY_SIZE));
     int i;
     
@@ -549,7 +567,14 @@ void Ophiuroid3::initSF() {
 }
 
 void Ophiuroid3::create() {
+    if (!hasNet) {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback3, this, true);
+    } else {
+        m_ownerWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
+    }
     zeroFriction(true);
+    
+    //if (!kCheck_first) return;
     
     std::random_device rnd;
     std::mt19937 mt(rnd());

@@ -21,7 +21,28 @@ public:
     std::map<int, btRotationalLimitMotor*> m_motor1;//handle
     std::map<int, btRotationalLimitMotor*> m_motor2;//wheel
     std::map<int, btCollisionShape*> m_shapes;
-    btDynamicsWorld* m_ownerWorld;
+    
+    std::map<int, btRotationalLimitMotor* > motor_tX;
+    std::map<int, btRotationalLimitMotor* > motor_tY;
+    std::map<int, btRotationalLimitMotor* > motor_tZ;
+    std::map<int, btRotationalLimitMotor* > motor_to_groundY;
+    std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
+    std::map<int, bool > motor_state;
+    std::map<int, bool > TF_Contact;
+    std::map<int, bool > TF_foward;
+    std::map<int, btRigidBody* > TF_object;
+    std::map<int, int > dl_time;
+    std::map<int, int> InitTime_tf;
+    std::map<int, int> ResumeTime_ground;
+    std::map<int, int> Init_tf;
+    std::map<int, btGeneric6DofSpringConstraint*> TF_constraint;
+    std::map<int, btUniversalConstraint*> TF_constraint_ground;
+    std::map<int, btVector3> TF_axis_direction;
+    std::map<int, btVector3> TF_pos;
+    
+    std::vector<btRigidBody* > bodies_tf;
+    std::vector<btTypedConstraint* > constraints;
+    btDiscreteDynamicsWorld* m_ownerWorld;
     bool drawTF = true;
     int m_time_step;
     bool kCheck_first;
@@ -67,7 +88,7 @@ public:
             itr->second->setFriction(f);
         }
     }
-    void setWorld(btDynamicsWorld* ownerWorld) {m_ownerWorld = ownerWorld;}
+    void setWorld(btDiscreteDynamicsWorld* ownerWorld) {m_ownerWorld = ownerWorld;}
     void setNet(NEAT::Network* net) {m_net = net; hasNet = true;}
     void setParam(GAparameter p) {m_param = p;}
 };

@@ -187,10 +187,10 @@ void Master::Render() {
             //sphere
             else if (shape == SPHERE_SHAPE_PROXYTYPE)
             {
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
-                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
+                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
                 if ( 10 <= index && index < 100) {
                     glutSolidSphere(FLEG_WIDTH, 100, 100);
                 } else {
@@ -200,10 +200,17 @@ void Master::Render() {
             //capsule
             else if (shape == CAPSULE_SHAPE_PROXYTYPE)
             {
-                glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
-                glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
-                glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
-                glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
+                if ( 10 <= index && index < 100) {
+                    glMaterialfv(GL_FRONT, GL_AMBIENT, ms_ruby.ambient);
+                    glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_ruby.diffuse);
+                    glMaterialfv(GL_FRONT, GL_SPECULAR, ms_ruby.specular);
+                    glMaterialfv(GL_FRONT, GL_SHININESS, &ms_ruby.shininess);
+                } else {
+                    glMaterialfv(GL_FRONT, GL_AMBIENT, ms_jade.ambient);
+                    glMaterialfv(GL_FRONT, GL_DIFFUSE, ms_jade.diffuse);
+                    glMaterialfv(GL_FRONT, GL_SPECULAR, ms_jade.specular);
+                    glMaterialfv(GL_FRONT, GL_SHININESS, &ms_jade.shininess);
+                }
                 glutSolidCapusule(halfExtent[0], halfExtent[1], 10);
 
             }
@@ -321,7 +328,7 @@ void Master::createStarfish() {
 
 void Master::checkStarfish() {
     if (!starfish->checkState()) {
-        CleanupStarfish();
+        //CleanupStarfish();
         Starfish* oph;
         if (starfish->className == 3) {
             oph = new Ophiuroid(starfish);
@@ -329,6 +336,7 @@ void Master::checkStarfish() {
             oph= new Ophiuroid3(starfish);
         }
         oph->kCheck_first = !starfish->kCheck_first;
+        if (starfish->hasNet) oph->setNet(starfish->m_net);
         setStarfish(oph);
         starfish->create();
     }

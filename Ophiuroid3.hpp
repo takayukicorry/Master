@@ -17,28 +17,7 @@
 class Ophiuroid3 : public Starfish {
     
 private:
-    std::map<int, btRotationalLimitMotor* > motor_tX;
-    std::map<int, btRotationalLimitMotor* > motor_tY;
-    std::map<int, btRotationalLimitMotor* > motor_tZ;
-    std::map<int, btRotationalLimitMotor* > motor_to_groundY;
-    std::map<int, btRotationalLimitMotor* > motor_to_groundZ;
-    std::map<int, bool > motor_state;
-    std::map<int, bool > TF_Contact;
-    std::map<int, bool > TF_foward;
-    std::map<int, btRigidBody* > TF_object;
-    std::map<int, int > dl_time;
-    std::map<int, int> InitTime_tf;
-    std::map<int, int> ResumeTime_ground;
-    std::map<int, int> Init_tf;
-    std::map<int, btGeneric6DofSpringConstraint*> TF_constraint;
-    std::map<int, btUniversalConstraint*> TF_constraint_ground;
-    std::map<int, btVector3> TF_axis_direction;
-    std::map<int, btVector3> TF_pos;
-
-    std::vector<btRigidBody* > bodies_tf;
-    std::vector<btTypedConstraint* > constraints;
-    
-
+ 
 public:
     Ophiuroid3(GAparameter);
     Ophiuroid3(Starfish*);

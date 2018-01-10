@@ -18,6 +18,7 @@
 class Ophiuroid : public Starfish {
     
 private:
+    
     int swing_phase;
     int leg_state[NUM_LEGS];
     int turn_direction[NUM_LEGS];
@@ -39,6 +40,9 @@ public:
     void setMotorTarget2(double);
     void setMotorTarget2_NEAT(double);
     void calcMotorTarget(int, int = 0, float = 0);
+    void setSpring(btGeneric6DofSpringConstraint*, int);
+    btRigidBody* initTubefeet(btScalar*, const btTransform&);
+
 };
 
 #endif /* Ophiuroid_hpp */

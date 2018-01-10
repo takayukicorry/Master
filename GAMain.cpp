@@ -33,7 +33,7 @@ Population *oph_test_realtime(GAmanager* m) {
     //
     //start
     //
-    start_genome = new Genome(NUM_LEGS, NUM_LEGS, NUM_LEGS*NUM_LEGS, 1);
+    start_genome = new Genome(NUM_LEGS, NUM_LEGS, NUM_LEGS, 1);
     for(expcount=0;expcount<NEAT::num_runs;expcount++) {
         pop= new Population(start_genome,NEAT::pop_size);
         pop->verify();
