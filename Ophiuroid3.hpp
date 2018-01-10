@@ -17,7 +17,7 @@
 class Ophiuroid3 : public Starfish {
     
 private:
- 
+    int targetOdorant;
 public:
     Ophiuroid3(GAparameter);
     Ophiuroid3(Starfish*);

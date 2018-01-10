@@ -467,7 +467,7 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
                         m_param.turn_pattern[i] = 1;
                         turn_direction[i] = 1;//右ねじ正
                         rigid1->setFriction(FRICTION);
-                        rigid1->setGravity(btVector3(0,-15.0,0));
+                        rigid1->setGravity(btVector3(0,-50.0,0));
                         }
                     }
                 }
@@ -551,7 +551,7 @@ void Ophiuroid::setMotorTarget2(double delta) {
                             m_param.turn_pattern[i] = 1;
                             turn_direction[i] = 1;//右ねじ正
                             rigid1->setFriction(FRICTION);
-                            rigid1->setGravity(btVector3(0,-15.0,0));
+                            rigid1->setGravity(btVector3(0,-30.0,0));
                         }
                     }
                 }
