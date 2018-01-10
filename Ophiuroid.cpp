@@ -244,11 +244,11 @@ void Ophiuroid::initSF() {
         const int AXIS2_ID = 1;
         m_motor1[i] = hinge2C->getRotationalLimitMotor(AXIS1_ID);
         m_motor2[i] = hinge2C->getRotationalLimitMotor(AXIS2_ID);
-        m_motor1[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;
-        m_motor2[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;
+        m_motor1[i]->m_maxMotorForce = 500000;
+        m_motor2[i]->m_maxMotorForce = 500000;
         
         m_motor1[i]->m_enableMotor = true;
-        m_motor2[i]->m_enableMotor = false;
+        m_motor2[i]->m_enableMotor = true;
         
         btVector3 JointPoint = btVector3(btScalar(fCos*(FBODY_SIZE+FLEG_WIDTH)), btScalar(0.), btScalar(fSin*(FBODY_SIZE+FLEG_WIDTH)));
         
@@ -262,7 +262,8 @@ void Ophiuroid::initSF() {
             if(k==1){pivotA = btVector3(0, 0, 0); pivotB = btVector3(0, FLEG_WIDTH*2 + FLEG_LENGTH/2, 0);}
             btHingeConstraint* joint2 = new btHingeConstraint(*m_bodies[k+(NUM_JOINT+1)*i], *m_bodies[k+1+(NUM_JOINT+1)*i], pivotA, pivotB, axisA, axisB);
             
-            joint2->setLimit(m_param.lowerlimit[(NUM_JOINT+2)*i + 1 + k], m_param.upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            //ここjoint2->setLimit(m_param.lowerlimit[(NUM_JOINT+2)*i + 1 + k], m_param.upperlimit[(NUM_JOINT+2)*i + 1 + k]);
+            joint2->setLimit(-M_PI_2, M_PI_2);
             joint2->setUserConstraintId(10);
             m_joints_ankle[k-1+NUM_JOINT*i] = joint2;
             m_ownerWorld->addConstraint(m_joints_ankle[k-1+NUM_JOINT*i], true);
@@ -278,7 +279,7 @@ void Ophiuroid::create() {
     } else {
         m_ownerWorld->setInternalTickCallback(motorPreTickCallback_NEAT, this, true);
     }
-    activateMotor(true);
+    //activateMotor(true);
     activateTwist(true);
     zeroFriction(false);
     
@@ -597,7 +598,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         default: fAngleError1 = fTargetLimitAngle1 - fCurAngle1; break;
     }
     btScalar fDesiredAngularVel1 = fAngleError1*3;//*FPS;
-    m_motor1[i]->m_targetVelocity = -fDesiredAngularVel1;
+    m_motor1[i]->m_targetVelocity = fDesiredAngularVel1;
     
     //wheel
     btScalar fCurAngle2 = -hinge2->getAngle2();

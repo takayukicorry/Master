@@ -70,7 +70,7 @@ enum CollisionGroup{
 #define FHEIGHT 15.f
 #define RADIUS 3
 #define LENGTH 10
-#define RADIUS_TF 3
+#define RADIUS_TF 1
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
 #define NUM_GROUND 3
 #define NUM_TF_UNIT 8//>=4
