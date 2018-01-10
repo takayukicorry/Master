@@ -10,8 +10,8 @@
 //#include <cxxabi.h>
 
 /*色など*/
-GLfloat light0pos[] = { 300.0, 300.0, 300.0, 1.0 };
-GLfloat light1pos[] = { -300.0, 300.0, 300.0, 1.0 };
+GLfloat light0pos[] = { 200.0, 200.0, 200.0, 1.0 };
+GLfloat light1pos[] = { -200.0, 200.0, 200.0, 1.0 };
 struct MaterialStruct {
     GLfloat ambient[4];
     GLfloat diffuse[4];
