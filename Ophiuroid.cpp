@@ -248,7 +248,7 @@ void Ophiuroid::initSF() {
         m_motor2[i]->m_maxMotorForce = MAX_MOTOR_TORQUE;
         
         m_motor1[i]->m_enableMotor = true;
-        m_motor2[i]->m_enableMotor = true;
+        m_motor2[i]->m_enableMotor = false;
         
         btVector3 JointPoint = btVector3(btScalar(fCos*(FBODY_SIZE+FLEG_WIDTH)), btScalar(0.), btScalar(fSin*(FBODY_SIZE+FLEG_WIDTH)));
         
@@ -476,6 +476,7 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
         //第二段階（turn後）//
         if (m_param.turn >= NUM_TURN){
             swing_phase = -1;
+            activateMotor(true);
             //支脚以外//
             if (leg_state[i] == 0){
                 
@@ -560,6 +561,7 @@ void Ophiuroid::setMotorTarget2(double delta) {
         //第二段階（turn後）//
         if (m_param.turn >= NUM_TURN){
             swing_phase = -1;
+            activateMotor(true);
             //支脚以外//
             if (leg_state[i] == 0){
                 float a = m_param.a[i];//シグモイド関数のパラメータ
