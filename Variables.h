@@ -55,9 +55,9 @@ enum CollisionGroup{
 #define NUM_TURN 2
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 1.f
-#define M_OBJ0 1.f
-#define M_TF 1.f
+#define M_OBJ 0.f
+#define M_OBJ0 0.f
+#define M_TF 0.f
 
 #define FPS 60.f
 #define RADIAN 180/M_PI
@@ -93,7 +93,7 @@ enum CollisionGroup{
 #define NUM_GENARATION 100
 #define SIMULATION_TIME_STEP 1200
 #define GA 0
-#define NT 1
+#define NT 0
 #define VERSION_1_3 0
 #define SINGLE 1
 
