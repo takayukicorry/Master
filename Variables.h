@@ -49,6 +49,7 @@ enum CollisionGroup{
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
+
 #define BODYPART_COUNT (NUM_JOINT+1) * NUM_LEGS + 1 //+ NUM_LEGS //最後のプラスはturn判定センサ
 #define JOINT_COUNT BODYPART_COUNT - 1 //+ NUM_LEGS
 #define NUM_TURN 2
