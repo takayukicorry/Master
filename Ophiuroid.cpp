@@ -593,7 +593,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         case 1: fAngleError1 = -fCurAngle1; break;
         default: fAngleError1 = fTargetLimitAngle1 - fCurAngle1; break;
     }
-    btScalar fDesiredAngularVel1 = fAngleError1;//*FPS;
+    btScalar fDesiredAngularVel1 = fAngleError1*3;//*FPS;
     m_motor1[i]->m_targetVelocity = -fDesiredAngularVel1;
     
     //wheel
@@ -607,7 +607,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         default: fTargetLimitAngle2 = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1] + fTargetAngle_hip2 * (m_param.upperlimit[(NUM_JOINT + 2)*i +1] - m_param.lowerlimit[(NUM_JOINT + 2)*i +1]); break;
     }
     btScalar fAngleError2 = fTargetLimitAngle2  - fCurAngle2;
-    btScalar fDesiredAngularVel2 = fAngleError2;//*FPS;
+    btScalar fDesiredAngularVel2 = fAngleError2*3;//*FPS;
     switch (sW) {
         case 2: m_motor2[i]->m_targetVelocity = -fDesiredAngularVel2 * f; break;
         default:m_motor2[i]->m_targetVelocity = -fDesiredAngularVel2; break;
@@ -630,7 +630,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
             default: fTargetLimitAngle_ankle = m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k] + fTargetAngle_ankle * (m_param.upperlimit[(NUM_JOINT + 2)*i + 1 + k] - m_param.lowerlimit[(NUM_JOINT + 2)*i + 1 + k]); break;
         }
         btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;
-        btScalar fDesiredAngularVel_ankle = fAngleError_ankle;
+        btScalar fDesiredAngularVel_ankle = fAngleError_ankle*3;
         switch (sW) {
             case 2: hingeC2->enableAngularMotor(true, -fDesiredAngularVel_ankle * f, MAX_MOTOR_TORQUE); break;
             default: hingeC2->enableAngularMotor(true, -fDesiredAngularVel_ankle, MAX_MOTOR_TORQUE); break;

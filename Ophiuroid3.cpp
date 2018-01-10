@@ -186,25 +186,27 @@ void Ophiuroid3::setDirection() {
 }
 
 void Ophiuroid3::setDirection_NEAT() {
-    std::map<int, double> f;
     int i = 0;
-    
-    m_net->load_sensors(m_param.light_pattern);
-    if (!(m_net->activate())) { m_value = -1; return; }
-    for (auto itr = m_net->outputs.begin(); itr != m_net->outputs.end(); ++itr) {
-        f[i] = (*itr)->activation;
-        i++;
-    }
     
     for (auto itr = TF_axis_direction.begin(); itr != TF_axis_direction.end(); ++itr) {
         int index = itr->first;
         i = (index-101)%NUM_LEGS;
-        btScalar angle_target = 2*M_PI*f[i];
+        btScalar angle_target = m_param.swing[i] * M_PI_4;
         TF_axis_direction[index] = btVector3(cos(angle_target),0,sin(angle_target));
     }
 }
 
 void Ophiuroid3::motor() {
+    std::map<int, double> f;
+    int ii = 0;
+    if (hasNet) {
+        m_net->load_sensors(m_param.light_pattern);
+        if (!(m_net->activate())) { m_value = -1; return; }
+        for (auto itr = m_net->outputs.begin(); itr != m_net->outputs.end(); ++itr) {
+            f[ii] = (*itr)->activation;
+            ii++;
+        }
+    }
     
     for (auto itr = motor_tZ.begin(); itr != motor_tZ.end(); ++itr) {
         int index = itr->first;
@@ -237,13 +239,13 @@ void Ophiuroid3::motor() {
             btScalar angleZ = motor->m_currentPosition;
             if (!Init_tf[index]) {
                 Init_tf[index] = true;
-                motor->m_targetVelocity = calcMotorVel(index);
+                motor->m_targetVelocity = (hasNet)?calcMotorVel(index)*f[(index-101)%NUM_LEGS]:calcMotorVel(index);
             }
             
             if (angleZ > M_PI_2+m_param.upperlimit2[index-101]-0.1) {
-                motor->m_targetVelocity = -calcMotorVel(index);
+                motor->m_targetVelocity = (hasNet)?-calcMotorVel(index)*f[(index-101)%NUM_LEGS]:-calcMotorVel(index);
             } else if (angleZ < M_PI_2+m_param.lowerlimit2[index-101]+0.1) {
-                motor->m_targetVelocity = calcMotorVel(index);
+                motor->m_targetVelocity = (hasNet)?calcMotorVel(index)*f[(index-101)%NUM_LEGS]:calcMotorVel(index);
                 motor->m_maxMotorForce = 100000000;
             }
         }
