@@ -15,7 +15,7 @@
 //#include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>イベントいるんだ」 の
+#include <opencv2/highgui/highgui.hpp>
 
 class Master {
     
@@ -54,6 +54,7 @@ public:
     void checkStarfish();
     void saveVideo();
     void releaseVideo();
+    void keyboard(unsigned char, int, int);
 };
 
 #endif /* Master_hpp */

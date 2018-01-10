@@ -33,18 +33,18 @@ enum CollisionGroup{
 #define NUM_LEGS 5
 #define CONECT_LENGTH 2*NUM_LEGS*NUM_LEGS
 #define POOL_SIZE 100
-#define MAX_CYCLE 2000
-#define MIN_CYCLE 300
+#define MAX_CYCLE 700
+#define MIN_CYCLE 200
 #define MAX_ANGLE M_PI_2
 #define MIN_ANGLE -M_PI_2
-#define MAX_CYCLE_2 2000
+#define MAX_CYCLE_2 700
 #define MIN_CYCLE_2 200
 #define MAX_ANGLE_2 M_PI/3
 #define MIN_ANGLE_2 -M_PI/3
 #define MAX_ANGLE2_2 M_PI
 #define MIN_ANGLE2_2 -M_PI
 #define NUM_JOINT 2
-#define MAX_MOTOR_TORQUE 10.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
+#define MAX_MOTOR_TORQUE 5000.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -55,31 +55,31 @@ enum CollisionGroup{
 #define NUM_TURN 2
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 0.5f
-#define M_OBJ0 0.5f
-#define M_TF 0.5f
+#define M_OBJ 5.f
+#define M_OBJ0 5.f
+#define M_TF 5.f
 
 #define FPS 60.f
 #define RADIAN 180/M_PI
 #define SECONDS 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
-#define FBODY_SIZE 15.f
-#define FLEG_LENGTH 22.5f/NUM_JOINT
-#define FLEG_WIDTH 10.f
-#define FHEIGHT 15.f
-#define RADIUS 3
-#define LENGTH 10
-#define RADIUS_TF 1
+#define FBODY_SIZE 30.f
+#define FLEG_LENGTH 40.f/NUM_JOINT
+#define FLEG_WIDTH 20.f
+#define FHEIGHT 30.f
+#define RADIUS 1
+#define LENGTH 30
+#define RADIUS_TF 4
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
-#define NUM_GROUND 3
+#define NUM_GROUND 7
 #define NUM_TF_UNIT 8//>=4
 #define NUM_TF NUM_TF_UNIT*NUM_JOINT
 #define DL_TIME 120
 #define RE_TIME 120
 #define THRESH_VEL 5
 #define THRESH_TURN 0.8
-#define THRESHOLD_ROT M_PI/2
-#define TF_PERCENT 70
+#define THRESHOLD_ROT M_PI/1.5
+#define TF_PERCENT 50
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
 #define ANGLE_ATTACH M_PI/8//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
@@ -90,14 +90,14 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
-#define NUM_GENARATION 100
+#define NUM_GENARATION 25
 #define SIMULATION_TIME_STEP 1200
 #define GA 0
-#define NT 1
+#define NT 0
 #define VERSION_1_3 0
 #define SINGLE 1
 
-#define VERSION 1
-#define WALL 0
+#define VERSION 3
+#define WALL 1
 //*******************************//
 #endif

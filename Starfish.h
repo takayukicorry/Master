@@ -76,9 +76,10 @@ public:
     }
     
     void activateTwist(bool t) {
+        btScalar f = (!t) ? 0 : M_PI_2;
         for (auto itr = m_joints_hip.begin(); itr != m_joints_hip.end(); ++itr) {
-            itr->second->setLowerLimit(-M_PI_2, 0);
-            itr->second->setUpperLimit(M_PI_2, 0);
+            itr->second->setLowerLimit(-M_PI_2, -f);
+            itr->second->setUpperLimit(M_PI_2, f);
         }
     }
     

@@ -14,6 +14,10 @@ static void Render() {
     stuff->Render();
 }
 
+static void Key(unsigned char key, int x, int y) {
+    stuff->keyboard(key, x, y);
+}
+
 static void idle() {
     stuff->idle();
 }
@@ -33,6 +37,7 @@ void mastermain(int argc, char** argv, Master* master, bool single) {
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutCreateWindow(argv[0]);
     glutDisplayFunc(Render);
+    glutKeyboardFunc(Key);
     if (single) {
         glutIdleFunc(idleDemo);
     } else {

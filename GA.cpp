@@ -28,8 +28,8 @@ GAparameter GAmanager::Adam() {
         //    c_mas = rand()%5;
         
     }
-    param.turn_pattern[a_mas] = 1;
-    param.turn_pattern[b_mas] = 1;
+    param.turn_pattern[0] = 1;
+    param.turn_pattern[1] = 1;
     //    param.turn_pattern[c_mas] = 1;
     
     for (int i = 0; i<ARRAY_LENGTH; i++)

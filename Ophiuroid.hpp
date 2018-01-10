@@ -22,7 +22,7 @@ private:
     int swing_phase;
     int leg_state[NUM_LEGS];
     int turn_direction[NUM_LEGS];
-    
+    bool check;
 public:
     Ophiuroid(GAparameter);
     Ophiuroid(Starfish*);

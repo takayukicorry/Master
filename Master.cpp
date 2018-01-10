@@ -131,7 +131,7 @@ btCollisionDispatcher* Master::dispatcher = new btCollisionDispatcher(Master::co
 btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
 btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseConstraintSolver;
 btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
-btVector3 gShape(btScalar(100.), btScalar(50.), btScalar(100.));
+btVector3 gShape(btScalar(100.), btScalar(100.), btScalar(100.));
 btCollisionShape* Master::groundShape = new btBoxShape(gShape);
 
 Master::Master(const char *fn) {
@@ -363,17 +363,19 @@ void Master::createGround() {
         }
     }
     if (WALL) {
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, 0, (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
-        groundTransform.setRotation(btQuaternion(btVector3(0,0,1),M_PI_4));
-        
-        btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
-        btRigidBody* body = new btRigidBody(rbInfo);
-        body->setActivationState(DISABLE_DEACTIVATION);
-        body->setUserIndex(2);
-        
-        Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+        for (int i = 0; i < NUM_GROUND; i++) {
+            groundTransform.setIdentity();
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[0]+30, 0, (NUM_GROUND-1-i*2)*gShape[2]));
+            groundTransform.setRotation(btQuaternion(btVector3(0,0,1),M_PI_4));
+            
+            btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
+            btRigidBody* body = new btRigidBody(rbInfo);
+            body->setActivationState(DISABLE_DEACTIVATION);
+            body->setUserIndex(2);
+            
+            Master::dynamicsWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+        }
     }
 }
 
@@ -430,7 +432,7 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(0,200,250, 0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-370,400,450, -70, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void Master::saveVideo() {
@@ -440,16 +442,23 @@ void Master::saveVideo() {
     cvConvertImage(video_buf, video, CV_CVTIMG_FLIP+CV_CVTIMG_SWAP_RB);
     
     cvWriteFrame(videoWriter,video);
-    
-    if (starfish->m_time_step > SIMULATION_TIME_STEP*2) {
-        releaseVideo();
-        save = false;
-        glutLeaveMainLoop();
-    }
 }
 
 void Master::releaseVideo() {
     cvReleaseVideoWriter(&videoWriter);
     cvReleaseImage(&video_buf);
     cvReleaseImage(&video);
+}
+
+void Master::keyboard(unsigned char key, int x, int y) {
+    switch (key) {
+            case 'q':
+            case 'Q':
+            case '\033':
+                releaseVideo();
+                save = false;
+                glutLeaveMainLoop();;  /* '\033' は ESC の ASCII コード */
+            default:
+                break;
+    }
 }

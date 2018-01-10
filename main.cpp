@@ -70,7 +70,6 @@ int main (int argc, char** argv) {
     master.setStarfish(Ss[VERSION]);
     mastermain(argc, argv, &master, SINGLE);
     
-    
     return 0;
 }
 

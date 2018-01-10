@@ -17,7 +17,8 @@
 class Ophiuroid3 : public Starfish {
     
 private:
- 
+    std::map<int, bool> ankle_wall;
+
 public:
     Ophiuroid3(GAparameter);
     Ophiuroid3(Starfish*);
@@ -36,7 +37,7 @@ public:
     float evalue();
     float evalue_NEAT(NEAT::Network*);
     void setSpring(btGeneric6DofSpringConstraint*, int);
-    btScalar calcMotorVel(int);
+    btScalar calcMotorVel(int, bool);
     btRigidBody* initTubefeet(btScalar*, const btTransform&);
     btRigidBody* createRigidBody(btScalar, const btTransform&, btCollisionShape*, int);
 };
