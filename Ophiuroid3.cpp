@@ -261,6 +261,8 @@ void Ophiuroid3::motor() {
             } else if (angleZ < M_PI_2+m_param.lowerlimit2[index-101]+0.1) {
                 motor->m_targetVelocity = (hasNet)?calcMotorVel(index,true)*f[(index-101)%NUM_LEGS]:calcMotorVel(index,true);
             }
+            
+            if (ankle_wall[index]) motor->m_maxMotorForce = 50000.f;
         }
     }
     

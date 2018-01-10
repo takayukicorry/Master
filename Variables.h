@@ -44,7 +44,7 @@ enum CollisionGroup{
 #define MAX_ANGLE2_2 M_PI
 #define MIN_ANGLE2_2 -M_PI
 #define NUM_JOINT 2
-#define MAX_MOTOR_TORQUE 5000.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
+#define MAX_MOTOR_TORQUE 50.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
