@@ -9,6 +9,19 @@
 #include "GAMain.hpp"
 
 Population *oph_test_realtime(GAmanager* m) {
+    
+    //csvファイルへの書き込み準備//
+    //現在時刻の取得//
+    time_t now = time(NULL);
+    struct tm *pnow = localtime(&now);
+
+    FILE *fp;
+    char fname[100] = {0};
+    strftime(fname,sizeof(fname),"/Users/masudatakayuki/M1/修士論文/%m%d_%H%M.csv",pnow);
+    fp = fopen(fname,"w");
+    if(fp==NULL){
+        printf("%sファイルが開けません",fname);
+    }
     //
     //set param
     //
@@ -44,12 +57,13 @@ Population *oph_test_realtime(GAmanager* m) {
             strftime(date, sizeof(date), "%Y/%m/%d %a %H:%M:%S", localtime(&t));
             printf("%s\n", date);
             
-            status = oph_epoch(pop,gen,m);
+            status = oph_epoch(pop,gen,m,fp);
         }
         
         if (expcount<NEAT::num_runs-1) delete pop;
     }
-    
+    fclose(fp);
+
     totalevals=0;
     samples=0;
     for(expcount=0;expcount<NEAT::num_runs;expcount++) {
@@ -67,7 +81,7 @@ Population *oph_test_realtime(GAmanager* m) {
     return pop;
 }
 
-int oph_epoch(Population *pop,int generation, GAmanager* m) {
+int oph_epoch(Population *pop,int generation, GAmanager* m, FILE* fp) {
     std::vector<Organism*>::iterator curorg;
     std::vector<Species*>::iterator curspecies;
     int i = 0;
@@ -85,6 +99,7 @@ int oph_epoch(Population *pop,int generation, GAmanager* m) {
     //Create the next generation
     pop->epoch(generation);
     m->CreateNext();
+    fprintf(fp,"%d,%f,%f\n",generation,m->champValue,m->ave);
     
     return 0;
 }

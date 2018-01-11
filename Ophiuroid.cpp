@@ -86,7 +86,8 @@ float Ophiuroid::evalue() {
             btVector3 vY = tr*up;
             btVector3 vOrigin = tr.getOrigin();
             btVector3 vY_O = vY - vOrigin;
-            val = vY_O[1];
+            val = asin(vY_O[1])+M_PI_2;
+        
         //}
         if (value < val) {
             value = val;
@@ -117,7 +118,7 @@ float Ophiuroid::evalue_NEAT(NEAT::Network* net) {
             btVector3 vY = tr*up;
             btVector3 vOrigin = tr.getOrigin();
             btVector3 vY_O = vY - vOrigin;
-            val = vY_O[1];
+            val = asin(vY_O[1])+M_PI_2;
         //}
         if (value < val) {
             value = val;
@@ -462,7 +463,7 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
                 
                 if(rot < THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
-                        if (m_param.turn_pattern[i]==1){
+                        //if (m_param.turn_pattern[i]==1){
                         m_param.turn += 1;
                         m_param.ee = 1;
                         leg_state[i] = 1;
@@ -470,7 +471,7 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
                         turn_direction[i] = 1;//右ねじ正
                         rigid1->setFriction(FRICTION);
                         rigid1->setGravity(btVector3(0,-50.0,0));
-                        }
+                        //}
                     }
                 }
             }
@@ -547,7 +548,7 @@ void Ophiuroid::setMotorTarget2(double delta) {
                 
                 if(rot < THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
-                        if (m_param.turn_pattern[i]==1){
+                        //if (m_param.turn_pattern[i]==1){
                             m_param.turn += 1;
                             m_param.ee = 1;
                             leg_state[i] = 1;
@@ -555,7 +556,7 @@ void Ophiuroid::setMotorTarget2(double delta) {
                             turn_direction[i] = 1;//右ねじ正
                             rigid1->setFriction(FRICTION);
                             rigid1->setGravity(btVector3(0,-50.0,0));
-                        }
+                        //}
                     }
                 }
             }
@@ -597,7 +598,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         case 1: fAngleError1 = -fCurAngle1; break;
         default: fAngleError1 = fTargetLimitAngle1 - fCurAngle1; break;
     }
-    btScalar fDesiredAngularVel1 = fAngleError1*3;//*FPS;
+    btScalar fDesiredAngularVel1 = fAngleError1*6;//*FPS;
     m_motor1[i]->m_targetVelocity = fDesiredAngularVel1;
     
     //wheel
@@ -612,7 +613,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
     }
     if (!check) fTargetLimitAngle2=0;
     btScalar fAngleError2 = fTargetLimitAngle2  - fCurAngle2;
-    btScalar fDesiredAngularVel2 = fAngleError2*3;//*FPS;
+    btScalar fDesiredAngularVel2 = fAngleError2*6;//*FPS;
     switch (sW) {
         case 2: m_motor2[i]->m_targetVelocity = fDesiredAngularVel2 * f; break;
         default:m_motor2[i]->m_targetVelocity = fDesiredAngularVel2; break;
@@ -636,7 +637,7 @@ void Ophiuroid::calcMotorTarget(int i, int sW, float f) {
         }
         if (!check) fTargetLimitAngle_ankle=0;
         btScalar fAngleError_ankle  = fTargetLimitAngle_ankle - fCurAngle_ankle;
-        btScalar fDesiredAngularVel_ankle = fAngleError_ankle*3;
+        btScalar fDesiredAngularVel_ankle = fAngleError_ankle*6;
         switch (sW) {
             case 2: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle * f, MAX_MOTOR_TORQUE); break;
             default: hingeC2->enableAngularMotor(true, fDesiredAngularVel_ankle, MAX_MOTOR_TORQUE); break;

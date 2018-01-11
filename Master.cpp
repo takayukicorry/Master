@@ -131,7 +131,7 @@ btCollisionDispatcher* Master::dispatcher = new btCollisionDispatcher(Master::co
 btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
 btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseConstraintSolver;
 btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
-btVector3 gShape(btScalar(100.), btScalar(100.), btScalar(100.));
+btVector3 gShape(btScalar(150.), btScalar(150.), btScalar(150.));
 btCollisionShape* Master::groundShape = new btBoxShape(gShape);
 
 Master::Master(const char *fn) {
@@ -282,6 +282,11 @@ void Master::Render() {
         }
     }
     
+    glPushMatrix();
+    glTranslatef(-500, 5, -250);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
+    glutSolidSphere(5, 100, 100);
+
     glPopMatrix();
     
     if (save) saveVideo();
@@ -365,7 +370,7 @@ void Master::createGround() {
     if (WALL) {
         for (int i = 0; i < NUM_GROUND; i++) {
             groundTransform.setIdentity();
-            groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[0]+30, 0, (NUM_GROUND-1-i*2)*gShape[2]));
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[0]+120, -70, (NUM_GROUND-1-i*2)*gShape[2]));
             groundTransform.setRotation(btQuaternion(btVector3(0,0,1),M_PI_4));
             
             btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
@@ -432,7 +437,9 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(-370,400,450, -70, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-500,400,200, -200, 0, 0.0, 0.0, 1.0, 0.0);
+    //gluLookAt(-70,700,700, -70, 0, 100.0, 0.0, 1.0, 0.0);
+    //gluLookAt(0,200,500, 0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void Master::saveVideo() {

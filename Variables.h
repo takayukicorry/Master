@@ -33,8 +33,8 @@ enum CollisionGroup{
 #define NUM_LEGS 5
 #define CONECT_LENGTH 2*NUM_LEGS*NUM_LEGS
 #define POOL_SIZE 100
-#define MAX_CYCLE 700
-#define MIN_CYCLE 200
+#define MAX_CYCLE 2000
+#define MIN_CYCLE 100
 #define MAX_ANGLE M_PI_2
 #define MIN_ANGLE -M_PI_2
 #define MAX_CYCLE_2 700
@@ -55,20 +55,20 @@ enum CollisionGroup{
 #define NUM_TURN 2
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 5.f
+#define M_OBJ 3.f
 #define M_OBJ0 5.f
-#define M_TF 5.f
+#define M_TF 3.f
 
 #define FPS 60.f
 #define RADIAN 180/M_PI
 #define SECONDS 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
-#define FBODY_SIZE 30.f
-#define FLEG_LENGTH 40.f/NUM_JOINT
-#define FLEG_WIDTH 20.f
-#define FHEIGHT 30.f
+#define FBODY_SIZE 24.f
+#define FLEG_LENGTH 32.f/NUM_JOINT
+#define FLEG_WIDTH 16.f
+#define FHEIGHT 24.f
 #define RADIUS 1
-#define LENGTH 30
+#define LENGTH 24
 #define RADIUS_TF 4
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
 #define NUM_GROUND 7
@@ -79,10 +79,10 @@ enum CollisionGroup{
 #define THRESH_VEL 5
 #define THRESH_TURN 0.8
 #define THRESHOLD_ROT M_PI/1.5
-#define TF_PERCENT 50
+#define TF_PERCENT 90
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
-#define ANGLE_ATTACH M_PI/8//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
+#define ANGLE_ATTACH M_PI/20//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
 #define ANGLE_ATTACH_Z_foward M_PI_2+ANGLE_ATTACH//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
 #define ANGLE_ATTACH_Z_back M_PI_2-ANGLE_ATTACH//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
 #define ANGLE_DETACH -ANGLE/2//管足、地面からの離脱判定角度下限//kannsoku,jimenntonoridatuhannteikakudojougenn
@@ -90,14 +90,18 @@ enum CollisionGroup{
 #define ANGLE_VELOCITY_GROUND ANGLE//管足地面間の振る角速度//kannsokujimennkannnofurukakusokudo
 
 //*******************************//
-#define NUM_GENARATION 25
-#define SIMULATION_TIME_STEP 1200
+#define NUM_GENARATION 100
+#define SIMULATION_TIME_STEP 2400
 #define GA 0
-#define NT 0
+#define NT 1
 #define VERSION_1_3 0
 #define SINGLE 1
 
 #define VERSION 3
-#define WALL 1
+#define WALL 0
+
+//3個発生源
+#define FIRST_STEP 200000
+#define SECOND_STEP 500000
 //*******************************//
 #endif

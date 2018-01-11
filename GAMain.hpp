@@ -32,7 +32,7 @@
 using namespace NEAT;
 
 Population *oph_test_realtime(GAmanager*);
-int oph_epoch(Population*, int, GAmanager*);
+int oph_epoch(Population*, int, GAmanager*, FILE*);
 double oph_evaluate(Organism*, GAparameter);
 
 #endif /* GAMain_hpp */

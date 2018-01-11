@@ -44,16 +44,19 @@ void GAMaster::createGround(btDiscreteDynamicsWorld* ownerWorld) {
         }
     }
     if (WALL) {
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-1)*2)*gShape[0]+30, gShape[1], (NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[2]));
-        
-        btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-        btRigidBody* body = new btRigidBody(rbInfo);
-        body->setActivationState(DISABLE_DEACTIVATION);
-        body->setUserIndex(2);
-        
-        ownerWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+        for (int i = 0; i < NUM_GROUND; i++) {
+            groundTransform.setIdentity();
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[0]+120, -70, (NUM_GROUND-1-i*2)*gShape[2]));
+            groundTransform.setRotation(btQuaternion(btVector3(0,0,1),M_PI_4));
+            
+            btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+            btRigidBody* body = new btRigidBody(rbInfo);
+            body->setActivationState(DISABLE_DEACTIVATION);
+            body->setUserIndex(2);
+            
+            ownerWorld->addRigidBody(body, RX_COL_GROUND, RX_COL_BODY | RX_COL_TF | RX_COL_AMP);
+        }
     }
 }
 

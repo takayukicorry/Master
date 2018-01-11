@@ -18,6 +18,8 @@ public:
     GAparameter pool[POOL_SIZE];
     double v[POOL_SIZE];
     int spiecies_of_starfish;
+    double champValue;
+    double ave;
     
     GAmanager(int);
     GAparameter Adam();

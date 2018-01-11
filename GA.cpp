@@ -28,8 +28,8 @@ GAparameter GAmanager::Adam() {
         //    c_mas = rand()%5;
         
     }
-    param.turn_pattern[0] = 1;
-    param.turn_pattern[1] = 1;
+    param.turn_pattern[a_mas] = 1;
+    param.turn_pattern[b_mas] = 1;
     //    param.turn_pattern[c_mas] = 1;
     
     for (int i = 0; i<ARRAY_LENGTH; i++)
@@ -49,6 +49,10 @@ GAparameter GAmanager::Adam() {
     {
         param.upperlimit2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE_2;
         param.lowerlimit2[i] = ((rand()%1000)/1000.0)*MIN_ANGLE_2;
+        if (i%5==0) {
+            param.upperlimit2[i] = MAX_ANGLE_2;
+            param.lowerlimit2[i] = MIN_ANGLE_2;
+        }
         param.upperlimit2_2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE2_2;
         param.lowerlimit2_2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE2_2;
         param.targetpercent2[i] = 0;//(rand()%1000)/1000.0;
@@ -377,7 +381,7 @@ GAmanager::GAmanager(int spiecies)
 }
 
 void GAmanager::CreateNext()
-{
+{   ave = 0;
     GAparameter stock[POOL_SIZE];//pool[]を移す
     float value[POOL_SIZE];
     float select[POOL_SIZE];//親として選ばれる確率
@@ -385,8 +389,14 @@ void GAmanager::CreateNext()
     for (int i = 0; i<POOL_SIZE; i++)
     {
         stock[i] = pool[i];
-        if(GA) value[i] = evalue(pool[i]);
+        if(GA) {
+            value[i] = evalue(pool[i]);
+            ave += value[i];
+        } else {
+            ave += v[i];
+        }
     }
+    ave /= POOL_SIZE;
     
     for (int i = 0; i<POOL_SIZE; i++)
     {
@@ -412,6 +422,7 @@ void GAmanager::CreateNext()
             pool[0].turn = 0;
             pool[0].ee = 0;
             pool[0].light = 0;
+            champValue = (GA)?value[i]:v[i];
         }
         
         select[i] = 1;
