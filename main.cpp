@@ -17,11 +17,12 @@ int main (int argc, char** argv) {
     time_t t = time(NULL);
     strftime(date, sizeof(date), "%m%d_%H%M%S", localtime(&t));
     std::string fnstr{date};
+    std::string fnstr_v = std::to_string(VERSION);
     std::string fnstr_avi, fnstr_data;
     
-    fnstr_avi = "/Users/masudatakayuki/M1/修士論文/動画/"+fnstr+".avi";
+    fnstr_avi = "/Users/masudatakayuki/M1/修士論文/動画/"+fnstr+"_"+fnstr_v+".avi";
     const char *fn_avi = fnstr_avi.c_str();
-    fnstr_data = "/Users/masudatakayuki/M1/修士論文/データ/"+fnstr;
+    fnstr_data = "/Users/masudatakayuki/M1/修士論文/データ/"+fnstr+"_"+fnstr_v;
     const char *fn_data = fnstr_data.c_str();
     
     

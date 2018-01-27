@@ -132,7 +132,10 @@ btBroadphaseInterface* Master::overlappingPairCache = new btDbvtBroadphase();
 btSequentialImpulseConstraintSolver* Master::solver = new btSequentialImpulseConstraintSolver;
 btDiscreteDynamicsWorld* Master::dynamicsWorld = new btDiscreteDynamicsWorld(Master::dispatcher, Master::overlappingPairCache, Master::solver, Master::collisionConfiguration);
 btVector3 gShape(btScalar(150.), btScalar(150.), btScalar(150.));
+btVector3 gShape_wall(btScalar(5.), btScalar(5.), btScalar(5.));
+
 btCollisionShape* Master::groundShape = new btBoxShape(gShape);
+btCollisionShape* Master::groundShape_wall = new btBoxShape(gShape_wall);
 
 Master::Master(const char *fn) {
     Master::dynamicsWorld->setGravity(btVector3(0, -10, 0));
@@ -283,9 +286,22 @@ void Master::Render() {
     }
     
     glPushMatrix();
-    glTranslatef(-500, 5, -250);
+    glTranslatef(-500, 10, -250);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
-    glutSolidSphere(5, 100, 100);
+    glutSolidSphere(10, 100, 100);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glTranslatef(500, 10, -250);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
+    glutSolidSphere(10, 100, 100);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glTranslatef(0, 10, 500);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
+    glutSolidSphere(10, 100, 100);
+    glPopMatrix();
 
     glPopMatrix();
     
@@ -370,11 +386,11 @@ void Master::createGround() {
     if (WALL) {
         for (int i = 0; i < NUM_GROUND; i++) {
             groundTransform.setIdentity();
-            groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape[0]+120, -70, (NUM_GROUND-1-i*2)*gShape[2]));
+            groundTransform.setOrigin(btVector3((NUM_GROUND-1-(NUM_GROUND-2)*2)*gShape_wall[0], 0, (NUM_GROUND-1-i*2)*gShape_wall[2]));
             groundTransform.setRotation(btQuaternion(btVector3(0,0,1),M_PI_4));
             
             btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape, localInertia);
+            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, Master::groundShape_wall, localInertia);
             btRigidBody* body = new btRigidBody(rbInfo);
             body->setActivationState(DISABLE_DEACTIVATION);
             body->setUserIndex(2);
@@ -404,24 +420,19 @@ void Master::checkStarfish() {
         starfish->create();
     }
 }
-
+//複数ver
 void Master::idle() {
     Master::dynamicsWorld->stepSimulation(1.f / FPS);
     
     starfish->idle();
     checkStarfish();
 }
-
+//単体ver
 void Master::idleDemo() {
     Master::dynamicsWorld->stepSimulation(1.f / FPS);
     
     starfish->idle();
-}
-
-void Master::idleNEAT() {
-    Master::dynamicsWorld->stepSimulation(1.f / FPS);
-    
-    starfish->idle();
+    starfish->ev();
 }
 
 void Master::setStarfish(Starfish* s){
@@ -437,9 +448,9 @@ void Master::init() {
     glLoadIdentity();
     gluPerspective(70.0, (double)640 / (double)480, 0.1, 10000);
     //****************gluLookAt(-50,50,200, -50.0, 0, 0.0, 0.0, 1.0, 0.0);
-    gluLookAt(-500,400,200, -200, 0, 0.0, 0.0, 1.0, 0.0);
+    //gluLookAt(-500,400,200, -200, 0, 0.0, 0.0, 1.0, 0.0);
     //gluLookAt(-70,700,700, -70, 0, 100.0, 0.0, 1.0, 0.0);
-    //gluLookAt(0,200,500, 0, 0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(-10,20,40, 0, 0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void Master::saveVideo() {

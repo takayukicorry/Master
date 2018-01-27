@@ -35,7 +35,6 @@ public:
     float upperlimit2_2[ARRAY_LENGTH_2];
     float lowerlimit2_2[ARRAY_LENGTH_2];
     float targetpercent2[ARRAY_LENGTH_2];//shokiisou
-    
 };
 
 #endif /* GA_h */

@@ -37,12 +37,12 @@ private:
 public:
     static btDiscreteDynamicsWorld* dynamicsWorld;
     static btCollisionShape* groundShape;
-    
+    static btCollisionShape* groundShape_wall;
+
     Master(const char*);
     void Render();
     void idle();
     void idleDemo();
-    void idleNEAT();
     void InitBullet();
     void CleanupBullet();
     void init();

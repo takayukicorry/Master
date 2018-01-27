@@ -57,6 +57,7 @@ public:
     virtual bool checkState() = 0;
     virtual void create() = 0;
     virtual void initSF() = 0;
+    virtual void ev() = 0;
     virtual float evalue() = 0;
     virtual float evalue_NEAT(NEAT::Network*) = 0;
     virtual ~Starfish() {}

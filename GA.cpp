@@ -36,7 +36,7 @@ GAparameter GAmanager::Adam() {
     {
         param.upperlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
         param.lowerlimit[i] = ((rand()%1000)/1000.0)*(MAX_ANGLE - MIN_ANGLE) + MIN_ANGLE;
-        param.targetpercent[i] = 0;//(rand()%1000)/1000.0;
+        param.targetpercent[i] = (rand()%1000)/1000.0;
         
         while(param.upperlimit[i] < param.lowerlimit[i])
         {
@@ -55,7 +55,7 @@ GAparameter GAmanager::Adam() {
         }
         param.upperlimit2_2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE2_2;
         param.lowerlimit2_2[i] = ((rand()%1000)/1000.0)*MAX_ANGLE2_2;
-        param.targetpercent2[i] = 0;//(rand()%1000)/1000.0;
+        param.targetpercent2[i] = ((rand()%1000)/1000.0)*2*SECONDS;
         
         while(param.upperlimit2_2[i] < param.lowerlimit2_2[i])
         {

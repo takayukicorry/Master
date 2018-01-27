@@ -74,7 +74,6 @@ void Ophiuroid3::idle() {
 
 void Ophiuroid3::idleDemo() {
     m_time_step++;
-    std::cout << m_time_step << std::endl;
     checkLightDistance();
     setDirection();
     motor();
@@ -98,6 +97,10 @@ bool Ophiuroid3::checkState() {
     btVector3 vY_O = vY - vOrigin;
     
     return vY_O[1] > -THRESH_TURN || vOrigin[1] > FLEG_WIDTH;
+}
+
+void Ophiuroid3::ev() {
+    
 }
 
 float Ophiuroid3::evalue() {
@@ -141,16 +144,17 @@ int lightThresh(170);
 void Ophiuroid3::checkLightDistance() {
     btVector3 now;
     double dis;
-    //light_patternの数値 = 各腕の光からの距離に応じた受光量の強さを示す
+    //入力層信号set
     for (int i = 1; i <= NUM_LEGS; i++){
         now = m_bodies[(NUM_JOINT+1)*i]->getCenterOfMassPosition();
         m_param.light_pattern[i-1] = lightThresh - (int)sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
         m_param.light_pattern[i-1] = (m_param.light_pattern[i-1] >= 0) ? m_param.light_pattern[i-1] : 0 ;
     }
+    //評価値evalue
     now = m_bodies[0]->getCenterOfMassPosition();
-    //dis = lightThresh - sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
+    dis = lightThresh - sqrt((now[0]-lightSource[0])*(now[0]-lightSource[0]) + (now[1]-lightSource[1])*(now[1]-lightSource[1]) + (now[2]-lightSource[2])*(now[2]-lightSource[2]));
     dis = sqrt(now[0]*now[0] + now[1]*now[1] + now[2]*now[2]);
-    m_value = (dis > 0) ? dis : 0;
+    m_value += (dis > 0) ? dis : 0;
     //if (m_time_step < SIMULATION_TIME_STEP) std::cout << m_value << std::endl;
 }
 
@@ -214,7 +218,7 @@ btScalar checkVel(btScalar vel) {
 
 void Ophiuroid3::motor() {
     btVector3 posB = m_bodies[0]->getCenterOfMassPosition();
-    if (m_value>-posB[0]) m_value = -posB[0];
+    //if (m_value>-posB[0]) m_value = -posB[0];
     /*btTransform traNext;
     traNext.setIdentity();
     traNext.setOrigin(posB);
@@ -298,19 +302,9 @@ void Ophiuroid3::motor() {
             }*/
         }
     }
-    
+    //m_bodies[0]->setLinearVelocity(btVector3(-5*0.5*(1+sin(M_PI*2*(m_time_step%(int)m_param.cycle2/(float)m_param.cycle2))),0,-5*0.5*(1+cos(M_PI*2*(m_time_step%(int)m_param.cycle2/(float)m_param.cycle2)))));
     if (m_time_step==FIRST_STEP) {
-        /*for (auto itr = TF_constraint.begin(); itr != TF_constraint.end(); ++itr) {
-            int index = itr->first;
-            int i = (index-101)%NUM_LEGS;
-            btScalar ang = -2*M_PI*i/5 - 5*M_PI/6;
-            ang = (ang<-M_PI_2) ? ang + M_PI : ang ;
-            ang = (ang<-M_PI_2) ? ang + M_PI : ang ;
-            itr->second->setAngularLowerLimit(btVector3(0,ang,M_PI_2+m_param.lowerlimit2[index-101]));
-            itr->second->setAngularUpperLimit(btVector3(0,ang,M_PI_2+m_param.upperlimit2[index-101]));
-            if (i==0 || i==1) TF_foward[index]=false;
-            
-        }*/
+        
         for (auto itr = TF_constraint.begin(); itr != TF_constraint.end(); ++itr) {
             int index = itr->first;
             int j = (index-101)%NUM_LEGS+1;
@@ -410,7 +404,7 @@ void Ophiuroid3::contact() {
             btManifoldPoint& pt = contactManifold->getContactPoint(k);
             const btVector3& ptB = pt.getPositionWorldOnB();
             int obIDC = bodyC->getUserIndex();
-            
+
             if (spider) {
                 m_ownerWorld->setGravity(btVector3(-2,-10,0));
                 if (spiderID==-1) {
@@ -423,7 +417,7 @@ void Ophiuroid3::contact() {
                 int ankleID = armID * NUM_JOINT + partID;
                 ankle_wall[ankleID] = true;
             }
-            
+            /////if ((obIDC-101)%NUM_LEGS!=0 && (obIDC-101)%NUM_LEGS!=2 && (obIDC-101)%NUM_LEGS!=3) break;
             if (!TF_Contact[obIDC]) {
                 btScalar angle = motor_tZ[obIDC]->m_currentPosition;
                 int percent = rand()%100;
@@ -466,10 +460,10 @@ void Ophiuroid3::contact() {
                         btRotationalLimitMotor* motor2 = univ->getRotationalLimitMotor(2);//handle
                         motor1->m_enableMotor = true;
                         motor1->m_targetVelocity = 0;
-                        motor1->m_maxMotorForce = 100000000000;
+                        motor1->m_maxMotorForce = MAX_MOTOR_TORQUE_B;
                         motor2->m_enableMotor = true;
                         motor2->m_targetVelocity = 0;
-                        motor2->m_maxMotorForce = 100000000000;
+                        motor2->m_maxMotorForce = MAX_MOTOR_TORQUE_B;
                         motor_to_groundZ[obIDC] = motor1;
                         motor_to_groundY[obIDC] = motor2;
                     }
@@ -513,20 +507,23 @@ void Ophiuroid3::setSpring(btGeneric6DofSpringConstraint* spring, int index) {
     spring->setDamping(1, 10.f);
     spring->setStiffness(0, 10.f);
     spring->setStiffness(1, 10.f);
-    spring->setLinearLowerLimit(btVector3(-2,-2,0));
-    spring->setLinearUpperLimit(btVector3(2,2,0));
-    spring->setAngularLowerLimit(btVector3(0,-M_PI/3,M_PI_2+m_param.lowerlimit2[index-101]));
-    spring->setAngularUpperLimit(btVector3(0,M_PI/3,M_PI_2+m_param.upperlimit2[index-101]));
+    spring->setLinearLowerLimit(btVector3(-0.2,-0.2,0));
+    spring->setLinearUpperLimit(btVector3(0.2,0.2,0));
+    ///////spring->setAngularLowerLimit(btVector3(0,-M_PI/2,M_PI_2+m_param.lowerlimit2[index-101]));
+    ///////spring->setAngularUpperLimit(btVector3(0,M_PI/2,M_PI_2+m_param.upperlimit2[index-101]));
+    spring->setAngularLowerLimit(btVector3(0,-M_PI,M_PI_2-M_PI/3));
+    spring->setAngularUpperLimit(btVector3(0,M_PI,M_PI_2+M_PI/3));
     
     /*
     int i = (index-101)%NUM_LEGS;
     btScalar ang = -2*M_PI*i/5;
     ang = (ang<-M_PI_2) ? ang + M_PI : ang ;
     ang = (ang<-M_PI_2) ? ang + M_PI : ang ;
-    spring->setAngularLowerLimit(btVector3(0,ang,M_PI_2+m_param.lowerlimit2[index-101]));
-    spring->setAngularUpperLimit(btVector3(0,ang,M_PI_2+m_param.upperlimit2[index-101]));
+    spring->setAngularLowerLimit(btVector3(0,ang,M_PI_2-M_PI/3));
+    spring->setAngularUpperLimit(btVector3(0,ang,M_PI_2+M_PI/3));
     if (i==2 || i==3) TF_foward[index]=false;
     */
+    
     TF_constraint[index] = spring;
     constraints.push_back(spring);
     //motor
@@ -535,13 +532,13 @@ void Ophiuroid3::setSpring(btGeneric6DofSpringConstraint* spring, int index) {
     btRotationalLimitMotor* motorRotZ = spring->getRotationalLimitMotor(2);
     motorRotX->m_enableMotor = true;
     motorRotX->m_targetVelocity = 0;
-    motorRotX->m_maxMotorForce = 100000000;
+    motorRotX->m_maxMotorForce = MAX_MOTOR_TORQUE;
     motorRotY->m_enableMotor = true;
     motorRotY->m_targetVelocity = 0;
-    motorRotY->m_maxMotorForce = 100000000;
+    motorRotY->m_maxMotorForce = MAX_MOTOR_TORQUE;
     motorRotZ->m_enableMotor = true;
     motorRotZ->m_targetVelocity = 0;
-    motorRotZ->m_maxMotorForce = 100000000;
+    motorRotZ->m_maxMotorForce = MAX_MOTOR_TORQUE;
     motor_tX[index] = motorRotX;
     motor_tY[index] = motorRotY;
     motor_tZ[index] = motorRotZ;
@@ -710,7 +707,7 @@ void Ophiuroid3::create() {
         m_ownerWorld->setInternalTickCallback(motorPreTickCallback3_NEAT, this, true);
     }
     zeroFriction(false);
-    activateTwist(false);
+    //activateTwist(false);
     
     //if (!kCheck_first) return;
     
@@ -746,8 +743,7 @@ void Ophiuroid3::create() {
             bodies_tf.push_back(body_tf);
             TF_Contact[index] = false;
             TF_axis_direction[index] = btVector3(cos(M_PI_2-2*M_PI*(j-1)/5), 0, sin(M_PI_2-2*M_PI*(j-1)/5));
-            if (j==3) TF_axis_direction[index] = btVector3(cos(M_PI_2+M_PI_4-2*M_PI*(j-1)/5),0,sin(M_PI_2+M_PI_4-2*M_PI*(j-1)/5));
-            InitTime_tf[index] = 2*SECONDS*( rand100(mt)/100.0 );
+            InitTime_tf[index] = m_param.targetpercent2[index-101];
             ResumeTime_ground[index] = InitTime_tf[index];
             TF_object[index] = body_tf;
             TF_object[index]->setFriction(0);

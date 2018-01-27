@@ -68,6 +68,7 @@ public:
     void deleteTF();
     void fixArmState();
     void checkStay();
+    void ev();
     float evalue();
     float evalue_NEAT(NEAT::Network*);
     void futtobi();

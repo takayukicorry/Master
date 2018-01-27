@@ -34,6 +34,7 @@ public:
     void contact();
     void setDirection();
     void setDirection_NEAT();
+    void ev();
     float evalue();
     float evalue_NEAT(NEAT::Network*);
     void setSpring(btGeneric6DofSpringConstraint*, int);

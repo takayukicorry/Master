@@ -47,7 +47,6 @@ void Ophiuroid::idle() {
 void Ophiuroid::idleDemo() {
     m_time_step++;
     checkState();
-    //setMotorTarget(1);
     setMotorTarget2(1);
 }
 
@@ -67,34 +66,52 @@ void motorPreTickCallback_NEAT(btDynamicsWorld *world, btScalar timeStep) {
     demo->idleNEAT();
 }
 
+void Ophiuroid::ev() {
+    btScalar value = swing_phase;
+    btVector3 up = btVector3(0, 1, 0);
+    btScalar val = swing_phase;
+    if (swing_phase >= -1) {
+        btTransform tr = m_bodies[0]->getWorldTransform();
+        btVector3 vY = tr*up;
+        btVector3 vOrigin = tr.getOrigin();
+        btVector3 vY_O = vY - vOrigin;
+        val = asin(vY_O[1])+M_PI_2;
+    }
+    if (value < val) {
+        value = val;
+    }
+    
+    std::cout << value << "  " << m_time_step << std::endl;
+}
+
 float Ophiuroid::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     //dynamicsWorld->setInternalTickCallback(motorPreTickCallback, this, true);
     setWorld(dynamicsWorld);
 
-    GAMaster::createGround(dynamicsWorld);
+    GAMaster::createGround(m_ownerWorld);
     initSF();
     create();
     btScalar value = swing_phase;
     btVector3 up = btVector3(0, 1, 0);
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
-        dynamicsWorld->stepSimulation(1.f / FPS);
+        m_ownerWorld->stepSimulation(1.f / FPS);
         btScalar val = swing_phase;
-        //if (swing_phase >= -1) {
+        if (swing_phase >= -1) {
             btTransform tr = m_bodies[0]->getWorldTransform();
             btVector3 vY = tr*up;
             btVector3 vOrigin = tr.getOrigin();
             btVector3 vY_O = vY - vOrigin;
             val = asin(vY_O[1])+M_PI_2;
         
-        //}
+        }
         if (value < val) {
             value = val;
         }
     }
     
-    GAMaster::cleanupWorld(dynamicsWorld);
+    GAMaster::cleanupWorld(m_ownerWorld);
     return value;
 }
 
@@ -113,13 +130,13 @@ float Ophiuroid::evalue_NEAT(NEAT::Network* net) {
     for (int i = 0; i < SIMULATION_TIME_STEP; i++) {
         m_ownerWorld->stepSimulation(1.f / FPS);
         btScalar val = swing_phase;
-        //if (swing_phase >= -1) {
+        if (swing_phase >= -1) {
             btTransform tr = m_bodies[0]->getWorldTransform();
             btVector3 vY = tr*up;
             btVector3 vOrigin = tr.getOrigin();
             btVector3 vY_O = vY - vOrigin;
             val = asin(vY_O[1])+M_PI_2;
-        //}
+        }
         if (value < val) {
             value = val;
         }
@@ -463,15 +480,15 @@ void Ophiuroid::setMotorTarget2_NEAT(double delta) {
                 
                 if(rot < THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
-                        //if (m_param.turn_pattern[i]==1){
-                        m_param.turn += 1;
-                        m_param.ee = 1;
-                        leg_state[i] = 1;
-                        m_param.turn_pattern[i] = 1;
-                        turn_direction[i] = 1;//右ねじ正
-                        rigid1->setFriction(FRICTION);
-                        rigid1->setGravity(btVector3(0,-50.0,0));
-                        //}
+                        if (m_param.turn_pattern[i]==1){
+                            m_param.turn += 1;
+                            m_param.ee = 1;
+                            leg_state[i] = 1;
+                            m_param.turn_pattern[i] = 1;
+                            turn_direction[i] = 1;//右ねじ正
+                            rigid1->setFriction(FRICTION);
+                            rigid1->setGravity(btVector3(0,-50.0,0));
+                        }
                     }
                 }
             }
@@ -548,15 +565,15 @@ void Ophiuroid::setMotorTarget2(double delta) {
                 
                 if(rot < THRESHOLD_ROT){
                     if (y < FLEG_WIDTH){
-                        //if (m_param.turn_pattern[i]==1){
+                        if (m_param.turn_pattern[i]==1){
                             m_param.turn += 1;
                             m_param.ee = 1;
                             leg_state[i] = 1;
                             m_param.turn_pattern[i] = 1;
                             turn_direction[i] = 1;//右ねじ正
                             rigid1->setFriction(FRICTION);
-                            rigid1->setGravity(btVector3(0,-50.0,0));
-                        //}
+                            rigid1->setGravity(btVector3(0,-15.0,0));
+                        }
                     }
                 }
             }

@@ -33,18 +33,19 @@ enum CollisionGroup{
 #define NUM_LEGS 5
 #define CONECT_LENGTH 2*NUM_LEGS*NUM_LEGS
 #define POOL_SIZE 100
-#define MAX_CYCLE 2000
+#define MAX_CYCLE 1000
 #define MIN_CYCLE 100
 #define MAX_ANGLE M_PI_2
 #define MIN_ANGLE -M_PI_2
-#define MAX_CYCLE_2 700
+#define MAX_CYCLE_2 500
 #define MIN_CYCLE_2 200
 #define MAX_ANGLE_2 M_PI/3
 #define MIN_ANGLE_2 -M_PI/3
 #define MAX_ANGLE2_2 M_PI
 #define MIN_ANGLE2_2 -M_PI
-#define NUM_JOINT 2
-#define MAX_MOTOR_TORQUE 50.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
+#define NUM_JOINT 1
+#define MAX_MOTOR_TORQUE 0.8f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
+#define MAX_MOTOR_TORQUE_B 800000000000.f//出力[W] ＝ ( 2 * M_PI / 60 ) × T[N・m] × θ[rad/min]
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -55,21 +56,23 @@ enum CollisionGroup{
 #define NUM_TURN 2
 #define SWING_ANGLE M_PI
 #define FRICTION 5.0
-#define M_OBJ 3.f
-#define M_OBJ0 5.f
-#define M_TF 3.f
+#define M_OBJ 0.5f
+#define M_OBJ0 0.5f
+#define M_TF 5.f
 
 #define FPS 60.f
 #define RADIAN 180/M_PI
 #define SECONDS 120//管足振る周期の半分//kannsokufurushuukinohannbunn
 
-#define FBODY_SIZE 24.f
-#define FLEG_LENGTH 32.f/NUM_JOINT
-#define FLEG_WIDTH 16.f
-#define FHEIGHT 24.f
+#define FBODY_SIZE 1.5f
+#define FLEG_LENGTH 2.4f/NUM_JOINT
+#define FLEG_WIDTH 0.9f
+#define FHEIGHT 1.5f
+#define RADIUS_TF 0.25f
+#define LENGTH 0.9f
+
 #define RADIUS 1
-#define LENGTH 24
-#define RADIUS_TF 4
+
 #define INIT_POS_Y LENGTH + RADIUS_TF*3 + 2
 #define NUM_GROUND 7
 #define NUM_TF_UNIT 8//>=4
@@ -77,9 +80,9 @@ enum CollisionGroup{
 #define DL_TIME 120
 #define RE_TIME 120
 #define THRESH_VEL 5
-#define THRESH_TURN 0.8
-#define THRESHOLD_ROT M_PI/1.5
-#define TF_PERCENT 90
+#define THRESH_TURN M_PI
+#define THRESHOLD_ROT M_PI/2
+#define TF_PERCENT 80
 /*以下、要調整*/
 #define ANGLE M_PI/3//管足の限度//kannsokunogenndo
 #define ANGLE_ATTACH M_PI/20//管足、地面との吸着判定角度上限//kannsoku,jimenntonokyuutyakuhannteikakudojougenn
@@ -91,17 +94,17 @@ enum CollisionGroup{
 
 //*******************************//
 #define NUM_GENARATION 100
-#define SIMULATION_TIME_STEP 2400
+#define SIMULATION_TIME_STEP 1200
 #define GA 0
-#define NT 1
+#define NT 0
 #define VERSION_1_3 0
 #define SINGLE 1
 
 #define VERSION 3
-#define WALL 0
+#define WALL 1
 
-//3個発生源
-#define FIRST_STEP 200000
-#define SECOND_STEP 500000
+//ver3 3個発生源
+#define FIRST_STEP 2000
+#define SECOND_STEP 5000
 //*******************************//
 #endif

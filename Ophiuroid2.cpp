@@ -82,6 +82,10 @@ void motorPreTickCallback2_NEAT(btDynamicsWorld *world, btScalar timeStep) {
     demo->idleNEAT();
 }
 
+void Ophiuroid2::ev() {
+    
+}
+
 float Ophiuroid2::evalue() {
     btDiscreteDynamicsWorld* dynamicsWorld = GAMaster::createWorld();
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
